@@ -1,16 +1,30 @@
 package com.rmsi.android.mast.util;
 
+import android.app.Application;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.ui.IconGenerator;
 import com.rmsi.android.mast.activity.R;
+import com.rmsi.android.mast.domain.Feature;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 import java.util.List;
 
@@ -19,6 +33,8 @@ import java.util.List;
  */
 
 public class GisUtility {
+    private static WKTReader wktReader;
+    private static IconGenerator iconFactory;
 
     /**
      * Returns distance between two points represented by Point coordinates
@@ -161,7 +177,7 @@ public class GisUtility {
 
     public static boolean IsPointInPolygon(Point ptClicked, Polygon polygon )
     {
-        if (polygon.contains(ptClicked))
+        if (polygon.contains(ptClicked) || polygon.touches(ptClicked))
         {
             return true;
         }else
@@ -282,7 +298,6 @@ public class GisUtility {
      */
     public static void zoomToMapExtent(GoogleMap googleMap){
         LatLngBounds mapExtent = GisUtility.getMapExtent();
-
         if(mapExtent != null){
             int padding = 0;
             com.google.android.gms.maps.CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(mapExtent, padding);
@@ -296,6 +311,69 @@ public class GisUtility {
     }
 
     /**
+     * Zooms to the polyline
+     * @param googleMap Google map component to zoom on
+     * @param line Polyline to zoom to
+     */
+    public static void zoomToPolyline(GoogleMap googleMap, PolylineOptions line){
+        if(line != null)
+            zoomToPoints(googleMap, line.getPoints());
+    }
+
+    /**
+     * Zooms to the polygon
+     * @param googleMap Google map component to zoom on
+     * @param polygon Polygon to zoom to
+     */
+    public static void zoomToPolygon(GoogleMap googleMap, PolygonOptions polygon){
+        if(polygon != null)
+            zoomToPoints(googleMap, polygon.getPoints());
+    }
+
+    /**
+     * Zooms to list of points representing polygon or polyline. Muat be at least 2 points
+     * @param googleMap Google map component to zoom on
+     * @param points Points representing polygon or polyline where to zoom to
+     */
+    public static void zoomToPoints(GoogleMap googleMap, List<LatLng> points){
+        if(googleMap == null || points == null || points.size() < 2){
+            return;
+        }
+
+        double maxX = 0;
+        double minX = 0;
+        double maxY = 0;
+        double minY = 0;
+        int i = 0;
+
+        for(LatLng coord : points){
+            if(i == 0){
+                minX = coord.longitude;
+                maxX = coord.longitude;
+                minY = coord.latitude;
+                maxY = coord.latitude;
+            } else {
+                if(coord.longitude > maxX)
+                    maxX = coord.longitude;
+                if(coord.longitude < minX)
+                    minX = coord.longitude;
+                if(coord.latitude > maxY)
+                    maxY = coord.latitude;
+                if(coord.latitude < minY)
+                    minY = coord.latitude;
+            }
+            i+=1;
+        }
+
+        LatLngBounds extent = new LatLngBounds(new LatLng(minY, minX), new LatLng(maxY, maxX));
+        if(extent != null) {
+            com.google.android.gms.maps.CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(extent, 20);
+            googleMap.moveCamera(cu);
+            googleMap.animateCamera(cu);
+        }
+    }
+
+    /**
      * Creates vertex marker from provided point
      * @param point Point to be used as vertex location
      * @param vertexType Type of the vertex
@@ -303,7 +381,9 @@ public class GisUtility {
     public static MarkerOptions makeVertex(LatLng point, VERTEX_TYPE vertexType){
         MarkerOptions m = new MarkerOptions();
         m.position(point);
+        m.draggable(false);
         m.anchor(0.5f, 0.5f);
+
         switch (vertexType){
             case NORMAL:
                 m.icon(BitmapDescriptorFactory.fromResource(R.drawable.green_circle_vertex));
@@ -311,5 +391,36 @@ public class GisUtility {
                 m.icon(BitmapDescriptorFactory.fromResource(R.drawable.green_circle_vertex));
         }
         return m;
+    }
+
+    /**
+     * Makes feature label
+     * @param feature Feature object to be used to create a label for
+     */
+    public static MarkerOptions makeLabel(Context ctx, Feature feature){
+        if(wktReader == null){
+            wktReader = new WKTReader();
+        }
+
+        if(iconFactory == null) {
+            iconFactory = new IconGenerator(ctx);
+            iconFactory.setBackground(null);
+            iconFactory.setTextAppearance(R.style.parcelLabel);
+        }
+
+        try {
+            Polygon poly = (Polygon) wktReader.read("POLYGON ((" + feature.getCoordinates() + "))");
+            Point center = poly.getCentroid();
+
+            return new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon("Polygon " + feature.getFeatureid())))
+                    .position(new LatLng(center.getY(), center.getX()))
+                    .anchor(0.5f, 0.5f);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            CommonFunctions.getInstance().appLog("", e);
+        }
+
+        return null;
     }
 }

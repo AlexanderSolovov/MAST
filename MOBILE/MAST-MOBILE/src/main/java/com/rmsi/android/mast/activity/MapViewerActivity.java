@@ -106,6 +106,7 @@ public class MapViewerActivity extends ActionBarActivity {
     CommonFunctions cf = CommonFunctions.getInstance();
     int role = 0;
     String capturFeatureStr, satelliteMapStr, rasterStr, offlineStr;
+    private boolean enableLabeling = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,11 +203,7 @@ public class MapViewerActivity extends ActionBarActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState(); // for button animation
 
-		/*for (int i = 0; i < mDrawerList.getCount(); i++) 
-		{		    
-			mDrawerList.setItemChecked(i, true);		    
-		}*/
-        //##########  NAVIGATION DRAWER ENDS ###################################################################
+        enableLabeling = cf.getEnableLabeling();
 
         try {
             // Loading map
@@ -653,7 +650,7 @@ public class MapViewerActivity extends ActionBarActivity {
                 visibleLayers.append("1");
 
                 if (!currVisibleLayers.contains("1"))
-                    loadCapturedFeaturesFromDB();
+                    loadFeaturesFromDB();
             } else {
                 googleMap.clear();
             }
@@ -684,7 +681,7 @@ public class MapViewerActivity extends ActionBarActivity {
         cf.saveVisibleLayers(visibleLayers.toString());
     }
 
-    private void loadCapturedFeaturesFromDB() {
+    private void loadFeaturesFromDB() {
         try {
             DBController dbObj = new DBController(context);
             List<Feature> features = dbObj.fetchFeatures();
@@ -710,6 +707,12 @@ public class MapViewerActivity extends ActionBarActivity {
                         LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
                         rectOptions.add(mapPoint);
                     }
+
+                    // Add label
+                    if(enableLabeling) {
+                        googleMap.addMarker(GisUtility.makeLabel(this, feature));
+                    }
+
                     if (feature.getStatus().equalsIgnoreCase("final")) {
                         rectOptions.fillColor(Color.argb(100, 204, 153, 255)).strokeWidth(5).strokeColor(Color.BLACK);
                     } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
@@ -903,7 +906,7 @@ public class MapViewerActivity extends ActionBarActivity {
                 mDrawerList.setItemChecked(0, true);
             }
             if (visibleLayers.contains("1")) {
-                loadCapturedFeaturesFromDB();
+                loadFeaturesFromDB();
                 mDrawerList.setItemChecked(1, true);
             }
 

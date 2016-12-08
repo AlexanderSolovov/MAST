@@ -74,8 +74,43 @@ public class ConfigureMapDisplay extends ActionBarActivity
                 {
                     openSnappingDialog();
                 }
+				if(position==4)	  // for labeling
+				{
+					openLabelingDialog();
+				}
 			}
 		});
+	}
+
+	private void openLabelingDialog()
+	{
+		try
+		{
+			final Dialog dialog = new Dialog(context, R.style.DialogTheme);
+			dialog.setContentView(R.layout.dialog_labeling_settings);
+			dialog.setTitle(getResources().getString(R.string.labelingSettingsTitle));
+
+			final CheckBox chbxEnableLabeling = (CheckBox) dialog.findViewById(R.id.chbxEnableLabeling);
+			Button btn_ok =(Button)dialog.findViewById(R.id.btn_ok);
+
+			chbxEnableLabeling.setChecked(cf.getEnableLabeling());
+
+			btn_ok.setOnClickListener(new OnClickListener()
+			{
+				@Override
+				public void onClick(View v)
+				{
+					cf.saveEnableLabeling(chbxEnableLabeling.isChecked());
+					dialog.dismiss();
+				}
+			});
+
+			dialog.show();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();cf.appLog("", e);
+		}
 	}
 
     private void openSnappingDialog()

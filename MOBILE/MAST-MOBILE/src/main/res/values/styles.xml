@@ -38,6 +38,15 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
+    <style name="parcelLabel">
+        <item name="android:textColor">#fff200</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">1</item>
+    </style>
+
     <style name="myPopupMenuTextAppearanceSmall" parent="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">
         <item name="android:textColor">@color/black</item>
     </style>

@@ -55,6 +55,7 @@ public class CommonFunctions {
     int MAP_MODE = 0;
     private final String KEY_SERVER_ADDRESS = "server_address";
     private final String KEY_SNAP_TO_VERTEX = "snap_to_vertex";
+    private final String KEY_ENABLE_LABELING = "enable_labeling";
     private final String KEY_SNAP_TO_SEGMENT = "snap_to_segment";
     private final String KEY_SNAP_TOLERANCE = "snap_tolerance";
     private final String KEY_MAP_EXTENT = "map_extent";
@@ -365,6 +366,16 @@ public class CommonFunctions {
         SharedPreferences.Editor editor = getmMyPreferences().edit();
         editor.putString(KEY_MAP_EXTENT, extent);
         editor.commit();
+    }
+
+    public void saveEnableLabeling(boolean enable) {
+        SharedPreferences.Editor editor = getmMyPreferences().edit();
+        editor.putBoolean(KEY_ENABLE_LABELING, enable);
+        editor.commit();
+    }
+
+    public boolean getEnableLabeling() {
+        return getmMyPreferences().getBoolean(KEY_ENABLE_LABELING, false);
     }
 
     public String getMapExtent() {

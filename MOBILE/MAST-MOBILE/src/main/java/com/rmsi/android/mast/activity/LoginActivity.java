@@ -119,8 +119,11 @@ public class LoginActivity extends ActionBarActivity {
 
         if(user != null){
             cmdHideServerAddress.setVisibility(View.GONE);
-            cmdShowServerAddress.setVisibility(View.GONE);
+            cmdShowServerAddress.setVisibility(View.VISIBLE);
             txtServerAddress.setVisibility(View.GONE);
+            //cmdHideServerAddress.setVisibility(View.GONE);
+            //cmdShowServerAddress.setVisibility(View.GONE);
+            //txtServerAddress.setVisibility(View.GONE);
         } else {
             cmdHideServerAddress.setVisibility(View.GONE);
             cmdShowServerAddress.setVisibility(View.VISIBLE);

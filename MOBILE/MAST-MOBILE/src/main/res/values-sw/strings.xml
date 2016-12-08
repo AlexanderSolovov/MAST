@@ -23,6 +23,7 @@
     <string name="snapToVertex">Snap to vertex</string>
     <string name="snapToSegment">Snap to line</string>
     <string name="snapTolerance">Snapping tolerance</string>
+    <string name="enableLabeling">Enable labeling</string>
 
     <string-array name="UserPref_arrays">
         <item>Badilisha lugha</item>
@@ -183,6 +184,7 @@
     <string name="unableToLoadOfflineData">Haiwezi kuchukua taarifa pasipo na mtandao .. !!</string>
     <string name="colorDialogTitle">Chagua rangi</string>
     <string name="snappingSettingsTitle">Snapping settings</string>
+    <string name="labelingSettingsTitle">Labeling settings</string>
 
     <string-array name="mapDisplayColors">
         <item>Njano</item>
@@ -200,6 +202,7 @@
         <item>Mstari</item>
         <item>Umbo</item>
         <item>Snapping</item>
+        <item>Labeling</item>
     </string-array>
     <string-array name="media">
         <item>Taswira</item>

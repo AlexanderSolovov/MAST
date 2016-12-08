@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_ver">v 2.1</string>
-    <string name="app_ver2">2.1</string>
+    <string name="app_ver">v 2.1.1</string>
+    <string name="app_ver2">2.1.1</string>
     <string name="app_name">MAST</string>
     <string name="action_settings">Settings</string>
     <string name="appname">Mobile Application to Secure Tenure</string>
@@ -24,6 +24,7 @@
     <string name="snapToVertex">Snap to vertex</string>
     <string name="snapToSegment">Snap to line</string>
     <string name="snapTolerance">Snapping tolerance</string>
+    <string name="enableLabeling">Enable labeling</string>
 
     <string-array name="UserPref_arrays">
         <item>Change Language</item>
@@ -188,6 +189,7 @@
     <string name="unableToLoadOfflineData">Unable to load offline data..!!</string>
     <string name="colorDialogTitle">Choose Color</string>
     <string name="snappingSettingsTitle">Snapping settings</string>
+    <string name="labelingSettingsTitle">Labeling settings</string>
 
     <string-array name="mapDisplayColors">
         <item>Yellow</item>
@@ -205,6 +207,7 @@
         <item>Line</item>
         <item>Polygon</item>
         <item>Snapping</item>
+        <item>Labeling</item>
     </string-array>
     <string-array name="media">
         <item>Image</item>
