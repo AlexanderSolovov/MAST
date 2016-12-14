@@ -397,13 +397,13 @@ public class GisUtility {
      * Makes feature label
      * @param feature Feature object to be used to create a label for
      */
-    public static MarkerOptions makeLabel(Context ctx, Feature feature){
+    public static MarkerOptions makeLabel(Feature feature){
         if(wktReader == null){
             wktReader = new WKTReader();
         }
 
         if(iconFactory == null) {
-            iconFactory = new IconGenerator(ctx);
+            iconFactory = new IconGenerator(CommonFunctions.getApplicationContext());
             iconFactory.setBackground(null);
             iconFactory.setTextAppearance(R.style.parcelLabel);
         }

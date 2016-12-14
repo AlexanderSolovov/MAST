@@ -91,9 +91,11 @@ public class ConfigureMapDisplay extends ActionBarActivity
 			dialog.setTitle(getResources().getString(R.string.labelingSettingsTitle));
 
 			final CheckBox chbxEnableLabeling = (CheckBox) dialog.findViewById(R.id.chbxEnableLabeling);
+			final CheckBox chbxEnableVertextDrawing = (CheckBox) dialog.findViewById(R.id.chbxEnableVertexDrawing);
 			Button btn_ok =(Button)dialog.findViewById(R.id.btn_ok);
 
 			chbxEnableLabeling.setChecked(cf.getEnableLabeling());
+			chbxEnableVertextDrawing.setChecked(cf.getEnableVertexDrawing());
 
 			btn_ok.setOnClickListener(new OnClickListener()
 			{
@@ -101,6 +103,7 @@ public class ConfigureMapDisplay extends ActionBarActivity
 				public void onClick(View v)
 				{
 					cf.saveEnableLabeling(chbxEnableLabeling.isChecked());
+					cf.saveEnableVertexDrawing(chbxEnableVertextDrawing.isChecked());
 					dialog.dismiss();
 				}
 			});

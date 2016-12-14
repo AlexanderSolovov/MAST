@@ -56,11 +56,11 @@ public class CommonFunctions {
     private final String KEY_SERVER_ADDRESS = "server_address";
     private final String KEY_SNAP_TO_VERTEX = "snap_to_vertex";
     private final String KEY_ENABLE_LABELING = "enable_labeling";
+    private final String KEY_ENABLE_VERTEX_DRAWING = "enable_vertex_drawing";
     private final String KEY_SNAP_TO_SEGMENT = "snap_to_segment";
     private final String KEY_SNAP_TOLERANCE = "snap_tolerance";
     private final String KEY_MAP_EXTENT = "map_extent";
 
-    //TODO SERVER IP ADDRESS WHERE THE CAPTURED DATA WILL SYNC
     //public static String SERVER_IP = "54.93.173.87";
 
 
@@ -81,7 +81,7 @@ public class CommonFunctions {
     public static int MEDIA_SYNC_ERROR = 2;
 
     private static String roleStr;
-    public static int roleId;
+    public static int roleId = -1;
 
 
     public static CommonFunctions getInstance() {
@@ -93,6 +93,10 @@ public class CommonFunctions {
     public void Initialize(Context ctxt) {
         mContext = ctxt;
         mMyPreferences = mContext.getSharedPreferences("MASTMobilePref", Activity.MODE_PRIVATE);
+    }
+
+    public static Context getApplicationContext() {
+        return mContext;
     }
 
     public void exitApplication(Context cntxt) {
@@ -368,6 +372,16 @@ public class CommonFunctions {
         editor.commit();
     }
 
+    public void saveEnableVertexDrawing(boolean enable) {
+        SharedPreferences.Editor editor = getmMyPreferences().edit();
+        editor.putBoolean(KEY_ENABLE_VERTEX_DRAWING, enable);
+        editor.commit();
+    }
+
+    public boolean getEnableVertexDrawing() {
+        return getmMyPreferences().getBoolean(KEY_ENABLE_VERTEX_DRAWING, true);
+    }
+
     public void saveEnableLabeling(boolean enable) {
         SharedPreferences.Editor editor = getmMyPreferences().edit();
         editor.putBoolean(KEY_ENABLE_LABELING, enable);
@@ -533,20 +547,20 @@ public class CommonFunctions {
     }
 
     public static int getRoleID() {
-        DBController sqllite = new DBController(mContext);
-        User user = sqllite.getLoggedUser();
+        if (roleId < 0) {
+            DBController sqllite = new DBController(mContext);
+            User user = sqllite.getLoggedUser();
 
+            if (user != null) {
+                roleStr = user.getRoleName();
+                sqllite.close();
+                if (roleStr.equals("ROLE_TRUSTED_INTERMEDIARY")) {
+                    roleId = CommonFunctions.ROLE_TRUSTED_INTERMEDIARY;
+                } else if (roleStr.equals("ROLE_ADJUDICATOR")) {
+                    roleId = CommonFunctions.ROLE_ADJUDICATOR;
+                }
 
-        //########## Setting logged USER
-        if (user != null) {
-            roleStr = user.getRoleName();
-            sqllite.close();
-            if (roleStr.equals("ROLE_TRUSTED_INTERMEDIARY")) {
-                roleId = CommonFunctions.ROLE_TRUSTED_INTERMEDIARY;
-            } else if (roleStr.equals("ROLE_ADJUDICATOR")) {
-                roleId = CommonFunctions.ROLE_ADJUDICATOR;
             }
-
         }
         return roleId;
     }

@@ -1,158 +1,139 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" 
-   >
+    android:orientation="vertical">
 
     <include
         android:id="@+id/toolbar"
         layout="@layout/layout_toolbar" />
 
-  <LinearLayout
-        android:id="@+id/fixedAttribs"
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="15"
-        android:orientation="vertical" >
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/projectname_lbl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/projectname"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSizeL" />
+        <LinearLayout
+            android:id="@+id/layoutAttributes"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/spatialunit_lbl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/spatialunit_lbl"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSizeL" />
-        
-         <TextView
-            android:id="@+id/villageName_lbl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/villageName_lbl"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSizeL" />
+            <TextView
+                android:id="@+id/spatialunit_lbl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:padding="5dp"
+                android:text="@string/spatialunit_lbl"
+                android:textColor="@color/black"
+                android:textSize="18dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
+            <TextView
+                android:id="@+id/villageName_lbl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:padding="5dp"
+                android:text="@string/villageName_lbl"
+                android:textColor="@color/black"
+                android:textSize="18dp" />
 
-        <TextView
-            android:id="@+id/spatialunit_personType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/spatialunit_personType_lbl"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSize" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
 
-        <Spinner
-            android:id="@+id/spinner_person_type"
-            style="@style/Widget.AppCompat.Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-           
-            android:entries="@array/personTypeArray" />
-        
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
+            <TextView
+                android:id="@+id/spatialunit_personType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/spatialunit_personType_lbl"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
 
-        <TextView
-            android:id="@+id/spatialunit_hemlet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/spatialunit_hemlet_lbl"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSize" />
+            <Spinner
+                android:id="@+id/spinner_person_type"
+                style="@style/Widget.AppCompat.Spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/personTypeArray" />
 
-        <Spinner
-            android:id="@+id/spinner_hemlet"
-            style="@style/Widget.AppCompat.Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-          
-            />
-        
-         <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
 
-        <TextView
-            android:id="@+id/spatialunit_witness1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/select_witness1"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSize" />
+            <TextView
+                android:id="@+id/spatialunit_hemlet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/spatialunit_hemlet_lbl"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
 
-        <Spinner
-            android:id="@+id/spinner_witness1"
-            style="@style/Widget.AppCompat.Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-           
-            />
-        
-         <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
+            <Spinner
+                android:id="@+id/spinner_hemlet"
+                style="@style/Widget.AppCompat.Spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/spatialunit_witness2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/select_witness2"
-            android:textColor="@color/black"
-            android:textSize="@dimen/textSize" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
 
-        <Spinner
-            android:id="@+id/spinner_witness2"
-            style="@style/Widget.AppCompat.Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-        
-            />
-        
+            <TextView
+                android:id="@+id/spatialunit_witness1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/select_witness1"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
-   
-       <ListView
-            android:id="@+id/list_view"
-            style="@style/ListStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-          >
-        </ListView>
- </LinearLayout>
-    
+            <Spinner
+                android:id="@+id/spinner_witness1"
+                style="@style/Widget.AppCompat.Spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
+            <TextView
+                android:id="@+id/spatialunit_witness2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/select_witness2"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
+
+            <Spinner
+                android:id="@+id/spinner_witness2"
+                style="@style/Widget.AppCompat.Spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+        </LinearLayout>
+    </ScrollView>
+
     <LinearLayout
         android:id="@+id/buttonBarAttributes"
         style="?android:attr/buttonBarStyle"
@@ -162,8 +143,7 @@
         android:background="@color/color_primary"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:weightSum="5" 
-       >
+        android:weightSum="5">
 
         <RelativeLayout
             style="@android:style/Widget.ActionButton"
@@ -173,7 +153,7 @@
             android:layout_weight="1"
             android:clickable="false"
             android:gravity="center"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/btn_propertyInfo"
@@ -186,7 +166,7 @@
                 android:padding="10dp"
                 android:src="@drawable/add_property" />
 
-           </RelativeLayout>
+        </RelativeLayout>
 
         <RelativeLayout
             style="@android:style/Widget.ActionButton"
@@ -196,7 +176,7 @@
             android:layout_weight="1"
             android:clickable="false"
             android:gravity="center"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/btn_tenureInfo"
@@ -208,20 +188,20 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:src="@drawable/add_tenure" />
-<!-- 
-            <TextView
-                android:id="@+id/tenureCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@id/btn_tenureInfo"
-                android:layout_alignRight="@id/btn_tenureInfo"
-                android:layout_alignTop="@id/btn_tenureInfo"
-                android:background="@drawable/count_style"
-                android:text="@string/attribCount"
-                android:textColor="@color/color_accent"
-                android:textStyle="bold" /> -->
+            <!--
+                        <TextView
+                            android:id="@+id/tenureCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignEnd="@id/btn_tenureInfo"
+                            android:layout_alignRight="@id/btn_tenureInfo"
+                            android:layout_alignTop="@id/btn_tenureInfo"
+                            android:background="@drawable/count_style"
+                            android:text="@string/attribCount"
+                            android:textColor="@color/color_accent"
+                            android:textStyle="bold" /> -->
         </RelativeLayout>
-        
+
         <RelativeLayout
             style="@android:style/Widget.ActionButton"
             android:layout_width="wrap_content"
@@ -230,7 +210,7 @@
             android:layout_weight="1"
             android:clickable="false"
             android:gravity="center"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/btn_personlist"
@@ -256,7 +236,7 @@
                 android:textStyle="bold" />
         </RelativeLayout>
 
-            <RelativeLayout
+        <RelativeLayout
             style="@android:style/Widget.ActionButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
@@ -264,7 +244,7 @@
             android:layout_weight="1"
             android:clickable="false"
             android:gravity="center"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/btn_addMultimedia"
@@ -298,7 +278,7 @@
             android:layout_weight="1"
             android:clickable="false"
             android:gravity="center"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/btn_addcustom"

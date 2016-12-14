@@ -66,10 +66,10 @@ public class LoginActivity extends ActionBarActivity {
         cf.loadLocale(getApplicationContext());
 
         setContentView(R.layout.activity_login);
-        /*	DBController sqllite  = new DBController(context);
-		sqllite.onCreate(sqllite.getWritableDatabase());
-		boolean isdb = sqllite.checkDataBase();
-		sqllite.close();
+        /*	DBController db  = new DBController(context);
+		db.onCreate(db.getWritableDatabase());
+		boolean isdb = db.checkDataBase();
+		db.close();
 
 		if(isdb)
 		{

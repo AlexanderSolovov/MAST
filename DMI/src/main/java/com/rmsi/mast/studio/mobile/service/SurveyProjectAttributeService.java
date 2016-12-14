@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.rmsi.mast.studio.domain.AttributeMaster;
+import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.ProjectAdjudicator;
 import com.rmsi.mast.studio.domain.ProjectHamlet;
 

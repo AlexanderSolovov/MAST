@@ -24,6 +24,7 @@
     <string name="snapToSegment">Snap to line</string>
     <string name="snapTolerance">Snapping tolerance</string>
     <string name="enableLabeling">Enable labeling</string>
+    <string name="enableVertexDrawing">Enable vertex drawing</string>
 
     <string-array name="UserPref_arrays">
         <item>Badilisha lugha</item>
@@ -184,7 +185,7 @@
     <string name="unableToLoadOfflineData">Haiwezi kuchukua taarifa pasipo na mtandao .. !!</string>
     <string name="colorDialogTitle">Chagua rangi</string>
     <string name="snappingSettingsTitle">Snapping settings</string>
-    <string name="labelingSettingsTitle">Labeling settings</string>
+    <string name="labelingSettingsTitle">Labeling and vertex settings</string>
 
     <string-array name="mapDisplayColors">
         <item>Njano</item>
@@ -202,7 +203,7 @@
         <item>Mstari</item>
         <item>Umbo</item>
         <item>Snapping</item>
-        <item>Labeling</item>
+        <item>Labeling and vertices</item>
     </string-array>
     <string-array name="media">
         <item>Taswira</item>
@@ -234,7 +235,7 @@
         <item>Hapana</item>
     </string-array>
 
-    <string name="spatialunit_personType_lbl">Chagua aina ya mmiliki</string>
+    <string name="spatialunit_personType_lbl">Aina ya mmiliki</string>
     <string name="title_activity_add_non_natural_person">Eneo la taasisi</string>
     <string name="title_activity_custom_attrib">Sifa za watumiaji</string>
     <string name="AddPerson">Ongeza Mtu</string>
@@ -377,16 +378,16 @@
 <string name="unableToDownloadAttributeData">Haiwezi kupakuwa taarifa </string>
 <string name="DownloadFinished">Ushushaji umekamilika..</string>
 <string name="DownloadError">Hitilafu katika ushushaji..</string>
-<string name="spatialunit_hemlet_lbl">Chagua kitongoji</string>
-<string name="select_witness1">Chagua mhakiki 1</string>
-<string name="select_witness2">chagua mhakiki 2</string>
+<string name="spatialunit_hemlet_lbl">Kitongoji</string>
+<string name="select_witness1">Mhakiki 1</string>
+<string name="select_witness2">Mhakiki 2</string>
 <string name="nextKin">Jaza mtu mwenye maslahi</string>
 <string name="tittle_addDeceased">Jaza jina la marehemu</string>
 <string name="addPOI">Jaza MASLA</string>
 <string name="addDeceased">Jaza MAREM</string>
 <string name="nextOfKin">Ingiza watu wenye maslahi</string>
 <string name="fill_tenure">Tafdhali jaza taarifa za umiliki kwanza</string>
-<string name="villageName_lbl">Jina la kijiji</string>
+<string name="villageName_lbl">Kijiji</string>
 <string name="AddedSuccessfully">Umefanikiwa kuongeza</string>
 <string name="UnableToSave">Haiwezi kuhifadhi</string>
 <string name="OwnerIsMinor">Mmiliki ni mtoto. Tafadhali jaza mlezi wake</string>

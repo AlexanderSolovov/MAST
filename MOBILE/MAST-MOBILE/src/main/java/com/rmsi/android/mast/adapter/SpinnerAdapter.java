@@ -16,7 +16,6 @@ import com.rmsi.android.mast.domain.Option;
 //custom adapter
 public class SpinnerAdapter extends ArrayAdapter<Option>
 {
-
    private Context context;
    private List<Option> myObjs;
 
@@ -39,36 +38,6 @@ public class SpinnerAdapter extends ArrayAdapter<Option>
    public long getItemId(int position)
    {
       return myObjs.get(position).getOptionId();
-   }
-
-   @Override
-   public View getView(int position, View convertView, ViewGroup parent) 
-   {
-
-	   TextView label = null;
-
-	   if(convertView==null)
-	   {   
-		   label = new TextView(context);
-	   }
-	   else
-	   {
-		   label = (TextView) convertView;
-	   }
-	   
-	   label.setText(myObjs.get(position).getOptionName());
-	   label.setTextSize(20);
-	   return label;
-   }
-
-   @Override
-   public View getDropDownView(int position, View convertView,ViewGroup parent) 
-   {
-       TextView label = new TextView(context);
-       label.setText(myObjs.get(position).getOptionName());
-       label.setTextSize(22);
-       label.setTextColor(context.getResources().getColor(R.color.black));
-       return label;
    }
 
 	public int getPosition(int optionId) 

@@ -40,12 +40,8 @@ import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Media;
 import com.rmsi.android.mast.domain.Option;
 import com.rmsi.android.mast.util.CommonFunctions;
+import com.rmsi.android.mast.util.GuiUtility;
 
-/**
- * 
- * @author prashant.nigam
- *
- */
 public class AddPersonActivity extends ActionBarActivity 
 {
 
@@ -56,13 +52,11 @@ public class AddPersonActivity extends ActionBarActivity
 	final Context context = this;
 	AttributeAdapter adapterList;
 	Button btnSave,btnCancel;
-	String FieldValue;	
 	CommonFunctions cf = CommonFunctions.getInstance();
 	int groupId = 0;
 	Long featureId = 0L,tenureTypeID;
 	myImageAdapter adapter;
 	List<Bitmap> imageFile = new ArrayList<Bitmap>();
-	private List<Integer> errorList = new ArrayList<Integer>();
 	int roleId=0;
 	String personSubType="",personSubTypeValue="";
 	String warningStr,msgStr;
@@ -121,7 +115,7 @@ public class AddPersonActivity extends ActionBarActivity
 		gridView.setAdapter(adapter);
 
 		try {
-			adapterList = new AttributeAdapter(context, attribList,featureId);
+			adapterList = new AttributeAdapter(context, attribList);
 		} 
 		catch (Exception e) {
 
@@ -316,172 +310,7 @@ public class AddPersonActivity extends ActionBarActivity
 
 	public boolean validate()
 	{
-		boolean isValid = true;
-		errorList.clear();
-		for (int i = 0; i < adapterList.getCount(); i++) 
-		{
-			Attribute item = (Attribute) adapterList.getItem(i);
-			String value = "";
-			String	hasvalidation = attribList.get(i).getValidation();
-			if (item.getControlType() == 1) {
-				if (item.getView() != null) 
-				{
-					// edit text
-					EditText editText = (EditText) item.getView();
-					value = editText.getText().toString();
-					if(hasvalidation.equalsIgnoreCase("true") && value.isEmpty())
-					{	
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}
-					else if(!value.isEmpty()){						
-						attribList.get(i).setFieldValue(value);						
-					}else{						
-						attribList.get(i).setFieldValue(null);						
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-			else if (item.getControlType() == 2) {
-				if (item.getView() != null) 
-				{
-					// edit text
-					TextView textview = (TextView) item.getView();
-					value = textview.getText().toString();
-					if(hasvalidation.equalsIgnoreCase("true") && value.isEmpty())
-					{	
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}else if(!value.isEmpty()){							
-
-						attribList.get(i).setFieldValue(value);								
-												
-					}else{						
-						attribList.get(i).setFieldValue(null);						
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-			else if (item.getControlType() == 3) {
-				if (item.getView() != null) // No Validation as boolean has only Yes OR No
-				{
-					Spinner spinner = (Spinner) item.getView();
-					String selecteditem = (String) spinner.getSelectedItem();
-					attribList.get(i).setFieldValue(selecteditem);
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-
-			}
-			else if (item.getControlType() == 4) {
-				if (item.getView() != null) 
-				{
-					// edit text(Numeric)
-					EditText editText = (EditText) item.getView();
-					value = editText.getText().toString();
-
-					if(hasvalidation.equalsIgnoreCase("true") && value.isEmpty())
-					{
-						isValid = false;
-						errorList.add(item.getAttributeid());	
-						attribList.get(i).setFieldValue(null);
-					}else if(!value.isEmpty()){	
-						
-						if(item.getAttributeid()==21)
-						{
-							if(tenureTypeID==70 || tenureTypeID==71 || tenureTypeID==72 || tenureTypeID==99)
-							{
-								 long age = Long.parseLong(value);
-								if(age<18)
-								{
-									isValid = false;
-									errorList.add(item.getAttributeid());
-									attribList.get(i).setFieldValue(null);
-									msgStr=getResources().getString(R.string.minorNotAllowed); //"Minor not allowed.Age should not be less than 18."
-									cf.showMessage(context,warningStr,msgStr);
-								}
-								else{
-									attribList.get(i).setFieldValue(value);
-								}
-							}
-							else if(tenureTypeID==100)
-							{ int age = Integer.parseInt(value);
-							if(age>=18 && personSubType.equalsIgnoreCase("Owner"))
-							{
-								isValid = false;
-								errorList.add(item.getAttributeid());
-								attribList.get(i).setFieldValue(null);
-								msgStr=getResources().getString(R.string.ownerShouldBeMinor);  //"Owner should be minor in case of Guardian(Minor) tenure type"
-								cf.showMessage(context,warningStr,msgStr);
-							}
-							if(age<18 && personSubType.equalsIgnoreCase("Guardian"))
-							{
-								isValid = false;
-								errorList.add(item.getAttributeid());
-								attribList.get(i).setFieldValue(null);
-								msgStr=getResources().getString(R.string.guardianShudBeAdult);
-								cf.showMessage(context,"Warning",msgStr); //"Guardian should be Adult."
-							}
-							else{
-								attribList.get(i).setFieldValue(value);
-							}
-								
-							}
-													}
-											
-					}else{
-						attribList.get(i).setFieldValue(null);
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-
-			else if (item.getControlType() == 5) {
-				if (item.getView() != null) 
-				{
-					// drop down spinner
-					Spinner spinner = (Spinner) item.getView();
-					Option selecteditem = (Option) spinner.getSelectedItem();
-
-					if (hasvalidation.equalsIgnoreCase("true") && selecteditem.getOptionId() == 0) {
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}else if(selecteditem.getOptionId() != 0){	
-						
-										
-						attribList.get(i).setFieldValue(selecteditem.getOptionId().toString());	
-					
-					}
-					else{
-						attribList.get(i).setFieldValue(null);
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-		}
-		adapterList.setErrorList(errorList);
-
-		if (!isValid) {
-			adapterList.notifyDataSetChanged();
-		}
-		return isValid;
+		return GuiUtility.validateAttributes(attribList);
 	}
 	
 	private void processPersonPhoto(int gId, DBController sqllite)

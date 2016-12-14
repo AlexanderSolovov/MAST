@@ -1014,7 +1014,7 @@ public class LandRecordsController {
 					tenureclassobj = landRecordsService.findtenureClasseById(2);
 				}
 				
-				socialTenureRelationship.setTenureclass_id(tenureclassobj);
+				socialTenureRelationship.setTenureclassId(tenureclassobj);
 				
 				
 

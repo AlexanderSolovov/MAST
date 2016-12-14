@@ -710,7 +710,7 @@ public class MapViewerActivity extends ActionBarActivity {
 
                     // Add label
                     if(enableLabeling) {
-                        googleMap.addMarker(GisUtility.makeLabel(this, feature));
+                        googleMap.addMarker(GisUtility.makeLabel(feature));
                     }
 
                     if (feature.getStatus().equalsIgnoreCase("final")) {

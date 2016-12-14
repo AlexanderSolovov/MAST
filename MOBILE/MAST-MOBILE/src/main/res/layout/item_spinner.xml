@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="label"
-        android:textColor="@color/black"
+        android:textColor="@color/color_primary_dark"
         android:textSize="@dimen/textSize" />
 
     <Spinner
@@ -19,7 +19,6 @@
         style="@style/Widget.AppCompat.Spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-       android:layout_marginTop="5dp"
-       android:padding="5dp" />
+       android:layout_marginTop="5dp" />
 
 </LinearLayout>

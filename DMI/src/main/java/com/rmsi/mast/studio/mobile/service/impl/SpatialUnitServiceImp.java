@@ -1,8 +1,9 @@
 /**
- * 
+ *
  */
 package com.rmsi.mast.studio.mobile.service.impl;
 
+import com.rmsi.mast.studio.dao.AcquisitionTypeDao;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rmsi.mast.studio.domain.Citizenship;
+import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.Gender;
 import com.rmsi.mast.studio.domain.GroupType;
 import com.rmsi.mast.studio.domain.LandType;
@@ -36,161 +38,189 @@ import com.rmsi.mast.studio.mobile.dao.TenureClassDao;
 import com.rmsi.mast.studio.mobile.dao.hibernate.SpatialUnitHibernateDao;
 import com.rmsi.mast.studio.mobile.service.SpatialUnitService;
 import com.rmsi.mast.studio.util.GeometryConversion;
+import com.rmsi.mast.studio.dao.ClaimTypeDao;
+import com.rmsi.mast.studio.dao.DocumentTypeDao;
+import com.rmsi.mast.studio.domain.AcquisitionType;
+import com.rmsi.mast.studio.domain.DocumentType;
 
-/**
- * @author Shruti.Thakur
- *
- */
 @Service
 public class SpatialUnitServiceImp implements SpatialUnitService {
 
-	@Autowired
-	SpatialUnitHibernateDao spatialUnitDao;
+    @Autowired
+    SpatialUnitHibernateDao spatialUnitDao;
 
-	@Autowired
-	GenderDao genderDao;
+    @Autowired
+    GenderDao genderDao;
 
-	@Autowired
-	MaritalStatusDao maritalStatusDao;
+    @Autowired
+    MaritalStatusDao maritalStatusDao;
 
-	@Autowired
-	OccupancyTypeDao occupancyTypeDao;
+    @Autowired
+    OccupancyTypeDao occupancyTypeDao;
 
-	@Autowired
-	TenureClassDao tenureClassDao;
+    @Autowired
+    TenureClassDao tenureClassDao;
 
-	@Autowired
-	ShareTypeDao tenureRelationTypeDao;
+    @Autowired
+    ShareTypeDao tenureRelationTypeDao;
 
-	@Autowired
-	LandUseTypeDao landUseTypeDao;
+    @Autowired
+    LandUseTypeDao landUseTypeDao;
 
-	@Autowired
-	SlopeValuesDao slopeValuesDao;
+    @Autowired
+    SlopeValuesDao slopeValuesDao;
 
-	@Autowired
-	SoilQualityValuesDao soilQualityValuesDao;
+    @Autowired
+    SoilQualityValuesDao soilQualityValuesDao;
 
-	@Autowired
-	GroupTypeDao groupTypeDao;
+    @Autowired
+    GroupTypeDao groupTypeDao;
 
-	@Autowired
-	LandTypeDao landTypeDao;
-	
-	@Autowired
-	CitizenshipDao citizenshipDao;
+    @Autowired
+    LandTypeDao landTypeDao;
 
-	@Override
-	public List<SpatialUnit> getSpatialUnitDataByProjectId(String projectId) {
+    @Autowired
+    CitizenshipDao citizenshipDao;
 
-		// Convert WKT to Geometry Type and returns the List<SpatialUnit>
-		return new GeometryConversion().converGeometryToString(spatialUnitDao
-				.getSpatialUnitByProject(projectId));
+    @Autowired
+    ClaimTypeDao claimTypeDAO;
+    
+    @Autowired
+    AcquisitionTypeDao acquisitionTypeDao;
+    
+    @Autowired
+    DocumentTypeDao documentTypeDao;
+    
+    @Override
+    public List<SpatialUnit> getSpatialUnitDataByProjectId(String projectId) {
 
-	}
+        // Convert WKT to Geometry Type and returns the List<SpatialUnit>
+        return new GeometryConversion().converGeometryToString(spatialUnitDao
+                .getSpatialUnitByProject(projectId));
 
-	@Override
-	public Gender getGenderById(long genderId) {
+    }
 
-		return genderDao.getGenderById(genderId);
+    @Override
+    public Gender getGenderById(long genderId) {
 
-	}
+        return genderDao.getGenderById(genderId);
 
-	@Override
-	public MaritalStatus getMartitalStatus(int maritalStatusId) {
+    }
 
-		return maritalStatusDao.getMaritalStatusById(maritalStatusId);
+    @Override
+    public MaritalStatus getMartitalStatus(int maritalStatusId) {
 
-	}
+        return maritalStatusDao.getMaritalStatusById(maritalStatusId);
 
-	@Override
-	public OccupancyType getOccupancyTypeById(int occId) {
+    }
 
-		return occupancyTypeDao.getOccupancyTypeById(occId);
+    @Override
+    public OccupancyType getOccupancyTypeById(int occId) {
 
-	}
+        return occupancyTypeDao.getOccupancyTypeById(occId);
 
-	@Override
-	public TenureClass getTenureClassById(int tenureId) {
+    }
 
-		return tenureClassDao.getTenureClassById(tenureId);
+    @Override
+    public TenureClass getTenureClassById(int tenureId) {
 
-	}
+        return tenureClassDao.getTenureClassById(tenureId);
 
-	@Override
-	public ShareType getShareTypeById(int tenureRelationId) {
+    }
 
-		return tenureRelationTypeDao
-				.getTenureRelationshipTypeById(tenureRelationId);
+    @Override
+    public ShareType getShareTypeById(int tenureRelationId) {
 
-	}
+        return tenureRelationTypeDao
+                .getTenureRelationshipTypeById(tenureRelationId);
 
-	@Override
-	public LandUseType getLandUseTypeById(int landUseTypeId) {
+    }
 
-		return landUseTypeDao.getLandUseTypeById(landUseTypeId);
+    @Override
+    public LandUseType getLandUseTypeById(int landUseTypeId) {
 
-	}
+        return landUseTypeDao.getLandUseTypeById(landUseTypeId);
 
-	@Override
-	public SpatialUnit getSpatialUnitByUsin(long usin) {
+    }
 
-		return spatialUnitDao.getSpatialUnitByUsin(usin);
+    @Override
+    public SpatialUnit getSpatialUnitByUsin(long usin) {
 
-	}
+        return spatialUnitDao.getSpatialUnitByUsin(usin);
 
-	@Override
-	public List<Long> getSpatialUnitByStatusId(String projectId, int statusId) {
+    }
 
-		List<Long> usinList = new ArrayList<Long>();
+    @Override
+    public List<Long> getSpatialUnitByStatusId(String projectId, int statusId) {
 
-		List<SpatialUnit> spatialUnit = spatialUnitDao
-				.findSpatialUnitByStatusId(projectId, statusId);
+        List<Long> usinList = new ArrayList<Long>();
 
-		if (spatialUnit != null) {
+        List<SpatialUnit> spatialUnit = spatialUnitDao
+                .findSpatialUnitByStatusId(projectId, statusId);
 
-			Iterator<SpatialUnit> spatialUnitIter = spatialUnit.iterator();
+        if (spatialUnit != null) {
 
-			while (spatialUnitIter.hasNext()) {
+            Iterator<SpatialUnit> spatialUnitIter = spatialUnit.iterator();
 
-				usinList.add(spatialUnitIter.next().getUsin());
-			}
-		}
-		return usinList;
-	}
+            while (spatialUnitIter.hasNext()) {
 
-	@Override
-	public GroupType getGroupTypeById(int groupTypeId) {
+                usinList.add(spatialUnitIter.next().getUsin());
+            }
+        }
+        return usinList;
+    }
 
-		return groupTypeDao.getGroupTypeById(groupTypeId);
+    @Override
+    public GroupType getGroupTypeById(int groupTypeId) {
 
-	}
+        return groupTypeDao.getGroupTypeById(groupTypeId);
 
-	@Override
-	public SoilQualityValues getSoilQualityValuesById(int soilQualityValueId) {
+    }
 
-		return soilQualityValuesDao
-				.getSoilQualityValuesById(soilQualityValueId);
+    @Override
+    public SoilQualityValues getSoilQualityValuesById(int soilQualityValueId) {
 
-	}
+        return soilQualityValuesDao
+                .getSoilQualityValuesById(soilQualityValueId);
 
-	@Override
-	public SlopeValues getSlopeValuesById(int slopeValuesId) {
+    }
 
-		return slopeValuesDao.getSlopeValuesById(slopeValuesId);
+    @Override
+    public SlopeValues getSlopeValuesById(int slopeValuesId) {
 
-	}
+        return slopeValuesDao.getSlopeValuesById(slopeValuesId);
 
-	@Override
-	public LandType getLandTypeById(int landTypeId) {
+    }
 
-		return landTypeDao.getLandTypeById(landTypeId);
+    @Override
+    public LandType getLandTypeById(int landTypeId) {
 
-	}
+        return landTypeDao.getLandTypeById(landTypeId);
 
-	@Override
-	public Citizenship getCitizenship(int val) {
-		return citizenshipDao.getCitizensbyId(val);
-	}
+    }
 
+    @Override
+    public Citizenship getCitizenship(int val) {
+        return citizenshipDao.getCitizensbyId(val);
+    }
+
+    @Override
+    public List<ClaimType> getClaimTypes() {
+        return claimTypeDAO.findAll();
+    }
+    
+    @Override
+    public ClaimType getClaimTypeById(String code) {
+        return claimTypeDAO.findById(code, true);
+    }
+    
+    @Override
+    public AcquisitionType getAcquisitionTypeByAttributeOptionId(int optId){
+        return acquisitionTypeDao.getTypeByAttributeOptionId(optId);
+    }
+    
+    @Override
+    public DocumentType getDocumentTypeByAttributeOptionId(int optId){
+        return documentTypeDao.getTypeByAttributeOptionId(optId);
+    }
 }

@@ -339,14 +339,14 @@ public class DataSummaryActivity extends ActionBarActivity {
 		try 
 		{
 			DBController sqllite = new DBController(context);
-			//List<Attribute> tmpList = sqllite.getTenureList(featureId,null);
-			//List<Attribute> tmpList1 = sqllite.getPropertyList(featureId);
+			//List<Attribute> tmpList = db.getTenureList(featureId,null);
+			//List<Attribute> tmpList1 = db.getPropertyList(featureId);
 			List<Attribute> tmpList2 = sqllite.getPersonList(featureId);
 		     tmpList3 = sqllite.getMediaList(featureId);
 			boolean isNonNatural=sqllite.IsNonNaturalPerson(featureId);
 			isCustomValue=sqllite.IsCustomAttributeValue(featureId);
 			isCustomAttrib=sqllite.IsCustomAttribute();
-			//boolean ispropertyAtttrib=sqllite.IsPropertyAttribute();
+			//boolean ispropertyAtttrib=db.IsPropertyAttribute();
 			boolean isPropertyValue=sqllite.IsPropertyAttribValue(featureId);
 			sqllite.close();
 			

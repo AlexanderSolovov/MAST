@@ -110,7 +110,7 @@ public class SocialTenureListActivity extends ActionBarActivity
 
 				/*
 				 * 
-				 * optionlist=sqllite.getPersonForTenure(featureId);
+				 * optionlist=db.getPersonForTenure(featureId);
 				 * if(optionlist.size()==0)
 				{
 

@@ -4,29 +4,26 @@
     android:layout_height="fill_parent"
     android:baselineAligned="false"
     android:orientation="vertical"
-    android:padding="5dp" >
+    android:padding="5dp">
 
     <TextView
         android:id="@+id/field"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="label"
-        android:textColor="@color/black"
+        android:textColor="@color/color_primary_dark"
         android:textSize="@dimen/textSize" />
- <TextView
+
+    <TextView
         android:id="@+id/textview_datepicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-          android:layout_marginTop="5dp"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"
         android:textColor="@color/black"
-        android:textSize="@dimen/textSize"
-         android:padding="5dp" /> />
-    
-   <!--  
-    <DatePicker
-        android:id="@+id/datePicker"
-        android:layout_width="wrap_content"
-        android:layout_height="147dp"
-        android:datePickerMode="spinner" /> -->
-
+        android:textSize="@dimen/textSize" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCCCCC" />
 </LinearLayout>

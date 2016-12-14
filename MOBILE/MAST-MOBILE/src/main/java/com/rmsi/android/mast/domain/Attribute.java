@@ -3,6 +3,7 @@ package com.rmsi.android.mast.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 public class Attribute 
@@ -25,8 +26,16 @@ public class Attribute
 	private int NextOfKinId;
 	private int HamletId;
 	private String witness1,witness2,HamletName,personSubType;
-	
-	
+	private String hamletLeaderName;
+	private Drawable initialBackground;
+
+	public String getHamletLeaderName() {
+		return hamletLeaderName;
+	}
+
+	public void setHamletLeaderName(String hamletLeaderName) {
+		this.hamletLeaderName = hamletLeaderName;
+	}
 
 	public String getHamletName() {
 		return HamletName;
@@ -114,8 +123,13 @@ public class Attribute
 	}
 	public void setView(View view) {
 		this.view = view;
+		this.initialBackground = view.getBackground();
 	}
-	
+
+	public Drawable getInitialBackground() {
+		return initialBackground;
+	}
+
 	public List<Option> getOptionsList() {
 		return OptionsList;
 	}
@@ -200,8 +214,6 @@ public class Attribute
 	public void setFEATURE_ID(long fEATURE_ID) {
 		FEATURE_ID = fEATURE_ID;
 	}
-	
-	
 }
 
 

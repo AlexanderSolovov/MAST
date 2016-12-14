@@ -24,6 +24,7 @@ import com.rmsi.android.mast.db.DBController;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Option;
 import com.rmsi.android.mast.util.CommonFunctions;
+import com.rmsi.android.mast.util.GuiUtility;
 
 public class AddCustomAttribActivity extends ActionBarActivity {
 
@@ -36,7 +37,6 @@ public class AddCustomAttribActivity extends ActionBarActivity {
 	String FieldValue;	
 	CommonFunctions cf = CommonFunctions.getInstance();
 	int groupId = 0;
-	private List<Integer> errorList = new ArrayList<Integer>();
 	int roleId=0;
 
 	@Override
@@ -87,7 +87,7 @@ public class AddCustomAttribActivity extends ActionBarActivity {
 		sqllite.close();
 
 		try {
-			adapterList = new AttributeAdapter(context, attribList,featureId);
+			adapterList = new AttributeAdapter(context, attribList);
 		} 
 		catch (Exception e) {
 
@@ -221,126 +221,7 @@ public class AddCustomAttribActivity extends ActionBarActivity {
 
 	public boolean validate()
 	{
-		boolean isValid = true;
-		errorList.clear();
-		for (int i = 0; i < adapterList.getCount(); i++) 
-		{
-			Attribute item = (Attribute) adapterList.getItem(i);
-			String value = "";
-			String	hasvalidation = attribList.get(i).getValidation();
-			if (item.getControlType() == 1) {
-				if (item.getView() != null) 
-				{
-					// edit text
-					EditText editText = (EditText) item.getView();
-					value = editText.getText().toString();
-					if(hasvalidation.equalsIgnoreCase("true") && value.isEmpty())
-					{	
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}
-					else{						
-						attribList.get(i).setFieldValue(value);						
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-			else if (item.getControlType() == 2) {
-				if (item.getView() != null) 
-				{
-					// edit text
-					TextView textview = (TextView) item.getView();
-					value = textview.getText().toString();
-					if(hasvalidation.equalsIgnoreCase("true") && value.isEmpty())
-					{	
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}
-					else{						
-						attribList.get(i).setFieldValue(value);						
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-			else if (item.getControlType() == 3) {
-				if (item.getView() != null) 
-				{
-					Spinner spinner = (Spinner) item.getView();
-					String selecteditem = (String) spinner.getSelectedItem();
-					/*if (hasvalidation.equalsIgnoreCase("true")) {
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}else{
-						attribList.get(i).setFieldValue(selecteditem);
-					}*/
-					//TODO validation for mandatory
-					attribList.get(i).setFieldValue(selecteditem);
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-
-			}
-			else if (item.getControlType() == 4) {
-				if (item.getView() != null) 
-				{
-					// edit text(Numeric)
-					EditText editText = (EditText) item.getView();
-					value = editText.getText().toString();
-
-					if(hasvalidation.equalsIgnoreCase("true") && value.isEmpty())
-					{
-						isValid = false;
-						errorList.add(item.getAttributeid());	
-						attribList.get(i).setFieldValue(null);
-					}else{
-						attribList.get(i).setFieldValue(value);
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-
-			else if (item.getControlType() == 5) {
-				if (item.getView() != null) 
-				{
-					// drop down spinner
-					Spinner spinner = (Spinner) item.getView();
-					Option selecteditem = (Option) spinner.getSelectedItem();
-
-					if (hasvalidation.equalsIgnoreCase("true") && selecteditem.getOptionId() == 0) {
-						isValid = false;
-						errorList.add(item.getAttributeid());
-						attribList.get(i).setFieldValue(null);
-					}
-					else{
-						attribList.get(i).setFieldValue(selecteditem.getOptionId().toString());
-					}
-				}else if(hasvalidation.equalsIgnoreCase("true")){	
-					isValid = false;
-					errorList.add(item.getAttributeid());
-					attribList.get(i).setFieldValue(null);
-				}
-			}
-		}
-		adapterList.setErrorList(errorList);
-
-		if (!isValid) {
-			adapterList.notifyDataSetChanged();
-		}
-		return isValid;
+		return GuiUtility.validateAttributes(attribList);
 	}
 
 	@Override

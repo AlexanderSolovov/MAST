@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.rmsi.mast.studio.mobile.service.impl;
 
 import java.util.ArrayList;
@@ -8,15 +5,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.rmsi.mast.studio.dao.AttributeMasterDAO;
 import com.rmsi.mast.studio.dao.ProjectAdjudicatorDAO;
 import com.rmsi.mast.studio.dao.ProjectHamletDAO;
 import com.rmsi.mast.studio.domain.AttributeMaster;
+import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.Person;
 import com.rmsi.mast.studio.domain.ProjectAdjudicator;
 import com.rmsi.mast.studio.domain.ProjectHamlet;
@@ -39,339 +35,333 @@ import com.rmsi.mast.studio.mobile.service.SurveyProjectAttributeService;
 import com.rmsi.mast.studio.util.GeometryConversion;
 import com.rmsi.mast.viewer.dao.SpatialUnitDeceasedPersonDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitPersonWithInterestDao;
+import com.rmsi.mast.studio.dao.ClaimTypeDao;
 
-/**
- * @author shruti.thakur
- *
- */
 @Service
 public class SurveyProjectAttributeServiceImp implements
-		SurveyProjectAttributeService {
+        SurveyProjectAttributeService {
 
-	@Autowired
-	SurveyProjectAttributeDao attributes;
+    @Autowired
+    SurveyProjectAttributeDao attributes;
 
-	@Autowired
-	AttributeOptionsDao attributeOptions;
+    @Autowired
+    AttributeOptionsDao attributeOptions;
 
-	@Autowired
-	NaturalPersonDao naturalPerson;
+    @Autowired
+    NaturalPersonDao naturalPerson;
 
-	@Autowired
-	SocialTenureDao socailTenure;
+    @Autowired
+    SocialTenureDao socailTenure;
 
-	@Autowired
-	AttributeMasterDAO attributeMasterDao;
+    @Autowired
+    AttributeMasterDAO attributeMasterDao;
 
-	@Autowired
-	SpatialUnitHibernateDao spatialUnitiHibernateDao;
+    @Autowired
+    SpatialUnitHibernateDao spatialUnitiHibernateDao;
 
-	@Autowired
-	SocialTenureHibernateDao tenureDao;
+    @Autowired
+    SocialTenureHibernateDao tenureDao;
 
-	@Autowired
-	PersonDao personDao;
+    @Autowired
+    PersonDao personDao;
 
-	@Autowired
-	AttributeValuesDao attributeValuesDao;
+    @Autowired
+    AttributeValuesDao attributeValuesDao;
 
-	@Autowired
-	NonNaturalPersonDao nonNaturalPersonDao;
+    @Autowired
+    NonNaturalPersonDao nonNaturalPersonDao;
 
-	@Autowired
-	SourceDocumentDao sourceDocumentDao;
+    @Autowired
+    SourceDocumentDao sourceDocumentDao;
 
-	@Autowired
-	ProjectAdjudicatorDAO projectAdjudicatorDAO;
+    @Autowired
+    ProjectAdjudicatorDAO projectAdjudicatorDAO;
 
-	@Autowired
-	ProjectHamletDAO projectHamletDAO;
-	
-	@Autowired
-	SpatialUnitPersonWithInterestDao spatialUnitPersonWithInterestDao; 
-	
-	@Autowired
-	SpatialUnitDeceasedPersonDao spatialUnitDeceasedPersonDao; 
-	
-	
-	private static final Logger logger = Logger
-			.getLogger(SurveyProjectAttributeServiceImp.class.getName());
+    @Autowired
+    ProjectHamletDAO projectHamletDAO;
 
-	@Override
-	public List<AttributeMaster> getSurveyAttributesByProjectId(String projectId) {
+    @Autowired
+    SpatialUnitPersonWithInterestDao spatialUnitPersonWithInterestDao;
 
-		List<AttributeMaster> attributeMasterList = attributes
-				.getSurveyAttributes(projectId);
-		try {
-			Iterator<AttributeMaster> surveyProjectAttribItr = attributeMasterList
-					.iterator();
+    @Autowired
+    SpatialUnitDeceasedPersonDao spatialUnitDeceasedPersonDao;
+   
+    private static final Logger logger = Logger
+            .getLogger(SurveyProjectAttributeServiceImp.class.getName());
 
-			while (surveyProjectAttribItr.hasNext()) {
+    @Override
+    public List<AttributeMaster> getSurveyAttributesByProjectId(String projectId) {
 
-				AttributeMaster attributeMaster = surveyProjectAttribItr.next();
+        List<AttributeMaster> attributeMasterList = attributes
+                .getSurveyAttributes(projectId);
+        try {
+            Iterator<AttributeMaster> surveyProjectAttribItr = attributeMasterList
+                    .iterator();
 
-				if (attributeMaster.getDatatypeIdBean().getDatatype()
-						.equalsIgnoreCase("dropdown")) {
-					attributeMaster.setAttributeOptions(attributeOptions
-							.getAttributeOptions(attributeMaster.getId()));
-				}
-			}
+            while (surveyProjectAttribItr.hasNext()) {
 
-		} catch (Exception ex) {
-			logger.error("Exception", ex);
-			System.out.println("Exception ::: " + ex);
-		}
-		return attributeMasterList;
+                AttributeMaster attributeMaster = surveyProjectAttribItr.next();
 
-	}
+                if (attributeMaster.getDatatypeIdBean().getDatatype()
+                        .equalsIgnoreCase("dropdown")) {
+                    attributeMaster.setAttributeOptions(attributeOptions
+                            .getAttributeOptions(attributeMaster.getId()));
+                }
+            }
 
-	@Override
-	public Map<Long, List<List<Object>>> getSurveyAttributeValuesByProjectId(
-			String projectId, int statusId) {
+        } catch (Exception ex) {
+            logger.error("Exception", ex);
+            System.out.println("Exception ::: " + ex);
+        }
+        return attributeMasterList;
 
-		try {
-			Map<Long, List<List<Object>>> attributeValuesMap = new HashMap<Long, List<List<Object>>>();
+    }
 
-			Map< Long, Long> personSubtypeMap = new HashMap<Long, Long>();
-			List<Object> personSubTypeList;
-			List<Object> spatialAttributes;
-			List<Object> tenureAttributes;
-			List<Object> naturalAttributes;
-			List<Object> nonNaturalAttributes;
-			List<Object> sourceDocumentAttribute;
-			List<Object> naturalMaster;
-			//Add for POI and deceased person 18-Nov
-			List<Object> personOfIntersest;
-			List<Object> deceasedPerson;
-			
-			List<List<Object>> attributeValuesList;
+    @Override
+    public Map<Long, List<List<Object>>> getSurveyAttributeValuesByProjectId(
+            String projectId, int statusId) {
 
-			/** 1) Get a list of spatial unit Id's for the specified project */
+        try {
+            Map<Long, List<List<Object>>> attributeValuesMap = new HashMap<Long, List<List<Object>>>();
 
-			Iterator<SpatialUnit> usinItr = (new GeometryConversion()
-					.converGeometryToString(spatialUnitiHibernateDao
-							.findSpatialUnitByStatusId(projectId, statusId)))
-					.iterator();
+            Map< Long, Long> personSubtypeMap = new HashMap<Long, Long>();
+            List<Object> personSubTypeList;
+            List<Object> spatialAttributes;
+            List<Object> tenureAttributes;
+            List<Object> naturalAttributes;
+            List<Object> nonNaturalAttributes;
+            List<Object> sourceDocumentAttribute;
+            List<Object> naturalMaster;
+            //Add for POI and deceased person 18-Nov
+            List<Object> personOfIntersest;
+            List<Object> deceasedPerson;
 
-			attributeValuesMap = new HashMap<Long, List<List<Object>>>();
+            List<List<Object>> attributeValuesList;
 
-			while (usinItr.hasNext()) {
+            /**
+             * 1) Get a list of spatial unit Id's for the specified project
+             */
+            Iterator<SpatialUnit> usinItr = (new GeometryConversion()
+                    .converGeometryToString(spatialUnitiHibernateDao
+                            .findSpatialUnitByStatusId(projectId, statusId)))
+                    .iterator();
 
-				SpatialUnit spatialUnit = usinItr.next();
+            attributeValuesMap = new HashMap<Long, List<List<Object>>>();
 
-				Long usin = spatialUnit.getUsin();
+            while (usinItr.hasNext()) {
 
-				spatialAttributes = new ArrayList<Object>();
-				attributeValuesList = new ArrayList<List<Object>>();
+                SpatialUnit spatialUnit = usinItr.next();
 
-				/** 2.1) Adding spatial unit to the list */
-				spatialAttributes.add(spatialUnit);
+                Long usin = spatialUnit.getUsin();
 
-				/** 2.2) Fetch attribute value and ID for spatial unit */
-				spatialAttributes.add(attributeValuesDao
-						.getAttributeValueandId(usin, 1));
-				spatialAttributes.add(attributeValuesDao
-						.getAttributeValueandId(usin, 7));
-				
-				/** 3) Fetch social tenure by Spatial Unit Id(usin) */
-				List<SocialTenureRelationship> socilaTenureList = tenureDao
-						.findSocailTenureByUsin(usin);
+                spatialAttributes = new ArrayList<Object>();
+                attributeValuesList = new ArrayList<List<Object>>();
 
-				Iterator<SocialTenureRelationship> tenureIter = socilaTenureList
-						.iterator();
+                /**
+                 * 2.1) Adding spatial unit to the list
+                 */
+                spatialAttributes.add(spatialUnit);
 
-				attributeValuesList.add(spatialAttributes);
+                /**
+                 * 2.2) Fetch attribute value and ID for spatial unit
+                 */
+                spatialAttributes.add(attributeValuesDao
+                        .getAttributeValueandId(usin, 1));
+                spatialAttributes.add(attributeValuesDao
+                        .getAttributeValueandId(usin, 7));
 
-				tenureAttributes = new ArrayList<Object>();
+                /**
+                 * 3) Fetch social tenure by Spatial Unit Id(usin)
+                 */
+                List<SocialTenureRelationship> socilaTenureList = tenureDao
+                        .findSocailTenureByUsin(usin);
 
-				naturalAttributes = new ArrayList<Object>();
-				naturalMaster = new ArrayList<Object>();
-				nonNaturalAttributes = new ArrayList<Object>();
-				personSubTypeList = new ArrayList<Object>();
+                Iterator<SocialTenureRelationship> tenureIter = socilaTenureList
+                        .iterator();
 
-				while (tenureIter.hasNext()) {
+                attributeValuesList.add(spatialAttributes);
 
-					SocialTenureRelationship socialTenure = tenureIter.next();
+                tenureAttributes = new ArrayList<Object>();
 
-					/** 4) Fetch attribute value and ID for social tenure */
-					tenureAttributes.add(attributeValuesDao
-							.getAttributeValueandId(socialTenure.getGid(), 4));
+                naturalAttributes = new ArrayList<Object>();
+                naturalMaster = new ArrayList<Object>();
+                nonNaturalAttributes = new ArrayList<Object>();
+                personSubTypeList = new ArrayList<Object>();
 
-					/** 5) Fetch attribute value with ParentId == Person_gid */
-					Person person = socialTenure.getPerson_gid();
+                while (tenureIter.hasNext()) {
 
-					/** 6) Fetch data on the bases of person type */
-					if (person.getPerson_type_gid().getPerson_type_gid() == 2) {
+                    SocialTenureRelationship socialTenure = tenureIter.next();
 
-						/**
-						 * 6.1) if person is non-natural fetch attribute values
-						 * and Id for non natural person
-						 */
-						nonNaturalAttributes
-								.add(attributeValuesDao
-										.getAttributeValueandId(person
-												.getPerson_gid(), 5));
+                    /**
+                     * 4) Fetch attribute value and ID for social tenure
+                     */
+                    tenureAttributes.add(attributeValuesDao
+                            .getAttributeValueandId(socialTenure.getGid(), 4));
 
-						/**
-						 * 6.2) Find natural person associated with non-natural
-						 * and fetch attribute values and Id for natural person
-						 */
+                    /**
+                     * 5) Fetch attribute value with ParentId == Person_gid
+                     */
+                    Person person = socialTenure.getPerson_gid();
+
+                    /**
+                     * 6) Fetch data on the bases of person type
+                     */
+                    if (person.getPerson_type_gid().getPerson_type_gid() == 2) {
+
+                        /**
+                         * 6.1) if person is non-natural fetch attribute values
+                         * and Id for non natural person
+                         */
+                        nonNaturalAttributes
+                                .add(attributeValuesDao
+                                        .getAttributeValueandId(person
+                                                .getPerson_gid(), 5));
+
+                        /**
+                         * 6.2) Find natural person associated with non-natural
+                         * and fetch attribute values and Id for natural person
+                         */
 //						naturalAttributes.add(attributeValuesDao
 //								.getAttributeValueandId(nonNaturalPersonDao
 //										.findById(person.getPerson_gid())
 //										.get(0).getPoc_gid(), 2));
 //					
-						long pocId = nonNaturalPersonDao.findById(person.getPerson_gid()).get(0).getPoc_gid();
-						naturalAttributes = attributeValuesDao
-								.getAttributeValueandId(pocId, 2);
-					
-						naturalAttributes.add(naturalPerson.findById(pocId).get(0).getPersonSubType().getPerson_type_gid());
-						//naturalAttributes.add(naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
+                        long pocId = nonNaturalPersonDao.findById(person.getPerson_gid()).get(0).getPoc_gid();
+                        naturalAttributes = attributeValuesDao
+                                .getAttributeValueandId(pocId, 2);
 
-						naturalMaster.add(naturalAttributes);
-						//personSubtypeMap.put(pocId, naturalPerson.findById(pocId).get(0).getPersonSubType().getPerson_type_gid());
-					} else if (person.getPerson_type_gid().getPerson_type_gid() == 1) {
+                        naturalAttributes.add(naturalPerson.findById(pocId).get(0).getPersonSubType().getPerson_type_gid());
+                        //naturalAttributes.add(naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
 
-						/**
-						 * 6.3) if person is natural than fetch attribute value
-						 * and Id for it
-						 */
-						naturalAttributes = attributeValuesDao
-								.getAttributeValueandId(person
-										.getPerson_gid(), 2);
-				//		naturalAttributes.add(naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
+                        naturalMaster.add(naturalAttributes);
+                        //personSubtypeMap.put(pocId, naturalPerson.findById(pocId).get(0).getPersonSubType().getPerson_type_gid());
+                    } else if (person.getPerson_type_gid().getPerson_type_gid() == 1) {
+
+                        /**
+                         * 6.3) if person is natural than fetch attribute value
+                         * and Id for it
+                         */
+                        naturalAttributes = attributeValuesDao
+                                .getAttributeValueandId(person
+                                        .getPerson_gid(), 2);
+                        //		naturalAttributes.add(naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
 //						naturalAttributes
 //								.add(attributeValuesDao
 //										.getAttributeValueandId(person
 //												.getPerson_gid(), 2));
-					    naturalAttributes.add(naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
-						naturalMaster.add(naturalAttributes);
-						//personSubtypeMap.put(person.getPerson_gid(), naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
-						
-						
-					}
-				}
+                        naturalAttributes.add(naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
+                        naturalMaster.add(naturalAttributes);
+                        //personSubtypeMap.put(person.getPerson_gid(), naturalPerson.findById(person.getPerson_gid()).get(0).getPersonSubType().getPerson_type_gid());
 
-				/**
-				 * 7) Fetch media attribute for person value and Id from Source
-				 * Document
-				 */
-				sourceDocumentAttribute = new ArrayList<Object>();
-				List<SourceDocument> sourceDocumentList;
+                    }
+                }
 
-				if ((sourceDocumentList = sourceDocumentDao.findByUsin(usin)) != null) {
+                /**
+                 * 7) Fetch media attribute for person value and Id from Source
+                 * Document
+                 */
+                sourceDocumentAttribute = new ArrayList<Object>();
+                List<SourceDocument> sourceDocumentList;
 
-					Iterator<SourceDocument> sourceDocumentItr = sourceDocumentList
-							.iterator();
+                if ((sourceDocumentList = sourceDocumentDao.findByUsin(usin)) != null) {
 
-					while (sourceDocumentItr.hasNext()) {
+                    Iterator<SourceDocument> sourceDocumentItr = sourceDocumentList
+                            .iterator();
 
-						SourceDocument sourceDocument = sourceDocumentItr
-								.next();
+                    while (sourceDocumentItr.hasNext()) {
 
-						/**
-						 * 7.1) Get attribute values only if media doesn't
-						 * belong to person
-						 */
-						if (sourceDocument.getPerson_gid() == null
-								&& sourceDocument.getSocial_tenure_gid() == null) {
+                        SourceDocument sourceDocument = sourceDocumentItr
+                                .next();
 
-							sourceDocumentAttribute.add(attributeValuesDao
-									.getAttributeValueandId(sourceDocument
-											.getGid(), 3));
+                        /**
+                         * 7.1) Get attribute values only if media doesn't
+                         * belong to person
+                         */
+                        if (sourceDocument.getPerson_gid() == null
+                                && sourceDocument.getSocial_tenure_gid() == null) {
 
-						}
-					}
-				}
-				
-				
-				/**
-				 * @data: Person of interest list
-				 * @date: 18-Nov
-				 * 
-				 */
-				
-				
-				personOfIntersest = new ArrayList<Object>();
-				List<SpatialunitPersonwithinterest> poiList;
+                            sourceDocumentAttribute.add(attributeValuesDao
+                                    .getAttributeValueandId(sourceDocument
+                                            .getGid(), 3));
 
-				if ((poiList = spatialUnitPersonWithInterestDao.findByUsin(usin)) != null) {
+                        }
+                    }
+                }
 
-					Iterator<SpatialunitPersonwithinterest> poiItr = poiList
-							.iterator();
+                /**
+                 * @data: Person of interest list
+                 * @date: 18-Nov
+                 *
+                 */
+                personOfIntersest = new ArrayList<Object>();
+                List<SpatialunitPersonwithinterest> poiList;
 
-					while (poiItr.hasNext()) {
+                if ((poiList = spatialUnitPersonWithInterestDao.findByUsin(usin)) != null) {
 
-						SpatialunitPersonwithinterest spatialunitpoi = poiItr
-								.next();
-						personOfIntersest.add(spatialunitpoi);
-						
-					}
-				}
-				
-				
-				/**
-				 * @data: deceased person list
-				 * @date: 18-Nov
-				 * 
-				 */
-				
-				
-				deceasedPerson = new ArrayList<Object>();
-				List<SpatialunitDeceasedPerson> deceasedlst;
+                    Iterator<SpatialunitPersonwithinterest> poiItr = poiList
+                            .iterator();
 
-				if ((deceasedlst = spatialUnitDeceasedPersonDao.findPersonByUsin(usin)) != null) {
+                    while (poiItr.hasNext()) {
 
-					Iterator<SpatialunitDeceasedPerson> deceasedItr = deceasedlst
-							.iterator();
+                        SpatialunitPersonwithinterest spatialunitpoi = poiItr
+                                .next();
+                        personOfIntersest.add(spatialunitpoi);
 
-					while (deceasedItr.hasNext()) {
+                    }
+                }
 
-						SpatialunitDeceasedPerson deceasedpersontmp = deceasedItr
-								.next();
-						deceasedPerson.add(deceasedpersontmp);
-						
-					}
-				}
-				
-				
-				attributeValuesList.add(tenureAttributes);
-				attributeValuesList.add(naturalMaster);
-				attributeValuesList.add(nonNaturalAttributes);
-				attributeValuesList.add(sourceDocumentAttribute);
-				attributeValuesList.add(personOfIntersest);
-				attributeValuesList.add(deceasedPerson);
-				/*personSubTypeList.add(personSubtypeMap);
+                /**
+                 * @data: deceased person list
+                 * @date: 18-Nov
+                 *
+                 */
+                deceasedPerson = new ArrayList<Object>();
+                List<SpatialunitDeceasedPerson> deceasedlst;
+
+                if ((deceasedlst = spatialUnitDeceasedPersonDao.findPersonByUsin(usin)) != null) {
+
+                    Iterator<SpatialunitDeceasedPerson> deceasedItr = deceasedlst
+                            .iterator();
+
+                    while (deceasedItr.hasNext()) {
+
+                        SpatialunitDeceasedPerson deceasedpersontmp = deceasedItr
+                                .next();
+                        deceasedPerson.add(deceasedpersontmp);
+
+                    }
+                }
+
+                attributeValuesList.add(tenureAttributes);
+                attributeValuesList.add(naturalMaster);
+                attributeValuesList.add(nonNaturalAttributes);
+                attributeValuesList.add(sourceDocumentAttribute);
+                attributeValuesList.add(personOfIntersest);
+                attributeValuesList.add(deceasedPerson);
+                /*personSubTypeList.add(personSubtypeMap);
 				attributeValuesList.add(personSubTypeList);*/
-				attributeValuesMap.put(usin, attributeValuesList);
-				
-			}
-			return attributeValuesMap;
-		} catch (Exception ex) {
-			logger.error("Exception", ex);
-			throw ex;
-		}
-	}
+                attributeValuesMap.put(usin, attributeValuesList);
 
-	@Override
-	public Long getSurveyProjectAttributeId(long attributeId, String projectId) {
+            }
+            return attributeValuesMap;
+        } catch (Exception ex) {
+            logger.error("Exception", ex);
+            throw ex;
+        }
+    }
 
-		return attributes.getSurveyProjectAttributeId(attributeId, projectId)
-				.getUid();
-	}
+    @Override
+    public Long getSurveyProjectAttributeId(long attributeId, String projectId) {
+        return attributes.getSurveyProjectAttributeId(attributeId, projectId).getUid();
+    }
 
-	@Override
-	public List<ProjectAdjudicator> getProjectAdjudicatorByProjectId(
-			String projectId) {
+    @Override
+    public List<ProjectAdjudicator> getProjectAdjudicatorByProjectId(String projectId) {
+        return projectAdjudicatorDAO.findByProject(projectId);
+    }
 
-		return projectAdjudicatorDAO.findByProject(projectId);
-	}
-
-	@Override
-	public List<ProjectHamlet> getProjectHamletsByProjectId(String projectId) {
-
-		return projectHamletDAO.findHamlets(projectId);
-		
-	}
-
+    @Override
+    public List<ProjectHamlet> getProjectHamletsByProjectId(String projectId) {
+        return projectHamletDAO.findHamlets(projectId);
+    }
 }

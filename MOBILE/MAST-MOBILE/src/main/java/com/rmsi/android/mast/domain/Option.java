@@ -2,6 +2,8 @@ package com.rmsi.android.mast.domain;
 
 import android.view.View;
 
+import com.rmsi.android.mast.util.StringUtils;
+
 public class Option 
 {
 	private Long optionId; 
@@ -43,5 +45,10 @@ public class Option
 	}
 	public void setOptionMultiLang(String optionMultiLang) {
 		this.optionMultiLang = optionMultiLang;
+	}
+
+    @Override
+	public String toString(){
+		return StringUtils.empty(getOptionName());
 	}
 }

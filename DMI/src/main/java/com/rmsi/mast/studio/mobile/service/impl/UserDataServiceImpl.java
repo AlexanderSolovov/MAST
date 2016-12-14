@@ -786,12 +786,12 @@ public class UserDataServiceImpl implements UserDataService {
 				attribsList.add(attributeValues);
 				attributeValues = new AttributeValues();
 			}
-			if (socialTenure.getTenure_duration() != 0) {
+			if (socialTenure.getTenureDuration() != 0) {
 				long attributeId = 13;
 				attributeValues.setParentuid(Long.parseLong(socialTenure
 						.getGid() + ""));
 				attributeValues
-						.setValue(socialTenure.getTenure_duration() + "");
+						.setValue(socialTenure.getTenureDuration() + "");
 				// attributeValues.setAttributevalueid(attributeId);
 				attributeValues.setUid(surveyProjectAttribute
 						.getSurveyProjectAttributeId(attributeId, project));
@@ -822,11 +822,11 @@ public class UserDataServiceImpl implements UserDataService {
 				attribsList.add(attributeValues);
 				attributeValues = new AttributeValues();
 			}
-			if (socialTenure.getOccupancy_type_id() != null) {
+			if (socialTenure.getOccupancyTypeId() != null) {
 				Long attributeId = 24L;
 				String value = attributeOptionsDao.getAttributeOptionsId(
 						attributeId.intValue(), socialTenure
-								.getOccupancy_type_id().getOccId());
+								.getOccupancyTypeId().getOccId());
 				if (value == null) {
 					System.out.println("Null value for AttributeID:"
 							+ attributeId);
@@ -841,11 +841,11 @@ public class UserDataServiceImpl implements UserDataService {
 				attribsList.add(attributeValues);
 				attributeValues = new AttributeValues();
 			}
-			if (socialTenure.getTenureclass_id() != null) {
+			if (socialTenure.getTenureclassId() != null) {
 				Long attributeId = 23L;
 				String value = attributeOptionsDao.getAttributeOptionsId(
 						attributeId.intValue(), socialTenure
-								.getTenureclass_id().getTenureId());
+								.getTenureclassId().getTenureId());
 				if (value == null) {
 					System.out.println("Null value for AttributeID:"
 							+ attributeId);

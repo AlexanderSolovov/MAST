@@ -147,6 +147,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
     private List<SnappingObject> allSnappingObjects;
     private List<SnappingObject> snappingObjects;
     private boolean enableLabeling = false;
+    private boolean enableVertexDrawing = true;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -351,6 +352,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
         snapToSegment = cf.getSnapToSegment();
         snappingTolerance = cf.getSnapTolerance();
         enableLabeling = cf.getEnableLabeling();
+        enableVertexDrawing = cf.getEnableVertexDrawing();
 
         snappingEnabled = snapToVertex || snapToSegment;
 
@@ -494,7 +496,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
         }
     }
 
-    private void handleMapClick(LatLng pointFromMap){
+    private void handleMapClick(LatLng pointFromMap) {
         // Condition for DRAW MODE
         if (MAP_MODE == FEATURE_DRAW_MAP_MODE) {
             if (!contextualMenuShown)
@@ -1218,16 +1220,18 @@ public class CaptureDataMapActivity extends ActionBarActivity {
         cf.saveVisibleLayers(visibleLayers.toString());
     }
 
-    private void addPointsForSnapping(Feature feature, String[] wktpoints){
-        // Add to the list for snapping
-        for (int i = 0; i < wktpoints.length - 1; i++) {
-            String[] tmpPoint1 = wktpoints[i].replaceAll(", ", ",").split(" ");
-            String[] tmpPoint2 = wktpoints[i + 1].replaceAll(", ", ",").split(" ");
-            allSnappingObjects.add(new SnappingObject(
-                    feature.getFeatureid(),
-                    new LatLng(Double.parseDouble(tmpPoint1[1]), Double.parseDouble(tmpPoint1[0])),
-                    new LatLng(Double.parseDouble(tmpPoint2[1]), Double.parseDouble(tmpPoint2[0]))
-            ));
+    private void addPointsForSnapping(Feature feature, String[] wktpoints) {
+        if (snappingEnabled) {
+            // Add to the list for snapping
+            for (int i = 0; i < wktpoints.length - 1; i++) {
+                String[] tmpPoint1 = wktpoints[i].replaceAll(", ", ",").split(" ");
+                String[] tmpPoint2 = wktpoints[i + 1].replaceAll(", ", ",").split(" ");
+                allSnappingObjects.add(new SnappingObject(
+                        feature.getFeatureid(),
+                        new LatLng(Double.parseDouble(tmpPoint1[1]), Double.parseDouble(tmpPoint1[0])),
+                        new LatLng(Double.parseDouble(tmpPoint2[1]), Double.parseDouble(tmpPoint2[0]))
+                ));
+            }
         }
     }
 
@@ -1261,20 +1265,22 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                         String[] tmpPoint = point.replaceAll(", ", ",").split(" ");
                         LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
                         rectOptions.add(mapPoint);
-                        googleMap.addMarker(GisUtility.makeVertex(mapPoint, GisUtility.VERTEX_TYPE.NORMAL));
+                        if (enableVertexDrawing) {
+                            googleMap.addMarker(GisUtility.makeVertex(mapPoint, GisUtility.VERTEX_TYPE.NORMAL));
+                        }
                     }
 
                     // Add label
-                    if(enableLabeling) {
-                        googleMap.addMarker(GisUtility.makeLabel(this, feature));
+                    if (enableLabeling) {
+                        googleMap.addMarker(GisUtility.makeLabel(feature));
                     }
 
                     if (feature.getStatus().equalsIgnoreCase("final")) {
-                        rectOptions.fillColor(Color.argb(100, 204, 153, 255)).strokeWidth(5).strokeColor(Color.BLACK);
+                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.argb(255, 80, 255, 80));
                     } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
-                        rectOptions.fillColor(Color.argb(100, 255, 51, 51)).strokeWidth(5).strokeColor(Color.BLACK);
+                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.argb(255, 255, 51, 51));
                     } else if (feature.getStatus().equalsIgnoreCase("complete")) {
-                        rectOptions.fillColor(Color.argb(150, 204, 255, 153)).strokeWidth(5).strokeColor(Color.BLACK);
+                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.argb(255, 255, 200, 0));
                     } else
                         rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.BLUE);
 
@@ -1874,7 +1880,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     yes = true;
                 }
 
-                if(!yes && snpObject.getPoint2() != null) {
+                if (!yes && snpObject.getPoint2() != null) {
                     if ((snpObject.getPoint2().longitude >= minX && snpObject.getPoint2().longitude <= maxX)
                             || (snpObject.getPoint2().latitude >= minY && snpObject.getPoint2().latitude <= maxY)) {
                         yes = true;
@@ -1989,11 +1995,11 @@ public class CaptureDataMapActivity extends ActionBarActivity {
             //this.screenPoint2 = googleMap.getProjection().toScreenLocation(point2);
         }
 
-        public void calculateScreenPoints(){
-            if(point1 != null){
+        public void calculateScreenPoints() {
+            if (point1 != null) {
                 this.screenPoint1 = googleMap.getProjection().toScreenLocation(point1);
             }
-            if(point2 != null){
+            if (point2 != null) {
                 this.screenPoint2 = googleMap.getProjection().toScreenLocation(point2);
             }
         }

@@ -34,6 +34,7 @@ import com.rmsi.android.mast.domain.Option;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
 import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
+import com.rmsi.android.mast.util.StringUtils;
 
 /**
  * @author Amreen.s
@@ -64,10 +65,16 @@ public class DBController extends SQLiteOpenHelper {
     private static String PERSON_SubType_Owner = "Owner";
     private static String PERSON_SubType_Guardian = "Guardian";
     private static String NonNaturalPerson = "Non-Natural";
+    private static int DB_VERSION = 5;
+    private static int CONTROL_STIRNG = 1;
+    private static int CONTROL_DATE = 2;
+    private static int CONTROL_BOOLEAN = 3;
+    private static int CONTROL_NUMBER = 4;
+    private static int CONTROL_SPINNER = 5;
     CommonFunctions cf = null;
 
     public DBController(Context applicationcontext) {
-        super(applicationcontext, DB_FULL_PATH, null, 2);
+        super(applicationcontext, DB_FULL_PATH, null, DB_VERSION);
         this.contxt = applicationcontext;
         cf = CommonFunctions.getInstance();
         //Initializing context in common functions in case of a crash
@@ -79,10 +86,6 @@ public class DBController extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        //myDataBase = getWritableDatabase();
-
-        //CONTROL 1=STRING,2=DATE , 3=BOOLEAN  4=Numeric 5=SPINNER
-
         String query_table1 = "CREATE TABLE SPATIAL_FEATURES (" +
                 "FEATURE_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "SERVER_FEATURE_ID TEXT," +
@@ -96,7 +99,8 @@ public class DBController extends SQLiteOpenHelper {
                 "PERSON_TYPE TEXT," +
                 "HAMLET_ID INTEGER," +
                 "WITNESS_1 TEXT," +
-                "WITNESS_2 TEXT" +
+                "WITNESS_2 TEXT," +
+                "CLAIM_TYPE TEXT" +
                 ")";
         String query_table2 = "CREATE TABLE ATTRIBUTE_MASTER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ATTRIB_ID INTEGER,ATTRIBUTE_TYPE STRING,ATTRIBUTE_CONTROLTYPE INTEGER,ATTRIBUTE_NAME TEXT,LISTING TEXT,ATTRIBUTE_NAME_OTHER TEXT,VALIDATION TEXT)";
         String query_table3 = "CREATE TABLE OPTIONS(OPTION_ID TEXT,ATTRIB_ID INTEGER,OPTION_NAME TEXT,OPTION_NAME_OTHER TEXT)";
@@ -106,18 +110,45 @@ public class DBController extends SQLiteOpenHelper {
         String query_table7 = "CREATE TABLE MEDIA(MEDIA_ID INTEGER PRIMARY KEY,FEATURE_ID TEXT,TYPE TEXT,PATH TEXT,ATTRIB_1 TEXT,ATTRIB_2 TEXT,SYNCED INTEGER DEFAULT 0)";
         String query_table8 = "CREATE TABLE PERSON(ID INTEGER PRIMARY KEY,ATTRIB_1 TEXT,ATTRIB_2 TEXT,FEATURE_ID TEXT,SERVER_PK TEXT,PERSON_SUBTYPE TEXT)";
 
-        String query_table10 = "CREATE TABLE SOCIAL_TENURE(ID INTEGER PRIMARY KEY,ATTRIB_1 TEXT,ATTRIB_2 TEXT,PERSON_ID INTEGER,FEATURE_ID TEXT,SERVER_PK TEXT)";
+        String query_table10 = "CREATE TABLE SOCIAL_TENURE(" +
+                "ID INTEGER PRIMARY KEY," +
+                "ATTRIB_1 TEXT," +
+                "ATTRIB_2 TEXT," +
+                "PERSON_ID INTEGER," +
+                "FEATURE_ID TEXT," +
+                "SERVER_PK TEXT," +
+                "CERT_NUMBER TEXT," +
+                "CERT_ISSUE_DATE TEXT," +
+                "JURIDICAL_AREA REAL" +
+                ")";
         String query_table11 = "CREATE TABLE GROUPID_SEQ(VALUE INTEGER)";
         String query_table12 = "CREATE TABLE PERSON_MEDIA(ID INTEGER PRIMARY KEY AUTOINCREMENT,PERSON_ID TEXT,TYPE TEXT,PATH TEXT,FEATURE_ID TEXT,SYNCED INTEGER DEFAULT 0)";
         String query_table13 = "CREATE TABLE PROJECT_SPATIAL_DATA(SERVER_PK INTEGER,PROJECT_NAME TEXT,FILE_NAME TEXT,FILE_EXT TEXT,ALIAS TEXT,VILLAGE_NAME TEXT)";
 
-        // added for phase 2 on 18/09/2015
-
-        String query_table14 = "CREATE TABLE HAMLET_DETAILS(ID INTEGER PRIMARY KEY ,HAMLET_NAME TEXT)";
+        String query_table14 = "CREATE TABLE HAMLET_DETAILS(ID INTEGER PRIMARY KEY, HAMLET_NAME TEXT, HAMLET_LEADER TEXT)";
         String query_table15 = "CREATE TABLE ADJUDICATOR_DETAILS(ID INTEGER PRIMARY KEY,ADJUDICATOR_NAME TEXT)";
-        String query_table16 = "CREATE TABLE NEXT_KIN_DETAILS(ID INTEGER PRIMARY KEY AUTOINCREMENT,NEXT_KIN_NAME TEXT,FEATURE_ID TEXT)";
+        String query_table16 = "CREATE TABLE NEXT_KIN_DETAILS(" +
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "NEXT_KIN_NAME TEXT," +
+                "DOB TEXT," +
+                "GENDER_ID INTEGER," +
+                "RELATIONSHIP_ID INTEGER," +
+                "FEATURE_ID TEXT" +
+                ")";
         String query_table17 = "CREATE TABLE DECEASED_PERSON(ID INTEGER PRIMARY KEY AUTOINCREMENT,FIRST_NAME TEXT,MIDDLE_NAME TEXT,LAST_NAME TEXT,FEATURE_ID TEXT)";
 
+        String query_table18 = "CREATE TABLE CLAIM_TYPE(" +
+                "CODE TEXT PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT" +
+                ")";
+
+        String query_table19 = "CREATE TABLE RELATIONSHIP_TYPE(" +
+                "CODE INTEGER PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT," +
+                "ACTIVE INTEGER" +
+                ")";
 
         try {
             dropTable(db, "SPATIAL_FEATURES");
@@ -151,35 +182,30 @@ public class DBController extends SQLiteOpenHelper {
             db.execSQL(query_table15);
             db.execSQL(query_table16);
             db.execSQL(query_table17);
-
+            db.execSQL(query_table18);
+            db.execSQL(query_table19);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
         }
-
-//	insertValues(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-
         if (newVersion > oldVersion) {
-            String query_table14 = "CREATE TABLE HAMLET_DETAILS(ID INTEGER PRIMARY KEY ,HAMLET_NAME TEXT)";
-            String query_table15 = "CREATE TABLE ADJUDICATOR_DETAILS(ID INTEGER PRIMARY KEY,ADJUDICATOR_NAME TEXT)";
-            String query_table16 = "CREATE TABLE NEXT_KIN_DETAILS(ID INTEGER PRIMARY KEY AUTOINCREMENT,NEXT_KIN_NAME TEXT,FEATURE_ID TEXT)";
-            String query_table17 = "CREATE TABLE DECEASED_PERSON(ID INTEGER PRIMARY KEY AUTOINCREMENT,FIRST_NAME TEXT,SECOND_NAME TEXT,THIRD_NAME TEXT,FEATURE_ID TEXT)";
-            db.execSQL(query_table14);
-            db.execSQL(query_table15);
-            db.execSQL(query_table16);
-            db.execSQL(query_table17);
-
-            db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN HAMLET_ID INTEGER");
-            db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN WITNESS_1 TEXT");
-            db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN WITNESS_2 TEXT");
-            db.execSQL("ALTER TABLE PROJECT_SPATIAL_DATA ADD COLUMN VILLAGE_NAME TEXT");
-            db.execSQL("ALTER TABLE PERSON ADD COLUMN PERSON_SUBTYPE TEXT");
-            //onCreate(db);
+            //db.execSQL("ALTER TABLE HAMLET_DETAILS ADD COLUMN HAMLET_LEADER TEXT");
+//            db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN CLAIM_TYPE TEXT");
+//
+//            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN CERT_NUMBER TEXT");
+//            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN CERT_ISSUE_DATE TEXT");
+//            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN JURIDICAL_AREA REAL");
+//
+//            db.execSQL("ALTER TABLE NEXT_KIN_DETAILS ADD COLUMN GENDER_ID INTEGER");
+//            db.execSQL("ALTER TABLE NEXT_KIN_DETAILS ADD COLUMN DOB TEXT");
+//            db.execSQL("ALTER TABLE NEXT_KIN_DETAILS ADD COLUMN RELATIONSHIP_ID INTEGER");
+//
+//            db.execSQL("CREATE TABLE CLAIM_TYPE(CODE TEXT PRIMARY KEY, NAME TEXT, NAME_OTHER_LANG TEXT)");
+//            db.execSQL("CREATE TABLE RELATIONSHIP_TYPE(CODE INTEGER PRIMARY KEY, NAME TEXT, NAME_OTHER_LANG TEXT, ACTIVE INTEGER)");
         }
     }
 
@@ -202,13 +228,11 @@ public class DBController extends SQLiteOpenHelper {
         database.execSQL(query);
     }
 
-    public List<Feature> fetchFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES";
-
+    private List<Feature> getFeatures(String query){
         List<Feature> features = new ArrayList<Feature>();
         try {
             myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
+            Cursor cursor = myDataBase.rawQuery(query, null);
             if (cursor.moveToFirst()) {
                 do {
                     Feature feature = new Feature();
@@ -217,7 +241,6 @@ public class DBController extends SQLiteOpenHelper {
                     feature.setCoordinates(cursor.getString(2));
                     feature.setGeomtype(cursor.getString(3));
                     feature.setStatus(cursor.getString(5));
-
                     features.add(feature);
                 }
                 while (cursor.moveToNext());
@@ -229,6 +252,11 @@ public class DBController extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         return features;
+    }
+
+    public List<Feature> fetchFeatures() {
+        String q = "SELECT * FROM SPATIAL_FEATURES";
+        return getFeatures(q);
     }
 
     public Long saveNewFeature(String geomtype, String wKTStr, String imei) {
@@ -293,150 +321,30 @@ public class DBController extends SQLiteOpenHelper {
 
     public List<Feature> fetchDraftFeatures() {
         String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_DRAFT + "'";
-
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-            close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        return getFeatures(q);
     }
 
     public List<Feature> fetchCompletedFeatures() {
         String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID = '' or SERVER_FEATURE_ID is null)";
-
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        return getFeatures(q);
     }
 
     public List<Feature> fetchSyncededFeatures() {
-        String syncedFeatureSql = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(syncedFeatureSql, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        String q = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
+        return getFeatures(q);
     }
 
     public List<Feature> fetchVerifiedFeatures() {
         String q = "SELECT * FROM SPATIAL_FEATURES where status in ('" + STATUS_VERIFIED + "','" + STATUS_VERIFIED_SYNCED + "')";
-
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        return getFeatures(q);
     }
 
     public List<Feature> fetchFinalFeatures() {
-        String syncedFeatureSql = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_FINAL + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(syncedFeatureSql, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        String q = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_FINAL + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
+        return getFeatures(q);
     }
 
     public boolean deleteFeature(Long featureid) {
-
         String whereClause = "FEATURE_ID =" + featureid;
         try {
             myDataBase = getReadableDatabase();
@@ -765,29 +673,11 @@ public class DBController extends SQLiteOpenHelper {
 
     public Feature fetchFeaturebyID(Long featureId) {
         String q = "SELECT * FROM SPATIAL_FEATURES where FEATURE_ID = " + featureId;
-
-        Feature feature = null;
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    feature = new Feature();
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-            close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
+        List<Feature> features = getFeatures(q);
+        if(features !=null && features.size() > 0){
+            return features.get(0);
         }
-        return feature;
+        return null;
     }
 
     public List<Attribute> getFormDataByGroupId(int GroupId, String lang) {
@@ -896,10 +786,7 @@ public class DBController extends SQLiteOpenHelper {
     public List<Attribute> getFeatureGenaralInfo(Long featureId, String keyword, String lang) {
         String attributeType = null;
         SQLiteDatabase database = getReadableDatabase();
-        /*String sql = "SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE FROM ATTRIBUTE_MASTER AS AM "
-				+ " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID = "+featureId
-				+ " LEFT JOIN SPATIAL_FEATURES AS SF ON FM.FEATURE_ID = SF.FEATURE_ID"
-				+ " where AM.ATTRIBUTE_TYPE = 'General'";*/
+
         if (keyword.equalsIgnoreCase("general")) {
             attributeType = CAT_General;
         } else if (keyword.equalsIgnoreCase("NonNatural")) {
@@ -912,7 +799,8 @@ public class DBController extends SQLiteOpenHelper {
             attributeType = CAT_Tenure;
         }
 
-        String sql = "SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE,SF.PERSON_TYPE,SF.HAMLET_ID,SF.WITNESS_1,SF.WITNESS_2 FROM ATTRIBUTE_MASTER AS AM"
+        String sql = "SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE,SF.PERSON_TYPE,SF.HAMLET_ID,SF.WITNESS_1,SF.WITNESS_2"
+                + " FROM ATTRIBUTE_MASTER AS AM"
                 + " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID = " + featureId
                 + " LEFT JOIN SPATIAL_FEATURES AS SF ON FM.FEATURE_ID = SF.FEATURE_ID"
                 + " where AM.ATTRIBUTE_TYPE = '" + attributeType + "'";
@@ -985,35 +873,9 @@ public class DBController extends SQLiteOpenHelper {
         return attribList;
     }
 
-
     public List<Feature> fetchFeaturesByGeomtype(String geomtype) {
         String q = "SELECT * FROM SPATIAL_FEATURES WHERE GEOMTYPE = '" + geomtype + "'";
-
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-            close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        return getFeatures(q);
     }
 
     // MOVE CONTENT VALUES HERE
@@ -1248,7 +1110,7 @@ public class DBController extends SQLiteOpenHelper {
                             tableValues.put("ATTRIB_2", attribute.getFieldValue());
 
 						/*if(attribute.getAttributeid()==54)
-						{
+                        {
 							String selectQueryOptions = "SELECT OPTION_NAME from OPTIONS WHERE OPTION_ID ="+ attribute.getFieldValue();
 							Cursor cursor = db.rawQuery(selectQueryOptions, null);
 							if (cursor.moveToFirst())
@@ -1395,7 +1257,7 @@ public class DBController extends SQLiteOpenHelper {
         if (isNonNatural) {
 
 			/*//String selectQueryQues ="SELECT * from SOCIAL_TENURE AS ST" +
-					" left join peRSON AS P ON ST.PERSON_ID=P.ID" + " where ST.FEATURE_ID ="+ featureId;*/
+                    " left join peRSON AS P ON ST.PERSON_ID=P.ID" + " where ST.FEATURE_ID ="+ featureId;*/
 
             String selectQueryQues = "select ST.ID,ST.PERSON_ID,FV.ATTRIB_VALUE,ST.FEATURE_ID,FV.ATTRIB_ID from soCIAL_TENURE as ST" +
                     " LEFT JOIN FORM_VALUES AS FV ON  FV.GROUP_ID=ST.PERSON_ID AND ST.FEATURE_ID = '" + featureId + "'" +
@@ -1593,6 +1455,10 @@ public class DBController extends SQLiteOpenHelper {
             database.delete("PROJECT_SPATIAL_DATA", null, null);
             database.delete("OPTIONS", null, null);
             database.delete("ATTRIBUTE_MASTER", null, null);
+            database.delete("HAMLET_DETAILS", null, null);
+            database.delete("ADJUDICATOR_DETAILS", null, null);
+            database.delete("RELATIONSHIP_TYPE", null, null);
+            database.delete("CLAIM_TYPE", null, null);
 
             if (projectdata.has("Extent")) {
                 String mapExtent = projectdata.getString("Extent");
@@ -1623,29 +1489,47 @@ public class DBController extends SQLiteOpenHelper {
             }
 
             if (projectdata.has("Hamlet")) {
-                ContentValues projectValues = new ContentValues();
-                JSONArray project_info = projectdata.getJSONArray("Hamlet");
-                if (project_info.length() > 0) {
-                    for (int i = 0; i < project_info.length(); i++) {
-                        JSONObject project_detail = new JSONObject(project_info.get(i).toString());
-                        projectValues.put("ID", project_detail.getInt("id"));
-                        projectValues.put("HAMLET_NAME", project_detail.getString("hamletName"));
-
-
-                        database.insert("HAMLET_DETAILS", null, projectValues);
+                ContentValues hamlets = new ContentValues();
+                JSONArray hamletsArray = projectdata.getJSONArray("Hamlet");
+                if (hamletsArray.length() > 0) {
+                    for (int i = 0; i < hamletsArray.length(); i++) {
+                        JSONObject hamlet = new JSONObject(hamletsArray.get(i).toString());
+                        hamlets.put("ID", hamlet.getInt("id"));
+                        hamlets.put("HAMLET_NAME", hamlet.getString("hamletName"));
+                        hamlets.put("HAMLET_LEADER", hamlet.getString("hamletLeaderName"));
+                        database.insert("HAMLET_DETAILS", null, hamlets);
                     }
                 }
             }
 
-		/*	if(projectdata.has("Village")){
+            if (projectdata.has("ClaimType")) {
+                ContentValues claimTypes = new ContentValues();
+                JSONArray claimTypesArray = projectdata.getJSONArray("ClaimType");
+                if (claimTypesArray.length() > 0) {
+                    for (int i = 0; i < claimTypesArray.length(); i++) {
+                        JSONObject claimType = new JSONObject(claimTypesArray.get(i).toString());
+                        claimTypes.put("CODE", claimType.getString("code"));
+                        claimTypes.put("NAME", claimType.getString("name"));
+                        claimTypes.put("NAME_OTHER_LANG", claimType.getString("nameOtherLang"));
+                        database.insert("CLAIM_TYPE", null, claimTypes);
+                    }
+                }
+            }
 
-
-				//JSONObject attribute_detail=new JSONObject();
-				String villageName=projectdata.getString("Village");
-				System.out.println("Village name---->"+villageName);
-
-
-			}*/
+            if (projectdata.has("RelationshipType")) {
+                ContentValues relTypes = new ContentValues();
+                JSONArray relTypesArray = projectdata.getJSONArray("RelationshipType");
+                if (relTypesArray.length() > 0) {
+                    for (int i = 0; i < relTypesArray.length(); i++) {
+                        JSONObject relType = new JSONObject(relTypesArray.get(i).toString());
+                        relTypes.put("CODE", relType.getString("code"));
+                        relTypes.put("NAME", relType.getString("name"));
+                        relTypes.put("NAME_OTHER_LANG", relType.getString("nameOtherLang"));
+                        relTypes.put("ACTIVE", relType.getBoolean("active") ? 1 : 0);
+                        database.insert("RELATIONSHIP_TYPE", null, relTypes);
+                    }
+                }
+            }
 
             if (projectdata.has("Adjudicator")) {
                 ContentValues projectValues = new ContentValues();
@@ -2351,29 +2235,7 @@ public class DBController extends SQLiteOpenHelper {
 
     public List<Feature> fetchRejectedFeatures() {
         String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_REJECTED + "'";
-
-        List<Feature> features = new ArrayList<Feature>();
-        try {
-            SQLiteDatabase myDataBase1 = getReadableDatabase();
-            Cursor cursor = myDataBase1.rawQuery(q, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Feature feature = new Feature();
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
-                    features.add(feature);
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        return features;
+        return getFeatures(q);
     }
 
     //String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where status = '"+STATUS_COMPLETE+"' and SERVER_FEATURE_ID IS NULL OR SERVER_FEATURE_ID = ''";
@@ -3038,7 +2900,7 @@ public class DBController extends SQLiteOpenHelper {
         return count;
     }
 
-    public List<Option> getHelmetName() {
+    public List<Option> getHamletOptions() {
 
         SQLiteDatabase db = getWritableDatabase();
 
@@ -3052,11 +2914,16 @@ public class DBController extends SQLiteOpenHelper {
 
         String selectQueryOptions = "SELECT * from HAMLET_DETAILS";
         Cursor cursor = db.rawQuery(selectQueryOptions, null);
+
         if (cursor.moveToFirst()) {
             do {
                 option = new Option();
                 option.setOptionId(cursor.getLong(0));
-                option.setOptionName(cursor.getString(1));
+                if(!StringUtils.isEmpty(cursor.getString(2))){
+                    option.setOptionName(cursor.getString(1) + " (" + cursor.getString(2) + ")");
+                } else {
+                    option.setOptionName(cursor.getString(1));
+                }
                 optionList.add(option);
 
             } while (cursor.moveToNext());
@@ -3632,9 +3499,7 @@ public List<Attribute> getGenaralAttributeInfo(Long featureId,String keyword,Str
 
     public List<Attribute> getGneralAttributeData(Long featureId, String keyword, String lang)            //for hardcoded controls
     {
-
         String sql = "SELECT * FROM SPATIAL_FEATURES WHERE FEATURE_ID=" + featureId;
-
         SQLiteDatabase db = getReadableDatabase();
 
         List<Attribute> attribList = new ArrayList<Attribute>();
