@@ -224,13 +224,13 @@
     <string name="bookmark_enter_name">Ingiza jina la eneo .. !!</string>
 
     <string-array name="personTypeArray">
-         <item>Chagua</item>
+        <item>Chagua</item>
         <item>Kawaida</item>
         <item>Taasisi</item>
     </string-array>
-    
-     <string-array name="residentArray">
-       <item>Chagua</item>
+
+    <string-array name="residentArray">
+        <item>Chagua</item>
         <item>Ndio</item>
         <item>Hapana</item>
     </string-array>
@@ -256,7 +256,7 @@
     <string name="error_saving_media">Hitilafu katika kuhifadhi  njia ya mawasiliano</string>
 
     <string-array name="booleanControlValues">
-         <item>Chagua</item>
+        <item>Chagua</item>
         <item>Ndio</item>
         <item>Hapana</item>
     </string-array>
@@ -269,7 +269,7 @@
     <string-array name="verifyDataStatus">
         <item>Inasubiri</item>
         <item>Imethibitishwa</item>
-         <item>mwisho</item>
+        <item>mwisho</item>
     </string-array>
 
     <string name="view_map">Onesha ramani</string>
@@ -351,125 +351,127 @@
     <string name="tap_on_map_xy">Gusa kwenye ramani kupata alama xy</string>
     <string name="gps_capture_exit">Unataka kutoka kwenye kipengele cha kunasa taarifa kwa kutumia GPS?</string>
     <string name="view_on_map">View on map</string>
-    <string name="logoutWarningMsg">Taarifa zako zitafutwa.Je unataka kutoka?</string>    
+    <string name="logoutWarningMsg">Taarifa zako zitafutwa.Je unataka kutoka?</string>
     <string name="selectOptionDialogTitle">Chagua chaguo kukamata</string>
-    <string name="continueTologout">Malizia/toka</string> 
-     <string name="add_photo_of_all_persons">Tafdahali ongeza picha za watu wote</string>
-    
+    <string name="continueTologout">Malizia/toka</string>
+    <string name="add_photo_of_all_persons">Tafdahali ongeza picha za watu wote</string>
+
     <!-- add on 3/Nov/2015 -->
-    
+
     <string name="data_summary_label1_1">Aina ya Miliki :</string>
     <string name="data_summary_label1_owner">Mmiliki :</string>
     <string name="data_summary_label4_admin">Msimamizi :</string>
     <string name="data_summary_label5_Guardian">Mlezi :</string>
     <string name="data_summary_label5_POI">Mtu mwenye maslahi :</string>
-    
-     <string name="FieldDataUploadedSuccessfully">Upandishwaji wa taarifa umefanikiwa</string>
- <string name="MultimediaUploadedSuccessfully">Upandishwaji wa Maltimedia umefanikiwa</string>
-<string name="ErrorInUploadingFieldData">Hitilafu katika upandishwaji wa taarifa</string>
-<string name="ErrorInUploadingMultimedia">Hitilafu katika upandishwaji wa maltimedia</string>
-<string name="UnableToConnectToTheServer">Haiwezi kuunganishwa kwenye seva</string>
-<string name="ConnectionTimeout">Uunganishaji umesitishwa</string>
-<string name="ProjectDataDownloadedSuccessfully">Taarifa za mradi zimefanikiwa kupakuliwa</string>
-<string name="OfflineDataDownloadedSuccessfully">Taarifa za nje ya mtandao zimefanikiwa kupakuliwa</string>
-<string name="ErrorDownloadingProjectdata">Hitilafu katika upakuwaji wa taarifa za mradi</string>
-<string name="ErrorDownloadingOfflineData">Hitilafu katika upakuaji wa taarifa zilizo nje ya mtandao</string>
-<string name="Downloading">Ushushaji..</string>
-<string name="unableToDownloadAttributeData">Haiwezi kupakuwa taarifa </string>
-<string name="DownloadFinished">Ushushaji umekamilika..</string>
-<string name="DownloadError">Hitilafu katika ushushaji..</string>
-<string name="spatialunit_hemlet_lbl">Kitongoji</string>
-<string name="select_witness1">Mhakiki 1</string>
-<string name="select_witness2">Mhakiki 2</string>
-<string name="nextKin">Jaza mtu mwenye maslahi</string>
-<string name="tittle_addDeceased">Jaza jina la marehemu</string>
-<string name="addPOI">Jaza MASLA</string>
-<string name="addDeceased">Jaza MAREM</string>
-<string name="nextOfKin">Ingiza watu wenye maslahi</string>
-<string name="fill_tenure">Tafdhali jaza taarifa za umiliki kwanza</string>
-<string name="villageName_lbl">Kijiji</string>
-<string name="AddedSuccessfully">Umefanikiwa kuongeza</string>
-<string name="UnableToSave">Haiwezi kuhifadhi</string>
-<string name="OwnerIsMinor">Mmiliki ni mtoto. Tafadhali jaza mlezi wake</string>
-<string name="selectOwnerOrAdminFirst">Mmiliki au Msimamizi hawapo katika mpangilio huu. Tafdhali hifadhi taarifa za Mmiliki au Msimamizi kwanza katika kipingile hiki.</string>
-<string name="mandatoryPOI">Inahitaji ujaze mtu wenye maslahi inapohitajika</string>
-<string name="selectAdminOrOwner">Chagua Msimamizi au Mmiliki kwanza</string>
-<string name="poi_deleted">Mtu mwenye maslahi amefutwa</string>
-<string name="delete_poi">Unahitaji kufuta mtu mwenye maslahi?</string>
-<string name="poi_isMandatory">Mtu anayejazwa ni "Msimamizi" ni lazima kujaza "mtu mwenye maslahi" katika kipengele hiki</string>
-<string name="guardian_cant_be_minor">Mlezi lazima awe na umri unaozidi miaka 18. Mlezi hawezi kuwa mtoto</string>
-<string-array name="person_sub_type">
-    <item >Mmiliki</item>
-    <item>Msimamizi</item>
-    <item>Mlezi</item>
-</string-array>
-<string name="select_person_subtype">Chagua  aina ya mtu</string>
-<string name="edit">Rekebisha</string>
-<string name="btn_proceed">Endelea</string>
-<string name="enter_details">Tafadhali jaza taarifa</string>
-<string name="tenureType">Aina ya Miliki</string>
 
-<!-- added String on 03/Nov/15- -->
-<string name="minorNotAllowed">Hairuhusu. Umri usiwe chini ya miaka 18.</string>
-<string name="ownerShouldBeMinor">Mmiliki lazima awe mtoto katika miliki ya mlezi</string>
-<string name="guardianShudBeAdult">Mlezi lazima awe mtu mzima</string>
-<string name="infoSingleOccupantStr">Lazima ujaze mmiliki mmoja tu na unaweza kuongeza mtu mwenye maslahi mmoja au zaidi</string>
-<string name="infoMultipleJointStr">Lazima ujaze wamiliki wawili na unaweza kuongeza mtu mwenye maslahi mmoja au zaidi</string>
-<string name="infoMultipleTeneancyStr">Lazima ujaze wamiliki  2 au zaidi (watoto) na walezi wasiozidi wawili</string>
-<string name="infoTenancyInProbateStr">Unaweza kuongeza mmiliki 1 au zaidi na wasimamizi wasiozidi 2, lazima ujaze jina la marehemu, na unaweza kujaza mtu mweye maslahi 1 au zaidi.</string>
-<string name="infoGuardianMinorStr">Lazima ujaze mmiliki 1 au zaidi na walezi wasiozidi wawili</string>
-<string name="warning_multipleJoint">Katika umiliki wa pamoja  (Mke na Mume) unatakiwa kujaza wamiliki 2 tu.</string>
-<string name="warning_multipleTenancy">Katika umiliki wa pamoja kwa hisa unatakiwa kujaza wamiliki 2 au zaidi</string>
-<string name="warning_tenancyProbate">Katika umiliki chini ya msimamizi unatakiwa kujaza jina la marehemu na mtu mwenye maslahi japo mmoja</string>
-<string name="warning_pleaseAddGuardianMinor">Tafadhali jaza mlezi wa mtoto huyu</string>
-<string name="warning_addPersonPhoto">Tafadhali weka picha ya mtu</string>
-<string name="can_not_add_poi">Huwezi kuongeza mtu mwenye maslahi</string>
-<string name="add_owner_first">Tafdhali jaza mmiliki kwanza</string>
-<string name="can_not_add_adminGuardian_in_SingleOccuapncy">Haiwezekani kuongeza Msimamizi au Mlezi katika Umiliki wa mtu mmoja</string>
-<string name="can_not_add_more_than_one_owner_in_SingleOccuapncy">Huwezi kuongeza zaidi ya moja Mmiliki katika kesi ya " Single Occupancy "</string>
-<string name="can_not_add_adminGuardian_in_multipleOccuapncy_joint">Haiwezekani kuongeza Msimamizi au Mlezi katika umiliki wa pamoja (Mke na Mume)</string>
-<string name="can_not_add_more_than_two_owners_in_multipleOccuapncy_joint">Huwezi kuongeza wamiliki zaidi ya 2 katika umiliki wa pamoja (Mke na Mume)</string>
-<string name="can_not_add_adminGuardian_in_multipleOccuapncy_common">Haiwezekani kuongeza Msimamizi au Mlezi katika umiliki wa pamoja (Mke na Mume)</string>
-<string name="guardian_can_not_more_than_two">Guardian can not be more than two in case of "Guardian(Minor)"</string>
-<string name="guardian_can_not_more_than_owners">Walezi hawawezi kuwa zaidi ya wamiliki (Watoto) katika Miliki chini ya Mlezi </string>
-<string name="can_not_add_admin_in_cas_of_guardian_minor">Haiwezekani kuongeza Msimamizi katika miliki chini ya Mlezi</string>
-<string name="can_not_add_moreThanOne_dp_tenancy_inProbate">Hauwezi kuongeza zaidi ya marehemu 1</string>
-<string name="Please_add_Administrator_first_or_Owner_first">Tafadhali jaza msimamizi au mmiliki kwanza</string>
-<string name="you_can_not_add_Guardian_in_tenancy_in_Probate">Huwezi kujaza mlezi katika aina ya miliki chini ya msimamizi</string>
-<string name="Administrator_can_not_be_more_than_two_in_tenancy_in_Probate">Wasimamizi hawawezi kuwa zaidi ya wawili</string>
-<string name="Please_delete_Owner_first">Tafadhali futa “Mmiliki” kwanza</string>
-<string name="Please_select_Hamlet">Tafadhali chagua Kitongoji</string>
-<string name="Please_select_Witness_1">Tafadhali chagua Mhakiki 1</string>
-<string name="Please_select_Witness_2">Tafdhali chagua Mhakiki 2</string>
-<string name="Witness_1_and_Witness_2_can_not_be_same">Mhakiki 1 na Mhakiki 2 hawawezi kuwa sawa</string>
-<string name="deleted">Imefutwa</string>
-<string name="do_u_want_to_continue">Unaitaji kuendelea?</string>
-<string name="You_have_selected">Umechagua : </string>
+    <string name="FieldDataUploadedSuccessfully">Upandishwaji wa taarifa umefanikiwa</string>
+    <string name="MultimediaUploadedSuccessfully">Upandishwaji wa Maltimedia umefanikiwa</string>
+    <string name="ErrorInUploadingFieldData">Hitilafu katika upandishwaji wa taarifa</string>
+    <string name="ErrorInUploadingMultimedia">Hitilafu katika upandishwaji wa maltimedia</string>
+    <string name="UnableToConnectToTheServer">Haiwezi kuunganishwa kwenye seva</string>
+    <string name="ConnectionTimeout">Uunganishaji umesitishwa</string>
+    <string name="ProjectDataDownloadedSuccessfully">Taarifa za mradi zimefanikiwa kupakuliwa</string>
+    <string name="OfflineDataDownloadedSuccessfully">Taarifa za nje ya mtandao zimefanikiwa kupakuliwa</string>
+    <string name="ErrorDownloadingProjectdata">Hitilafu katika upakuwaji wa taarifa za mradi</string>
+    <string name="ErrorDownloadingOfflineData">Hitilafu katika upakuaji wa taarifa zilizo nje ya mtandao</string>
+    <string name="Downloading">Ushushaji..</string>
+    <string name="unableToDownloadAttributeData">Haiwezi kupakuwa taarifa </string>
+    <string name="DownloadFinished">Ushushaji umekamilika..</string>
+    <string name="DownloadError">Hitilafu katika ushushaji..</string>
+    <string name="spatialunit_hemlet_lbl">Kitongoji</string>
+    <string name="select_witness1">Mhakiki 1</string>
+    <string name="select_witness2">Mhakiki 2</string>
+    <string name="polygonNumber">Namba ya kudai</string>
+    <string name="surveyDate">Tarehe madai</string>
+    <string name="nextKin">Jaza mtu mwenye maslahi</string>
+    <string name="tittle_addDeceased">Jaza jina la marehemu</string>
+    <string name="addPOI">Jaza MASLA</string>
+    <string name="addDeceased">Jaza MAREM</string>
+    <string name="nextOfKin">Ingiza watu wenye maslahi</string>
+    <string name="fill_tenure">Tafdhali jaza taarifa za umiliki kwanza</string>
+    <string name="villageName_lbl">Kijiji</string>
+    <string name="AddedSuccessfully">Umefanikiwa kuongeza</string>
+    <string name="UnableToSave">Haiwezi kuhifadhi</string>
+    <string name="OwnerIsMinor">Mmiliki ni mtoto. Tafadhali jaza mlezi wake</string>
+    <string name="selectOwnerOrAdminFirst">Mmiliki au Msimamizi hawapo katika mpangilio huu. Tafdhali hifadhi taarifa za Mmiliki au Msimamizi kwanza katika kipingile hiki.</string>
+    <string name="mandatoryPOI">Inahitaji ujaze mtu wenye maslahi inapohitajika</string>
+    <string name="selectAdminOrOwner">Chagua Msimamizi au Mmiliki kwanza</string>
+    <string name="poi_deleted">Mtu mwenye maslahi amefutwa</string>
+    <string name="delete_poi">Unahitaji kufuta mtu mwenye maslahi?</string>
+    <string name="poi_isMandatory">Mtu anayejazwa ni "Msimamizi" ni lazima kujaza "mtu mwenye maslahi" katika kipengele hiki</string>
+    <string name="guardian_cant_be_minor">Mlezi lazima awe na umri unaozidi miaka 18. Mlezi hawezi kuwa mtoto</string>
+    <string-array name="person_sub_type">
+        <item>Mmiliki</item>
+        <item>Msimamizi</item>
+        <item>Mlezi</item>
+    </string-array>
+    <string name="select_person_subtype">Chagua  aina ya mtu</string>
+    <string name="edit">Rekebisha</string>
+    <string name="btn_proceed">Endelea</string>
+    <string name="enter_details">Tafadhali jaza taarifa</string>
+    <string name="tenureType">Aina ya Miliki</string>
 
- <string name="yes">Ndio</string>
- <string name="no">Hapana</string>
- <string name="unable_to_add_person_tye">Haiwezi kuhifadhi aina ya mtu</string>
- <string name="do_u_want_to_add_media">Unahitaji kuongeza faili la media?</string>
- <string name="no_media_exist">Hakuna media iliyopo katika kipengele hiki cha anga</string>
- <string name="person">Mtu</string>
- <string name="person_of_interest">Mtu mwenye maslahi</string>
- <string name="deceased_person">Jina la marehemu</string>
- <string name="select_person_type">Tafadhali Chagua aina ya mmiliki</string>
- <string name="resident">Mkazi</string>
- <string name="you_did_not_enter_custum_attributes">Hukujaza sifa za miliki</string>
- <string name="want_to_add_custum_attributes">Unaitaji kujaza sifa za miliki?</string>
- <string name="delete_poi_first">Tafadhali futa “Mtu mwenye maslahi” kwanza</string>
- <string name="delete_deceased_first">Tafdahali Futa "jina la marehemu" kwanza</string>
- <string name="satellite_map">Muongozo wa Ramani</string>
- <string name="capture_features">Nasa Vipengele</string>     
- <string name="edit_Person">Sahihisha Mtu</string>
- <string name="you_can_add_only_one_photo">Unaweza kuweka picha moja tu</string>
- <string name="administrator_can_not_be_more_tha_Owner">Unaweza kujaza wasimamizi wawili tu</string>
- <string name="please_fill_tenure_details">Tafdhali jaza  taarifa za milki</string>
- <string name="please_fill_owner_details">Tafadhali jaza taarifa za mmiliki</string>
- <string name="select_other_option">Tafadhali kuchagua njia nyingine</string> 
- <string name="view_person">Mtazamo Mtu</string>
- <string name="can_add_only_one_person_with_non_natural_person">Unaweza kujaza mtu mmoja tu kwenye “Taasisi”</string>
- <string name="please_add_atleast_one_admin">Tafadhali Kuongeza angalau Msimamizi moja</string>
-    
+    <!-- added String on 03/Nov/15- -->
+    <string name="minorNotAllowed">Hairuhusu. Umri usiwe chini ya miaka 18.</string>
+    <string name="ownerShouldBeMinor">Mmiliki lazima awe mtoto katika miliki ya mlezi</string>
+    <string name="guardianShudBeAdult">Mlezi lazima awe mtu mzima</string>
+    <string name="infoSingleOccupantStr">Lazima ujaze mmiliki mmoja tu na unaweza kuongeza mtu mwenye maslahi mmoja au zaidi</string>
+    <string name="infoMultipleJointStr">Lazima ujaze wamiliki wawili na unaweza kuongeza mtu mwenye maslahi mmoja au zaidi</string>
+    <string name="infoMultipleTeneancyStr">Lazima ujaze wamiliki  2 au zaidi (watoto) na walezi wasiozidi wawili</string>
+    <string name="infoTenancyInProbateStr">Unaweza kuongeza mmiliki 1 au zaidi na wasimamizi wasiozidi 2, lazima ujaze jina la marehemu, na unaweza kujaza mtu mweye maslahi 1 au zaidi.</string>
+    <string name="infoGuardianMinorStr">Lazima ujaze mmiliki 1 au zaidi na walezi wasiozidi wawili</string>
+    <string name="warning_multipleJoint">Katika umiliki wa pamoja  (Mke na Mume) unatakiwa kujaza wamiliki 2 tu.</string>
+    <string name="warning_multipleTenancy">Katika umiliki wa pamoja kwa hisa unatakiwa kujaza wamiliki 2 au zaidi</string>
+    <string name="warning_tenancyProbate">Katika umiliki chini ya msimamizi unatakiwa kujaza jina la marehemu na mtu mwenye maslahi japo mmoja</string>
+    <string name="warning_pleaseAddGuardianMinor">Tafadhali jaza mlezi wa mtoto huyu</string>
+    <string name="warning_addPersonPhoto">Tafadhali weka picha ya mtu</string>
+    <string name="can_not_add_poi">Huwezi kuongeza mtu mwenye maslahi</string>
+    <string name="add_owner_first">Tafdhali jaza mmiliki kwanza</string>
+    <string name="can_not_add_adminGuardian_in_SingleOccuapncy">Haiwezekani kuongeza Msimamizi au Mlezi katika Umiliki wa mtu mmoja</string>
+    <string name="can_not_add_more_than_one_owner_in_SingleOccuapncy">Huwezi kuongeza zaidi ya moja Mmiliki katika kesi ya " Single Occupancy "</string>
+    <string name="can_not_add_adminGuardian_in_multipleOccuapncy_joint">Haiwezekani kuongeza Msimamizi au Mlezi katika umiliki wa pamoja (Mke na Mume)</string>
+    <string name="can_not_add_more_than_two_owners_in_multipleOccuapncy_joint">Huwezi kuongeza wamiliki zaidi ya 2 katika umiliki wa pamoja (Mke na Mume)</string>
+    <string name="can_not_add_adminGuardian_in_multipleOccuapncy_common">Haiwezekani kuongeza Msimamizi au Mlezi katika umiliki wa pamoja (Mke na Mume)</string>
+    <string name="guardian_can_not_more_than_two">Guardian can not be more than two in case of "Guardian(Minor)"</string>
+    <string name="guardian_can_not_more_than_owners">Walezi hawawezi kuwa zaidi ya wamiliki (Watoto) katika Miliki chini ya Mlezi </string>
+    <string name="can_not_add_admin_in_cas_of_guardian_minor">Haiwezekani kuongeza Msimamizi katika miliki chini ya Mlezi</string>
+    <string name="can_not_add_moreThanOne_dp_tenancy_inProbate">Hauwezi kuongeza zaidi ya marehemu 1</string>
+    <string name="Please_add_Administrator_first_or_Owner_first">Tafadhali jaza msimamizi au mmiliki kwanza</string>
+    <string name="you_can_not_add_Guardian_in_tenancy_in_Probate">Huwezi kujaza mlezi katika aina ya miliki chini ya msimamizi</string>
+    <string name="Administrator_can_not_be_more_than_two_in_tenancy_in_Probate">Wasimamizi hawawezi kuwa zaidi ya wawili</string>
+    <string name="Please_delete_Owner_first">Tafadhali futa “Mmiliki” kwanza</string>
+    <string name="Please_select_Hamlet">Tafadhali chagua Kitongoji</string>
+    <string name="Please_select_Witness_1">Tafadhali chagua Mhakiki 1</string>
+    <string name="Please_select_Witness_2">Tafdhali chagua Mhakiki 2</string>
+    <string name="Witness_1_and_Witness_2_can_not_be_same">Mhakiki 1 na Mhakiki 2 hawawezi kuwa sawa</string>
+    <string name="deleted">Imefutwa</string>
+    <string name="do_u_want_to_continue">Unaitaji kuendelea?</string>
+    <string name="You_have_selected">Umechagua : </string>
+
+    <string name="yes">Ndio</string>
+    <string name="no">Hapana</string>
+    <string name="unable_to_add_person_tye">Haiwezi kuhifadhi aina ya mtu</string>
+    <string name="do_u_want_to_add_media">Unahitaji kuongeza faili la media?</string>
+    <string name="no_media_exist">Hakuna media iliyopo katika kipengele hiki cha anga</string>
+    <string name="person">Mtu</string>
+    <string name="person_of_interest">Mtu mwenye maslahi</string>
+    <string name="deceased_person">Jina la marehemu</string>
+    <string name="select_person_type">Tafadhali Chagua aina ya mmiliki</string>
+    <string name="resident">Mkazi</string>
+    <string name="you_did_not_enter_custum_attributes">Hukujaza sifa za miliki</string>
+    <string name="want_to_add_custum_attributes">Unaitaji kujaza sifa za miliki?</string>
+    <string name="delete_poi_first">Tafadhali futa “Mtu mwenye maslahi” kwanza</string>
+    <string name="delete_deceased_first">Tafdahali Futa "jina la marehemu" kwanza</string>
+    <string name="satellite_map">Muongozo wa Ramani</string>
+    <string name="capture_features">Nasa Vipengele</string>
+    <string name="edit_Person">Sahihisha Mtu</string>
+    <string name="you_can_add_only_one_photo">Unaweza kuweka picha moja tu</string>
+    <string name="administrator_can_not_be_more_tha_Owner">Unaweza kujaza wasimamizi wawili tu</string>
+    <string name="please_fill_tenure_details">Tafdhali jaza  taarifa za milki</string>
+    <string name="please_fill_owner_details">Tafadhali jaza taarifa za mmiliki</string>
+    <string name="select_other_option">Tafadhali kuchagua njia nyingine</string>
+    <string name="view_person">Mtazamo Mtu</string>
+    <string name="can_add_only_one_person_with_non_natural_person">Unaweza kujaza mtu mmoja tu kwenye “Taasisi”</string>
+    <string name="please_add_atleast_one_admin">Tafadhali Kuongeza angalau Msimamizi moja</string>
+
 </resources>

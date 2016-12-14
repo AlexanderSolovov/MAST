@@ -7,7 +7,9 @@ public class Feature
 	private String geomtype;
 	private String status;
 	private String server_featureid;
-	
+	private String polygonNumber;
+	private String surveyDate;
+
 	public Long getFeatureid() {
 		return featureid;
 	}
@@ -37,8 +39,22 @@ public class Feature
 	}
 	public void setServer_featureid(String server_featureid) {
 		this.server_featureid = server_featureid;
-	} 
+	}
 
-	
+	public String getPolygonNumber() {
+		return polygonNumber;
+	}
+
+	public void setPolygonNumber(String polygonNumber) {
+		this.polygonNumber = polygonNumber;
+	}
+
+	public String getSurveyDate() {
+		return surveyDate;
+	}
+
+	public void setSurveyDate(String surveyDate) {
+		this.surveyDate = surveyDate;
+	}
 }
 

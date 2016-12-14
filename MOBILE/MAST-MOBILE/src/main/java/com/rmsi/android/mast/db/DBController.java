@@ -13,19 +13,16 @@ import org.json.JSONObject;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.rmsi.android.mast.activity.R;
-import com.rmsi.android.mast.activity.R.string;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Bookmark;
 import com.rmsi.android.mast.domain.Feature;
@@ -34,11 +31,8 @@ import com.rmsi.android.mast.domain.Option;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
 import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
-import com.rmsi.android.mast.util.StringUtils;
+import com.rmsi.android.mast.util.StringUtility;
 
-/**
- * @author Amreen.s
- */
 public class DBController extends SQLiteOpenHelper {
     Context contxt;
     SQLiteDatabase myDataBase;
@@ -65,7 +59,7 @@ public class DBController extends SQLiteOpenHelper {
     private static String PERSON_SubType_Owner = "Owner";
     private static String PERSON_SubType_Guardian = "Guardian";
     private static String NonNaturalPerson = "Non-Natural";
-    private static int DB_VERSION = 5;
+    private static int DB_VERSION = 6;
     private static int CONTROL_STIRNG = 1;
     private static int CONTROL_DATE = 2;
     private static int CONTROL_BOOLEAN = 3;
@@ -100,7 +94,9 @@ public class DBController extends SQLiteOpenHelper {
                 "HAMLET_ID INTEGER," +
                 "WITNESS_1 TEXT," +
                 "WITNESS_2 TEXT," +
-                "CLAIM_TYPE TEXT" +
+                "CLAIM_TYPE TEXT," +
+                "POLYGON_NUMBER TEXT," +
+                "SURVEY_DATE TEXT" +
                 ")";
         String query_table2 = "CREATE TABLE ATTRIBUTE_MASTER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ATTRIB_ID INTEGER,ATTRIBUTE_TYPE STRING,ATTRIBUTE_CONTROLTYPE INTEGER,ATTRIBUTE_NAME TEXT,LISTING TEXT,ATTRIBUTE_NAME_OTHER TEXT,VALIDATION TEXT)";
         String query_table3 = "CREATE TABLE OPTIONS(OPTION_ID TEXT,ATTRIB_ID INTEGER,OPTION_NAME TEXT,OPTION_NAME_OTHER TEXT)";
@@ -195,6 +191,9 @@ public class DBController extends SQLiteOpenHelper {
         if (newVersion > oldVersion) {
             //db.execSQL("ALTER TABLE HAMLET_DETAILS ADD COLUMN HAMLET_LEADER TEXT");
 //            db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN CLAIM_TYPE TEXT");
+          //  db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN POLYGON_NUMBER TEXT");
+            //db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN SURVEY_DATE TEXT");
+
 //
 //            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN CERT_NUMBER TEXT");
 //            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN CERT_ISSUE_DATE TEXT");
@@ -234,13 +233,22 @@ public class DBController extends SQLiteOpenHelper {
             myDataBase = getReadableDatabase();
             Cursor cursor = myDataBase.rawQuery(query, null);
             if (cursor.moveToFirst()) {
+                int colId = cursor.getColumnIndex("FEATURE_ID");
+                int colServerId = cursor.getColumnIndex("SERVER_FEATURE_ID");
+                int colCoordinates = cursor.getColumnIndex("COORDINATES");
+                int colGeomType = cursor.getColumnIndex("GEOMTYPE");
+                int colStatus = cursor.getColumnIndex("STATUS");
+                int colPolygonNumber = cursor.getColumnIndex("POLYGON_NUMBER");
+                int colSurveyDate = cursor.getColumnIndex("SURVEY_DATE");
                 do {
                     Feature feature = new Feature();
-                    feature.setFeatureid(cursor.getLong(0));
-                    feature.setServer_featureid(cursor.getString(1));
-                    feature.setCoordinates(cursor.getString(2));
-                    feature.setGeomtype(cursor.getString(3));
-                    feature.setStatus(cursor.getString(5));
+                    feature.setFeatureid(cursor.getLong(colId));
+                    feature.setServer_featureid(cursor.getString(colServerId));
+                    feature.setCoordinates(cursor.getString(colCoordinates));
+                    feature.setGeomtype(cursor.getString(colGeomType));
+                    feature.setStatus(cursor.getString(colStatus));
+                    feature.setPolygonNumber(cursor.getString(colPolygonNumber));
+                    feature.setSurveyDate(cursor.getString(colSurveyDate));
                     features.add(feature);
                 }
                 while (cursor.moveToNext());
@@ -819,7 +827,6 @@ public class DBController extends SQLiteOpenHelper {
                 } else {
                     attrib.setAttributeName(cursor.getString(4));
                 }
-
 
                 attrib.setValidation(cursor.getString(7));
                 attrib.setGroupId(cursor.getInt(8));
@@ -2919,7 +2926,7 @@ public class DBController extends SQLiteOpenHelper {
             do {
                 option = new Option();
                 option.setOptionId(cursor.getLong(0));
-                if(!StringUtils.isEmpty(cursor.getString(2))){
+                if(!StringUtility.isEmpty(cursor.getString(2))){
                     option.setOptionName(cursor.getString(1) + " (" + cursor.getString(2) + ")");
                 } else {
                     option.setOptionName(cursor.getString(1));

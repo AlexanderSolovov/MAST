@@ -318,12 +318,6 @@ COMMENT ON COLUMN public.source_document.dispute_id IS 'Dispute id.';
 
 INSERT INTO public.attribute_category(attributecategoryid, category_name) VALUES (8, 'Person of interest');
 
-INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'Polygon Number', 'Idadi Poligoni', 'polygon_number', 1, 1, 'spatial_unit', 20, true, 1, true, true);
-
-INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'Claim Date', 'Tarehe Madai', 'survey_date', 2, 1, 'spatial_unit', 10, true, 2, true, true);
-
 UPDATE public.attribute_master SET alias = 'Length of occupancy', alias_second_language = 'Urefu wa kumiliki ardhi' WHERE id = 13;
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)

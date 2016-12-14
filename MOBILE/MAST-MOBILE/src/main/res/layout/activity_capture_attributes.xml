@@ -131,6 +131,54 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#CCCCCC" />
+
+            <TextView
+                android:id="@+id/lblPolygonNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/polygonNumber"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
+
+            <EditText
+                android:id="@+id/txtPolygonNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:inputType="textPersonName"
+                android:padding="5dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
+            <TextView
+                android:id="@+id/lblClaimDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/surveyDate"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
+
+            <TextView
+                android:id="@+id/txtClaimDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:textColor="@color/black"
+                android:textSize="@dimen/textSize" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
         </LinearLayout>
     </ScrollView>
 

@@ -2,7 +2,7 @@ package com.rmsi.android.mast.domain;
 
 import android.view.View;
 
-import com.rmsi.android.mast.util.StringUtils;
+import com.rmsi.android.mast.util.StringUtility;
 
 public class Option 
 {
@@ -49,6 +49,6 @@ public class Option
 
     @Override
 	public String toString(){
-		return StringUtils.empty(getOptionName());
+		return StringUtility.empty(getOptionName());
 	}
 }

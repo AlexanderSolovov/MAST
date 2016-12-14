@@ -4,7 +4,7 @@ package com.rmsi.android.mast.util;
  * Contains various string helper function
  */
 
-public class StringUtils {
+public class StringUtility {
     /**
      * Check given string and returns true if null or empty, otherwise false.
      * @param str String to check

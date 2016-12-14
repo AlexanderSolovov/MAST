@@ -20,6 +20,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -83,6 +84,9 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         SpinnerAdapter spinnerAdapterWitness2 = new SpinnerAdapter(this.context, android.R.layout.simple_spinner_item, witnessList);
         spinnerAdapterWitness2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerWitness2.setAdapter(spinnerAdapterWitness2);
+
+        TextView claimDate = (TextView) findViewById(R.id.txtClaimDate);
+        EditText claimNumber = (EditText) findViewById(R.id.txtPolygonNumber);
 
         infoStr = getResources().getString(R.string.info);
         infoSingleOccupantStr = getResources().getString(R.string.infoSingleOccupantStr);

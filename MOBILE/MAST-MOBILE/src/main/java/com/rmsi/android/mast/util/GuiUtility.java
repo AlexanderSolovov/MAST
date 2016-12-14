@@ -21,7 +21,6 @@ import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Option;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -136,82 +135,25 @@ public class GuiUtility {
         TextView field = (TextView) container.findViewById(R.id.field);
         field.setText(attribute.getAttributeName());
 
-        final TextView textdatepicker = (TextView) container.findViewById(R.id.textview_datepicker);
-        textdatepicker.setTag(attribute.getAttributeid());
+        final TextView textDatePicker = (TextView) container.findViewById(R.id.textview_datepicker);
+        textDatePicker.setTag(attribute.getAttributeid());
 
         if (CommonFunctions.getRoleID() == 2) {
-            textdatepicker.setEnabled(false);
+            textDatePicker.setEnabled(false);
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Calendar calender = Calendar.getInstance();
-        if (attribute.getFieldValue() != null) {
-            try {
-                calender.setTime(sdf.parse(attribute.getFieldValue()));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            int day = calender.get(Calendar.DAY_OF_MONTH);
-            String strday = day < 10 ? "0" + String.valueOf(day) : String.valueOf(day);
-            int month = calender.get(Calendar.MONTH) + 1; // adding 1 as month starts with 0
-            String strmonth = month < 10 ? "0" + String.valueOf(month) : String.valueOf(month);
-            int year = calender.get(Calendar.YEAR);
-
-            textdatepicker.setText(new StringBuilder()
-                    .append(year).append("-").append(strmonth).append("-").append(strday));
+        if (!StringUtility.isEmpty(attribute.getFieldValue())) {
+            textDatePicker.setText(DateUtility.formatDateString(attribute.getFieldValue()));
         }
 
-
-        textdatepicker.setOnClickListener(new View.OnClickListener() {
+        textDatePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Dialog custom_timepicker = new Dialog(v.getContext(), R.style.DialogTheme);
-                custom_timepicker.setTitle("Select Date");
-                custom_timepicker.setContentView(R.layout.dialog_time_picker);
-                custom_timepicker.getWindow().getAttributes().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                final DatePicker datepicker = (DatePicker) custom_timepicker.findViewById(R.id.datePicker);
-
-                Button btnSet = (Button) custom_timepicker.findViewById(R.id.button_set);
-
-                try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    Calendar calender = Calendar.getInstance();
-                    if (attribute.getFieldValue() != null) {
-                        calender.setTime(sdf.parse(attribute.getFieldValue()));
-                    }
-                    int day = calender.get(Calendar.DAY_OF_MONTH);
-                    String strday = day < 10 ? "0" + String.valueOf(day) : String.valueOf(day);
-                    int month = calender.get(Calendar.MONTH) + 1;
-                    String strmonth = month < 10 ? "0" + String.valueOf(month) : String.valueOf(month);
-                    int year = calender.get(Calendar.YEAR);
-                    datepicker.init(year, month, day, null);
-                    if (attribute.getFieldValue() != null)
-                        textdatepicker.setText(new StringBuilder()
-                                .append(year).append("-").append(strmonth).append("-").append(strday));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                custom_timepicker.show();
-
-                btnSet.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int day = datepicker.getDayOfMonth();
-                        String strday = day < 10 ? "0" + String.valueOf(day) : String.valueOf(day);
-                        int month = datepicker.getMonth() + 1;
-                        String strmonth = month < 10 ? "0" + String.valueOf(month) : String.valueOf(month);
-                        int year = datepicker.getYear();
-
-                        textdatepicker.setText(new StringBuilder()
-                                .append(year).append("-").append(strmonth).append("-").append(strday));
-                        custom_timepicker.dismiss();
-                    }
-                });
+                showDatePicker(textDatePicker, attribute.getFieldValue());
             }
         });
 
-        textdatepicker.addTextChangedListener(new TextWatcher() {
+        textDatePicker.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
@@ -223,7 +165,7 @@ public class GuiUtility {
             @Override
             public void afterTextChanged(Editable s) {
                 try {
-                    Integer attribId = (Integer) textdatepicker.getTag();
+                    Integer attribId = (Integer) textDatePicker.getTag();
                     if (attribute.getAttributeid() == attribId) {
                         attribute.setFieldValue(s.toString());
                     }
@@ -232,7 +174,62 @@ public class GuiUtility {
             }
         });
 
-        return textdatepicker;
+        return textDatePicker;
+    }
+
+    /**
+     * Shows custom date picker, attached to the TextView control
+     * @param textView TextView control to attach date picker to
+     * @param dateString Initial date string to display
+     */
+    public static void showDatePicker(final TextView textView, String dateString){
+        final Dialog customTimePicker = new Dialog(textView.getContext(), R.style.DialogTheme);
+        customTimePicker.setTitle("Select Date");
+        customTimePicker.setContentView(R.layout.dialog_time_picker);
+        customTimePicker.getWindow().getAttributes().width = ViewGroup.LayoutParams.MATCH_PARENT;
+        final DatePicker datepicker = (DatePicker) customTimePicker.findViewById(R.id.datePicker);
+
+        Button btnSet = (Button) customTimePicker.findViewById(R.id.button_set);
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Calendar calender = Calendar.getInstance();
+            if (!StringUtility.isEmpty(dateString)) {
+                calender.setTime(sdf.parse(dateString));
+            }
+
+            int day = calender.get(Calendar.DAY_OF_MONTH);
+            String strday = day < 10 ? "0" + String.valueOf(day) : String.valueOf(day);
+
+            int month = calender.get(Calendar.MONTH) + 1;
+            String strmonth = month < 10 ? "0" + String.valueOf(month) : String.valueOf(month);
+
+            int year = calender.get(Calendar.YEAR);
+            datepicker.init(year, month-1, day, null);
+
+            if (!StringUtility.isEmpty(dateString))
+                textView.setText(new StringBuilder()
+                        .append(year).append("-").append(strmonth).append("-").append(strday));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        customTimePicker.show();
+
+        btnSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int day = datepicker.getDayOfMonth();
+                String strday = day < 10 ? "0" + String.valueOf(day) : String.valueOf(day);
+                int month = datepicker.getMonth() + 1;
+                String strmonth = month < 10 ? "0" + String.valueOf(month) : String.valueOf(month);
+                int year = datepicker.getYear();
+
+                textView.setText(new StringBuilder()
+                        .append(year).append("-").append(strmonth).append("-").append(strday));
+                customTimePicker.dismiss();
+            }
+        });
     }
 
     private static Spinner createSpinnerViewFromArray(View container, final Attribute attribute) {
