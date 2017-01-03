@@ -36,6 +36,7 @@ import com.rmsi.mast.studio.util.GeometryConversion;
 import com.rmsi.mast.viewer.dao.SpatialUnitDeceasedPersonDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitPersonWithInterestDao;
 import com.rmsi.mast.studio.dao.ClaimTypeDao;
+import com.rmsi.mast.studio.domain.Surveyprojectattribute;
 
 @Service
 public class SurveyProjectAttributeServiceImp implements
@@ -355,6 +356,11 @@ public class SurveyProjectAttributeServiceImp implements
         return attributes.getSurveyProjectAttributeId(attributeId, projectId).getUid();
     }
 
+    @Override
+    public List<Surveyprojectattribute> getSurveyProjectAttributes(String projectId){
+        return attributes.getSurveyProjectAttributes(projectId);
+    }
+    
     @Override
     public List<ProjectAdjudicator> getProjectAdjudicatorByProjectId(String projectId) {
         return projectAdjudicatorDAO.findByProject(projectId);

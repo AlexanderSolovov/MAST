@@ -27,7 +27,4 @@
         android:paddingRight="?android:attr/listPreferredItemPaddingRight"
         android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
         android:src="@drawable/action_overflow" />
-    
- 
-
 </RelativeLayout>

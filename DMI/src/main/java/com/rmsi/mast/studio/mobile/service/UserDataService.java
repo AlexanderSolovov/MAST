@@ -21,6 +21,7 @@ import com.rmsi.mast.studio.domain.SpatialUnitPersonWithInterest;
 import com.rmsi.mast.studio.domain.User;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.domain.fetch.SpatialunitDeceasedPerson;
+import com.rmsi.mast.studio.mobile.transferobjects.Property;
 
 /**
  * @author shruti.thakur
@@ -56,29 +57,15 @@ public interface UserDataService {
 	SourceDocument uploadMultimedia(SourceDocument sourceDocument,
 			MultipartFile mpFile, File documentsDir);
 
-	/**
-	 * This method will sync the data entered by trusted intermediary after
-	 * survey via mobile
-	 * 
-	 * @param spatialUnit
-	 * @param nextOfKinList
-	 * @param deceasedPersonList
-	 * @param naturalPersonList
-	 * @param nonNaturalPersonList
-	 * @param socialTenureList
-	 * @param customAttributeList
-	 * @param attributeValuesMap
-	 * @return
-	 */
-	Long syncSurveyProjectData(SpatialUnit spatialUnit,
-			List<SpatialunitDeceasedPerson>deceasedPersonList,
-			List<SpatialUnitPersonWithInterest> nextOfKinList,
-			List<NaturalPerson> naturalPersonList,
-			List<NonNaturalPerson> nonNaturalPersonList,
-			List<SocialTenureRelationship> socialTenureList,
-			List<AttributeValues> customAttributeList,
-			Map<String, List<List<AttributeValues>>> attributeValuesMap);
-
+        /** 
+         * Saves claim/property and returns property ID, generated on the server. 
+         * @param prop Property object to save
+         * @param projectName Project name/ID
+         * @param userId User ID who created the claim
+         * @return 
+         */
+        Map<String, String> saveClaims(List<Property> properties, String projectName, int userId);
+        
 	/**
 	 * This will be used to fetch record from source document if USIN and
 	 * FielName matches

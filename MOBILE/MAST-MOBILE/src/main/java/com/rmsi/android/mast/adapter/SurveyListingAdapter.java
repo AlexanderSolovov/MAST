@@ -16,105 +16,85 @@ import com.rmsi.android.mast.Fragment.DraftSurveyFragment;
 import com.rmsi.android.mast.Fragment.VerifyDataFragment;
 import com.rmsi.android.mast.domain.Feature;
 import com.rmsi.android.mast.util.CommonFunctions;
+import com.rmsi.android.mast.util.StringUtility;
 
+public class SurveyListingAdapter extends BaseAdapter {
+    private List<Feature> myObjs;
+    private LayoutInflater lInflator;
+    String classname;
+    Context context;
+    Object fragmentObj;
+    String claimStr = "";
 
-//custom adapter
-public class SurveyListingAdapter extends BaseAdapter
-{
-	private List<Feature> myObjs;
-	private LayoutInflater lInflator;
-	String classname;
-	Context context;
-	Object fragmentObj;
-	
-	public SurveyListingAdapter(Context context, Object fragmentObj, List<Feature> features,String classname) 
-	{
-		this.context = context;
-		this.myObjs = features;
-		this.lInflator = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		this.classname = classname;
-		this.fragmentObj = fragmentObj;
-	}
+    public SurveyListingAdapter(Context context, Object fragmentObj, List<Feature> features, String classname) {
+        this.context = context;
+        this.myObjs = features;
+        this.lInflator = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.classname = classname;
+        this.fragmentObj = fragmentObj;
+        claimStr = context.getResources().getString(R.string.Claim);
+    }
 
-	public int getCount(){
-		return myObjs.size();
-	}
+    public int getCount() {
+        return myObjs.size();
+    }
 
-	public Feature getItem(int position)
-	{
-		return myObjs.get(position);
-	}
+    public Feature getItem(int position) {
+        return myObjs.get(position);
+    }
 
-	public long getItemId(int position)
-	{
-		return position;
-	}
+    public long getItemId(int position) {
+        return position;
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) 
-	{
-		ViewHolderItem viewHolder;
-		String geomtype="";
-		Feature feat = myObjs.get(position);
-		if(convertView==null)
-		{
-			convertView = lInflator.inflate(R.layout.item_list_row,parent,false);
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolderItem viewHolder;
+        Feature feat = myObjs.get(position);
+        if (convertView == null) {
+            convertView = lInflator.inflate(R.layout.item_list_row, parent, false);
 
-			viewHolder = new ViewHolderItem();
-			viewHolder.textViewItem = (TextView) convertView.findViewById(R.id.surveyData);
-			viewHolder.options = (ImageButton) convertView.findViewById(R.id.optionsButton);
+            viewHolder = new ViewHolderItem();
+            viewHolder.textViewItem = (TextView) convertView.findViewById(R.id.surveyData);
+            ImageButton options = (ImageButton) convertView.findViewById(R.id.optionsButton);
+            viewHolder.options = options;
+            if(classname.equalsIgnoreCase("final")){
+                options.setVisibility(View.GONE);
+            }
 
-			convertView.setTag(viewHolder);
-		}
-		else
-		{
-			viewHolder = (ViewHolderItem) convertView.getTag();		   
-		}
-		
-		if(feat.getGeomtype().equals(CommonFunctions.GEOM_POINT))
-		{
-			geomtype = context.getResources().getString(R.string.point_txt);
-		}
-		else if(feat.getGeomtype().equals(CommonFunctions.GEOM_LINE))
-		{
-			geomtype = context.getResources().getString(R.string.line_txt);
-		}
-		else if(feat.getGeomtype().equals(CommonFunctions.GEOM_POLYGON))
-		{
-			geomtype = context.getResources().getString(R.string.polygon_txt);
-		}
-		
-		viewHolder.textViewItem.setText(geomtype+" "+feat.getFeatureid());
-		
-		viewHolder.options.setTag(position);
-		//viewHolder.options.setFocusable(false);
-		
-		viewHolder.options.setOnClickListener(new OnClickListener() 
-		{			
-			@Override
-			public void onClick(View v) 
-			{
-				if(classname.equalsIgnoreCase("draftsurvey"))
-				{
-					DraftSurveyFragment obj = (DraftSurveyFragment) fragmentObj;
-					obj.showPopupDraft(v, v.getTag());
-				}
-				
-				if(classname.equalsIgnoreCase("verifyData"))
-				{
-					VerifyDataFragment obj = (VerifyDataFragment) fragmentObj;
-					obj.showPopupVerify(v, v.getTag());
-				}
-			}
-		});
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolderItem) convertView.getTag();
+        }
 
-		return convertView;
-	}
+        if (!StringUtility.isEmpty(feat.getPolygonNumber()))
+            viewHolder.textViewItem.setText(claimStr + " " + feat.getPolygonNumber());
+        else
+            viewHolder.textViewItem.setText(claimStr + " " + feat.getId());
 
-	private static class ViewHolderItem 
-	{
-		TextView textViewItem;
-		ImageButton options;
-	}
+        viewHolder.options.setTag(position);
+
+        viewHolder.options.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (classname.equalsIgnoreCase("draftsurvey")) {
+                    DraftSurveyFragment obj = (DraftSurveyFragment) fragmentObj;
+                    obj.showPopupDraft(v, v.getTag());
+                }
+
+                if (classname.equalsIgnoreCase("verifyData")) {
+                    VerifyDataFragment obj = (VerifyDataFragment) fragmentObj;
+                    obj.showPopupVerify(v, v.getTag());
+                }
+            }
+        });
+
+        return convertView;
+    }
+
+    private static class ViewHolderItem {
+        TextView textViewItem;
+        ImageButton options;
+    }
 
 }

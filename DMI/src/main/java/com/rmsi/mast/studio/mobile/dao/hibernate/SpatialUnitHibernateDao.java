@@ -65,17 +65,17 @@ public class SpatialUnitHibernateDao extends
 	}
 
 	@Override
-	public SpatialUnit findByImeiandTimeStamp(String imeiNumber, Date surveyDate) {
+	public SpatialUnit findByImeiandTimeStamp(String imeiNumber, Date date) {
 
 		String query = "select s from SpatialUnit s where s.imeiNumber =:imeiNumber"
-				+ " and s.surveyDate =:surveyDate";
+				+ " and s.statusUpdateTime =:date";
 
 		try {
 
 			@SuppressWarnings("unchecked")
 			List<SpatialUnit> spatialUnit = getEntityManager()
 					.createQuery(query).setParameter("imeiNumber", imeiNumber)
-					.setParameter("surveyDate", surveyDate).getResultList();
+					.setParameter("date", date).getResultList();
 
 			if (spatialUnit.size() > 0) {
 				return spatialUnit.get(0);

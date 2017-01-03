@@ -253,7 +253,7 @@
     <string name="no_fix_msg">No Fix</string>
     <string name="sats_use_msg">sats in use</string>
     <string name="deleteEntryMsg">Are you sure you to delete this entry ?</string>
-    <string name="add_atlest_one_person">Please add atleast one person</string>
+    <string name="add_atlest_one_person">Please add at least one person</string>
     <string name="warning">Warning</string>
     <string name="save_genral_attrribute">Please save general attribute first</string>
     <string name="login_error">Authentication failed</string>
@@ -321,18 +321,18 @@
     <string name="fill_mandatory">Please fill mandatory fields</string>
     <string name="unable_logout">Unable to logout</string>
     <string name="sync_pending_records">Please Sync all Pending Records before logging off</string>
-    <string name="data_summary_label1">Tenure Relation :</string>
-    <string name="data_summary_label1_1">Tenure Type :</string>
-    <string name="data_summary_label1_owner">Owner :</string>
-    <string name="data_summary_label2">Property :</string>
-    <string name="data_summary_label3">Natural person(s) :</string>
-    <string name="data_summary_label4">Non-Natural person :</string>
-    <string name="data_summary_label4_admin">Administrator :</string>
-    <string name="data_summary_label5">Social tenure :</string>
-    <string name="data_summary_label5_Guardian">Guardian :</string>
-    <string name="data_summary_label5_POI">Person of Interest :</string>
-    <string name="data_summary_label6">Multimedia :</string>
-    <string name="data_summary_label7">Custom :</string>
+    <string name="data_summary_label1">Tenure Relation:</string>
+    <string name="data_summary_label1_1">Tenure Type:</string>
+    <string name="data_summary_label1_owner">Owner:</string>
+    <string name="data_summary_label2">Property:</string>
+    <string name="data_summary_label3">Natural person(s):</string>
+    <string name="data_summary_label4">Non-Natural person:</string>
+    <string name="data_summary_label4_admin">Administrator:</string>
+    <string name="data_summary_label5">Social tenure:</string>
+    <string name="data_summary_label5_Guardian">Guardian:</string>
+    <string name="data_summary_label5_POI">Person of Interest:</string>
+    <string name="data_summary_label6">Multimedia:</string>
+    <string name="data_summary_label7">Custom:</string>
     <string name="unable_to_save_data">Unable to save data</string>
     <string name="delete_all_data">All data will be deleted.</string>
     <string name="unable_delete">Unable to delete</string>
@@ -383,6 +383,7 @@
     <string name="select_witness1">Adjudicator 1</string>
     <string name="select_witness2">Adjudicator 2</string>
     <string name="polygonNumber">Claim number</string>
+    <string name="claimType">Claim type</string>
     <string name="surveyDate">Claim date</string>
     <string name="nextKin">Add Person of Interest</string>
     <string name="tittle_addDeceased">Add Deceased Person</string>
@@ -442,9 +443,9 @@
     <string name="Administrator_can_not_be_more_than_two_in_tenancy_in_Probate">Administrator can not be more than two</string>
     <string name="Please_delete_Owner_first">Please delete "\"Owner\"" first</string>
     <string name="Please_select_Hamlet">Please select Hamlet</string>
-    <string name="Please_select_Witness_1">Please select Witness 1</string>
-    <string name="Please_select_Witness_2">Please select Witness 2</string>
-    <string name="Witness_1_and_Witness_2_can_not_be_same">Witness 1 and Witness 2 can not be same</string>
+    <string name="Please_select_Witness_1">Please select Adjudicator 1</string>
+    <string name="Please_select_Witness_2">Please select Adjudicator 2</string>
+    <string name="Witness_1_and_Witness_2_can_not_be_same">Adjudicator 1 and Adjudicator 2 can not be same</string>
     <string name="deleted">Deleted</string>
     <string name="do_u_want_to_continue">Do you want to continue ?</string>
     <string name="You_have_selected">You have selected : </string>
@@ -472,13 +473,64 @@
     <string name="view_person">View Person</string>
     <string name="please_add_atleast_one_admin">Please Add atleast one Administrator</string>
     <string name="accept">Accept</string>
-
-
-    <!-- <string name="view_person">View Person</string>
-
-
-
-
-    <string name="delete_deceased_first">Tafdahali Futa "jina la marehemu" kwanza</string> -->
-
+    <string name="nonNatural">Non-Natural</string>
+    <string name="personType">Person type:</string>
+    <string name="selectPersonType">Select person type</string>
+    <string name="rightType">Tenancy type</string>
+    <string name="shareType">Occupation type</string>
+    <string name="certNumber">Certificate number</string>
+    <string name="certDate">Certificate date</string>
+    <string name="juridicalArea">Juridical area</string>
+    <string name="SelectRightType">Select tenancy type</string>
+    <string name="SelectShareType">Select occupancy type</string>
+    <string name="FillCertNumber">Fill in certificate number</string>
+    <string name="SelectCertDate">Select certificate date</string>
+    <string name="FillJuridicalArea">Fill in juridical area</string>
+    <string name="SelectResidency">Select residency</string>
+    <string name="administrator">Administrator</string>
+    <string name="Guardian">Guardian</string>
+    <string name="RightNotFound">Tenure right was not found</string>
+    <string name="PropertyNotFound">Claim was not found</string>
+    <string name="SelectClaimType">Select Claim type</string>
+    <string name="EnterClaimNumber">Enter Claim number</string>
+    <string name="SelectClaimDate">Select Claim date</string>
+    <string name="SelectOption">Select an option</string>
+    <string name="ClaimDateInFuture">Claim date cannot be in future</string>
+    <string name="ClaimNumberUnique">Provided claim number already exists</string>
+    <string name="RelationshipType">Relationship type</string>
+    <string name="SelectRelationshipType">Select relationship type</string>
+    <string name="AddNonNaturalPerson">Add Non-Natural person</string>
+    <string name="RepresentativePerson">Representative Person</string>
+    <string name="Claim">Claim</string>
+    <string name="Dob">Date of birth</string>
+    <string name="FillGeneralProperties">Fill in general properties of the claim</string>
+    <string name="FillRequiredFieldsOngeneralProp">Fill in required fields on the General properties</string>
+    <string name="FillRequiredFieldsOnRight">Fill in required fields for Social tenure</string>
+    <string name="FillMediaAttributes">Fill in multimedia attributes</string>
+    <string name="FillCustomAttributes">Fill in custom attributes</string>
+    <string name="FillRequiredFieldsOnPerson">Fill in required fields for person</string>
+    <string name="FillRequiredFieldsOnNonPerson">Fill in required fields for non-natural person</string>
+    <string name="AgeMustBe18or100">Person age must be between 18 and 110 years</string>
+    <string name="AgeLessThan18">Owner age must be less than 18 years</string>
+    <string name="SingleShareCheck">Single ownership must have only 1 owner</string>
+    <string name="MultiJointShareError">Multiple joint occupancy must have only 2 owners</string>
+    <string name="MultiCommonShareError">Multiple occupancy in common must have at least 2 owners and no other person types</string>
+    <string name="GuardianShareError">Guardian occupancy must have one or more Minors and up to 2 Guardians</string>
+    <string name="ProbateShareError">Tenancy in probate must have deceased person and up to 2 administrators. Multiple owners can be added as well.</string>
+    <string name="FillShareSize">Fill in share size field</string>
+    <string name="ShareSize">Share size</string>
+    <string name="Next">Next</string>
+    <string name="Close">Close</string>
+    <string name="Finish">Finish</string>
+    <string name="AddDisputeDetails">Add dispute details</string>
+    <string name="Dispute">Dispute</string>
+    <string name="DisputeType">Dispute type</string>
+    <string name="DisputeDescription">Dispute description</string>
+    <string name="DisputingParties">Disputing persons</string>
+    <string name="SelectDisputeType">Select dispute type</string>
+    <string name="AddDisputingPersons">Add at least 2 disputing persons</string>
+    <string name="AcquisitionType">Acquisition type</string>
+    <string name="SelectAcquisitionType">Select acquisition type</string>
+    <string name="DisputeDetails">Dispute details</string>
+    <string name="FailedToFormJson">Failed to form JSON string</string>
 </resources>

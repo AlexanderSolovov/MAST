@@ -24,6 +24,7 @@ COMMENT ON TABLE public.claim_type
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('newClaim', 'New claim', 'Madai new', 't');
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('existingClaim', 'Existing claim', 'Madai zilizopo', 't');
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('unclaimed', 'Unclaimed', 'Unclaimed', 't');
+INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('dispute', 'Disputed claim', 'Madai mgogoro', 't');
 
 ALTER TABLE public.tenure_class ADD COLUMN for_adjudication boolean DEFAULT 't';
 COMMENT ON COLUMN public.tenure_class.for_adjudication IS 'Indicates whether type right should be processed through adjudication process.';
@@ -147,10 +148,16 @@ INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES
 ALTER TABLE public.natural_person ADD COLUMN id_number character varying(50);
 ALTER TABLE public.natural_person ADD COLUMN id_type integer;
 ALTER TABLE public.natural_person ADD COLUMN dob date;
+ALTER TABLE public.natural_person ADD COLUMN share character varying(100);
+ALTER TABLE public.natural_person ADD COLUMN acquisition_type integer;
 ALTER TABLE public.natural_person ADD CONSTRAINT fk_natural_person_id_type FOREIGN KEY (id_type) REFERENCES public.id_type (code) ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE public.natural_person ADD CONSTRAINT natural_person_fk_acquisition_type FOREIGN KEY (acquisition_type) REFERENCES public.acquisition_type (code) ON UPDATE NO ACTION ON DELETE NO ACTION;
+
 COMMENT ON COLUMN public.natural_person.id_number IS 'Identification document number.';
 COMMENT ON COLUMN public.natural_person.id_type IS 'Identification document type code.';
 COMMENT ON COLUMN public.natural_person.dob IS 'Date of birth.';
+COMMENT ON COLUMN public.natural_person.share IS 'Share size or share description in case of common ownership right';
+COMMENT ON COLUMN public.natural_person.acquisition_type IS 'Acquisition type code. Mostly used for disputing parties';
 
 ALTER TABLE public.spatialunit_personwithinterest ADD COLUMN dob date;
 ALTER TABLE public.spatialunit_personwithinterest ADD COLUMN gender_id integer;
@@ -187,7 +194,7 @@ UPDATE public.project_area SET region_code = '119IR';
 
 CREATE TABLE public.dispute_status
 (
-   code character varying(20) NOT NULL, 
+   code int NOT NULL, 
    name character varying(200) NOT NULL, 
    name_other_lang character varying(200), 
    active boolean NOT NULL DEFAULT 't', 
@@ -204,12 +211,12 @@ COMMENT ON COLUMN public.dispute_status.active IS 'Boolean flag indicating wheth
 COMMENT ON TABLE public.dispute_status
   IS 'Reference data table for Dispute types';
 
-INSERT INTO public.dispute_status (code, name, name_other_lang, active) VALUES ('active', 'Active', 'Kazi', 't');
-INSERT INTO public.dispute_status (code, name, name_other_lang, active) VALUES ('resolved', 'Resolved', 'Kutatuliwa', 't');
+INSERT INTO public.dispute_status (code, name, name_other_lang, active) VALUES (1, 'Active', 'Kazi', 't');
+INSERT INTO public.dispute_status (code, name, name_other_lang, active) VALUES (2, 'Resolved', 'Kutatuliwa', 't');
 
 CREATE TABLE public.dispute_type
 (
-   code character varying(20) NOT NULL, 
+   code int NOT NULL, 
    name character varying(200) NOT NULL, 
    name_other_lang character varying(200), 
    active boolean NOT NULL DEFAULT 't', 
@@ -226,34 +233,34 @@ COMMENT ON COLUMN public.dispute_type.active IS 'Boolean flag indicating whether
 COMMENT ON TABLE public.dispute_type
   IS 'Reference data table for Dispute types';
 
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES ('boundary', 'Boundary', 'Mpaka', 't');
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES ('interFamily', 'Inter-family', 'Baina ya familia', 't');
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES ('intraFamily', 'Intra-family', 'Ndani ya familia', 't');
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES ('other', 'Other interests', 'Maslahi mengine', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (1, 'Boundary', 'Mpaka', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (2, 'Inter-family', 'Baina ya familia', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (3, 'Intra-family', 'Ndani ya familia', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (4, 'Other interests', 'Maslahi mengine', 't');
 
 CREATE TABLE public.dispute
 (
    id bigint NOT NULL, 
-   dispute_type character varying(20) NOT NULL, 
-   acquisition_type character varying(20), 
+   usin bigint NOT NULL,
+   dispute_type int NOT NULL, 
    description character varying(500), 
    reg_date date,
    resolution_text text,
    resolution_date date,
-   status character varying(20) NOT NULL DEFAULT 'active', 
+   status int NOT NULL DEFAULT 1, 
    deleted boolean DEFAULT true,
    CONSTRAINT dispute_pk_id PRIMARY KEY (id), 
+   CONSTRAINT dispute_fk_spatial_unit FOREIGN KEY (usin) REFERENCES public.spatial_unit (usin) ON UPDATE NO ACTION ON DELETE CASCADE, 
    CONSTRAINT dispute_fk_dispute_type FOREIGN KEY (dispute_type) REFERENCES public.dispute_type (code) ON UPDATE NO ACTION ON DELETE NO ACTION, 
-   CONSTRAINT dispute_fk_status FOREIGN KEY (status) REFERENCES public.dispute_status (code) ON UPDATE NO ACTION ON DELETE NO ACTION, 
-   CONSTRAINT dispute_fk_acquisition_type FOREIGN KEY (acquisition_type) REFERENCES public.acquisition_type (code) ON UPDATE NO ACTION ON DELETE NO ACTION
+   CONSTRAINT dispute_fk_status FOREIGN KEY (status) REFERENCES public.dispute_status (code) ON UPDATE NO ACTION ON DELETE NO ACTION
 ) 
 WITH (
   OIDS = FALSE
 )
 ;
 COMMENT ON COLUMN public.dispute.id IS 'Primary key';
+COMMENT ON COLUMN public.dispute.usin IS 'Parcel ID';
 COMMENT ON COLUMN public.dispute.dispute_type IS 'Dispute type code';
-COMMENT ON COLUMN public.dispute.acquisition_type IS 'Acquisition type code';
 COMMENT ON COLUMN public.dispute.description IS 'Dispute description';
 COMMENT ON COLUMN public.dispute.reg_date IS 'Date when dispute was registered';
 COMMENT ON COLUMN public.dispute.resolution_text IS 'Dispute resolution text';
@@ -261,20 +268,27 @@ COMMENT ON COLUMN public.dispute.resolution_date IS 'Date when dispute was resol
 COMMENT ON COLUMN public.dispute.status IS 'Dispute status code';
 COMMENT ON COLUMN public.dispute.deleted IS 'Indication whether record is deleted or not';
 
+CREATE SEQUENCE public.dispute_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 6741
+  CACHE 1;
+ALTER TABLE public.dispute_id_seq
+  OWNER TO postgres;
+  
 CREATE TABLE public.dispute_person
 (
-   id bigint NOT NULL, 
    dispute_id bigint NOT NULL, 
    person_id bigint NOT NULL, 
-   CONSTRAINT dispute_person_pk_id PRIMARY KEY (id), 
+   CONSTRAINT dispute_person_pk_id PRIMARY KEY (dispute_id, person_id), 
    CONSTRAINT dispute_person_fk_dispute FOREIGN KEY (dispute_id) REFERENCES public.dispute (id) ON UPDATE NO ACTION ON DELETE CASCADE, 
-   CONSTRAINT dispute_person_fk_person FOREIGN KEY (person_id) REFERENCES public.person (person_gid) ON UPDATE NO ACTION ON DELETE CASCADE
+   CONSTRAINT dispute_person_fk_person FOREIGN KEY (person_id) REFERENCES public.natural_person (gid) ON UPDATE NO ACTION ON DELETE CASCADE
 ) 
 WITH (
   OIDS = FALSE
 )
 ;
-COMMENT ON COLUMN public.dispute_person.id IS 'Primary key';
 COMMENT ON COLUMN public.dispute_person.dispute_id IS 'Dispute id';
 COMMENT ON COLUMN public.dispute_person.person_id IS 'Person id';
 
@@ -315,160 +329,91 @@ COMMENT ON COLUMN public.source_document.document_type IS 'Document type code.';
 COMMENT ON COLUMN public.source_document.dispute_id IS 'Dispute id.';
 
 -- Master attributes
-
-INSERT INTO public.attribute_category(attributecategoryid, category_name) VALUES (8, 'Person of interest');
-
 UPDATE public.attribute_master SET alias = 'Length of occupancy', alias_second_language = 'Urefu wa kumiliki ardhi' WHERE id = 13;
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'Acquisition Type', 'Upatikanaji aina', 'acquisition_type', 5, 4, 'social_tenure_relationship', 20, true, 3, true, true);
+VALUES (300, 'Acquisition Type', 'Upatikanaji aina', 'acquisition_type', 5, 4, 'social_tenure_relationship', 20, true, 3, true, true);
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'ID number', 'Idadi ID', 'id_number', 1, 2, 'natural_person', 50, true, 4, true, true);
+VALUES (310, 'ID number', 'Idadi ID', 'id_number', 1, 2, 'natural_person', 50, true, 90, true, true);
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'ID type', 'Aina ID', 'id_type', 5, 2, 'natural_person', 20, true, 5, true, true);
+VALUES (320, 'ID type', 'Aina ID', 'id_type', 5, 2, 'natural_person', 20, true, 80, true, true);
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'Date of birth', 'Tarehe Ya Ku Zaliwa', 'dob', 2, 2, 'natural_person', 10, true, 6, true, true);
+VALUES (330, 'Date of birth', 'Tarehe Ya Ku Zaliwa', 'dob', 2, 2, 'natural_person', 10, true, 60, true, true);
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'Relationship type', 'Aina uhusiano', 'relationship_type', 5, 4, 'social_tenure_relationship', 100, false, 10, true, true);
+VALUES (340, 'Document type', 'Aina hati', 'document_type', 5, 3, 'source_document', 20, false, 20, true, true);
 
-INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
-VALUES ((select max(id)+1 from public.attribute_master), 'Document type', 'Aina hati', 'document_type', 5, 3, 'source_document', 20, false, 3, true, true);
+UPDATE public.attribute_master SET active = false WHERE id in (264,265,266,267,31,23,24);
+UPDATE public.attribute_master SET listing = 10 WHERE id = 16; 
+UPDATE public.attribute_master SET listing = 20 WHERE id = 9;
+UPDATE public.attribute_master SET listing = 30 WHERE id = 44;
+UPDATE public.attribute_master SET listing = 40 WHERE id = 45;
+UPDATE public.attribute_master SET listing = 50 WHERE id = 46;
+UPDATE public.attribute_master SET listing = 60 WHERE id = 47;
+UPDATE public.attribute_master SET listing = 70 WHERE id = 50;
+UPDATE public.attribute_master SET listing = 80 WHERE id = 51;
+UPDATE public.attribute_master SET listing = 25 WHERE id = 37;
+UPDATE public.attribute_master SET listing = 26 WHERE id = 39;
+UPDATE public.attribute_master SET listing = 27 WHERE id = 38;
+update public.attribute_master set listing = 10 where id = 1;
+update public.attribute_master set listing = 20 where id = 2;
+update public.attribute_master set listing = 30 where id = 3;
+update public.attribute_master set listing = 40 where id = 4;
+update public.attribute_master set listing = 50 where id = 42;
+update public.attribute_master set listing = 70 where id = 21;
+update public.attribute_master set listing = 100 where id = 22;
+update public.attribute_master set listing = 110 where id = 5;
+update public.attribute_master set listing = 120 where id = 19;
+update public.attribute_master set listing = 30 where id = 10;
+update public.attribute_master set listing = 10 where id = 11;
+update public.attribute_master set listing = 1, attributecategoryid=4 where id = 9;
 
-UPDATE public.attribute_master SET active = false WHERE id in (264,265,266,267);
-
-delete from public.attribute_options where attribute_id = 279
 -- Master attribute options
 -- acquisition
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Allocated by Village Council', (select max(id) from public.attribute_master where alias='Acquisition Type'), 'Zilizotengwa kwa Halmashauri ya Kijiji', 1);
+VALUES ((select max(id)+1 from public.attribute_options), 'Allocated by Village Council', 300, 'Zilizotengwa kwa Halmashauri ya Kijiji', 1);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Gift', (select max(id) from public.attribute_master where alias='Acquisition Type'), 'Kipawa', 2);
+VALUES ((select max(id)+1 from public.attribute_options), 'Gift', 300, 'Kipawa', 2);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Inheritance', (select max(id) from public.attribute_master where alias='Acquisition Type'), 'Urithi', 3);
+VALUES ((select max(id)+1 from public.attribute_options), 'Inheritance', 300, 'Urithi', 3);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Purchase', (select max(id) from public.attribute_master where alias='Acquisition Type'), 'Ununuzi', 4);
+VALUES ((select max(id)+1 from public.attribute_options), 'Purchase', 300, 'Ununuzi', 4);
 -- id type
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Voter ID', (select max(id) from public.attribute_master where alias='ID type' and fieldname='id_type'), 'ID wapiga kura', 1);
+VALUES ((select max(id)+1 from public.attribute_options), 'Voter ID', 320, 'ID wapiga kura', 1);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Driving license', (select max(id) from public.attribute_master where alias='ID type' and fieldname='id_type'), 'Leseni ya kuendesha gari', 2);
+VALUES ((select max(id)+1 from public.attribute_options), 'Driving license', 320, 'Leseni ya kuendesha gari', 2);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Passport', (select max(id) from public.attribute_master where alias='ID type' and fieldname='id_type'), 'Pasipoti', 3);
+VALUES ((select max(id)+1 from public.attribute_options), 'Passport', 320, 'Pasipoti', 3);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'ID card', (select max(id) from public.attribute_master where alias='ID type' and fieldname='id_type'), 'Namba ya kitambulisho', 4);
+VALUES ((select max(id)+1 from public.attribute_options), 'ID card', 320, 'Namba ya kitambulisho', 4);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Political affiliation card', (select max(id) from public.attribute_master where alias='ID type' and fieldname='id_type'), 'Political kadi uhusiano', 5);
--- relationship types
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Father', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Baba', 1);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Mother', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Mama', 2);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Sister', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Dada', 3);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Brother', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Kaka', 4);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Son', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Mwana', 5);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Daughter', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Binti', 6);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Grandmother', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Bibi', 7);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Grandfather', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Babu', 8);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Grandson', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Mjukuu', 9);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Granddaughter', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Mjukuu', 10);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Ankle', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Kifundo cha mgu', 11);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Aunt', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Shangazi', 12);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Niece', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Mpwa', 13);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Nephew', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Mpwa', 14);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Other relatives', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Ndugu wengine', 15);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Partners', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Washirika', 16);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Other', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Nyingine', 17);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Spouses', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Wanandoa', 18);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Parents and children', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Wazazi na watoto', 19);
-
-INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Siblings', (select max(id) from public.attribute_master where alias='Relationship type' 
-and reftable='social_tenure_relationship'), 'Ndugu', 20);
+VALUES ((select max(id)+1 from public.attribute_options), 'Political affiliation card', 320, 'Political kadi uhusiano', 5);
 
 -- document type
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Informal Receipt of Sale', (select max(id) from public.attribute_master where alias='Document type' 
-and reftable='source_document'), 'Yasiyo rasmi ya kupokea kuuza', 1);
+VALUES ((select max(id)+1 from public.attribute_options), 'Informal Receipt of Sale', 340, 'Yasiyo rasmi ya kupokea kuuza', 1);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Formal Receipt of Sale', (select max(id) from public.attribute_master where alias='Document type' 
-and reftable='source_document'), 'Rasmi ya kupokea kuuza', 2);
+VALUES ((select max(id)+1 from public.attribute_options), 'Formal Receipt of Sale', 340, 'Rasmi ya kupokea kuuza', 2);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Letter of Allocation', (select max(id) from public.attribute_master where alias='Document type' 
-and reftable='source_document'), 'Barua ya mgao', 3);
+VALUES ((select max(id)+1 from public.attribute_options), 'Letter of Allocation', 340, 'Barua ya mgao', 3);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Probate Document', (select max(id) from public.attribute_master where alias='Document type' 
-and reftable='source_document'), 'Hati probate', 4);
+VALUES ((select max(id)+1 from public.attribute_options), 'Probate Document', 340, 'Hati probate', 4);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Other', (select max(id) from public.attribute_master where alias='Document type' 
-and reftable='source_document'), 'Nyingine', 5);
+VALUES ((select max(id)+1 from public.attribute_options), 'Other', 340, 'Nyingine', 5);
 
 

@@ -19,7 +19,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.ContextThemeWrapper;
@@ -31,9 +30,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.activity.R.string;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 
@@ -66,23 +64,6 @@ public class LoginActivity extends ActionBarActivity {
         cf.loadLocale(getApplicationContext());
 
         setContentView(R.layout.activity_login);
-        /*	DBController db  = new DBController(context);
-		db.onCreate(db.getWritableDatabase());
-		boolean isdb = db.checkDataBase();
-		db.close();
-
-		if(isdb)
-		{
-			Toast.makeText(this, "DATABASE Created", Toast.LENGTH_SHORT).show();
-		}
-		else
-		{
-			Toast.makeText(this, "DATABASE Creation failed", Toast.LENGTH_SHORT).show();
-		}	*/
-        //Setting toolbar
-		/*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		if(toolbar!=null)
-			setSupportActionBar(toolbar);*/
 
         // Set up the login form.
         mUsernameView = (EditText) findViewById(R.id.username);
@@ -155,7 +136,11 @@ public class LoginActivity extends ActionBarActivity {
                 cf.showMessage(context, "Warning", "Please enter server address");
                 return;
             }
-            if (!TextUtils.isEmpty(userName) && !TextUtils.isEmpty(password)) {
+
+            userName = mUsernameView.getText().toString();
+            password = mPasswordView.getText().toString();
+
+            if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(password)) {
                 cf.showMessage(context, "Warning", "Please Enter Your Username and Password");
             }
 
@@ -163,8 +148,6 @@ public class LoginActivity extends ActionBarActivity {
                 cf.saveServerAddress(txtServerAddress.getText().toString());
             }
 
-            userName = mUsernameView.getText().toString();
-            password = mPasswordView.getText().toString();
             user = new User();
             user.setUserName(userName);
             user.setPassword(password);
@@ -174,9 +157,8 @@ public class LoginActivity extends ActionBarActivity {
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////
     private void getLoggedUserFromDB() {
-        DBController sqllite = new DBController(context);
+        DbController sqllite = DbController.getInstance(context);
         user = sqllite.getLoggedUser();
         //########## Setting logged USER
         if (user != null) {
@@ -190,7 +172,6 @@ public class LoginActivity extends ActionBarActivity {
             mUsernameView.setText("");
             mPasswordView.setText("");
         }
-        sqllite.close();
     }
 
     private void validateUserOnline(User newUser) {
@@ -289,7 +270,7 @@ public class LoginActivity extends ActionBarActivity {
                         valueList.add(values);
                         String tableName = "USER";
                         loginAction(true, "Success");
-                        new DBController(getApplicationContext()).InsertValues(valueList, tableName);
+                        DbController.getInstance(getApplicationContext()).insertValues(valueList, tableName);
                     }
                 } else {
                     error_msg = getResources().getString(string.login_error);
@@ -303,8 +284,6 @@ public class LoginActivity extends ActionBarActivity {
                 loginAction(false, error_msg);
                 e.printStackTrace();
             }
-
-
         }
     }
 
@@ -320,6 +299,4 @@ public class LoginActivity extends ActionBarActivity {
             cf.showMessage(context, "Login Failed", msg);
         }
     }
-
-
 }

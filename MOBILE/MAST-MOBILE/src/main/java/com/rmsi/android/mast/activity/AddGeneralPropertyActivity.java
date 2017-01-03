@@ -1,6 +1,5 @@
 package com.rmsi.android.mast.activity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -8,37 +7,31 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.adapter.AttributeAdapter;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
-import com.rmsi.android.mast.domain.Option;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GuiUtility;
 
 public class AddGeneralPropertyActivity extends ActionBarActivity {
 
-	Long featureId = 0L;
-	List<Attribute> attribList;
-	ListView listView;
-	final Context context = this;
-	AttributeAdapter adapterList;
-	Button btnSave,btnBack;
-	CommonFunctions cf = CommonFunctions.getInstance();
-	int groupId = 0;
-	int roleId=0;
-	static String serverFeatureId=null;
+	private Long featureId = 0L;
+	private boolean isDispute = false;
+	private List<Attribute> attributes;
+	private ListView listView;
+	private final Context context = this;
+	private AttributeAdapter adapterList;
+	private Button btnSave,btnBack;
+	private CommonFunctions cf = CommonFunctions.getInstance();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
@@ -50,8 +43,7 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 		cf.loadLocale(getApplicationContext());
 		
 		setContentView(R.layout.activity_add_property_info);		
-		
-		roleId=CommonFunctions.getRoleID(); 
+
 		btnSave=(Button) findViewById(R.id.btn_save);
 		btnBack=(Button) findViewById(R.id.btn_cancel);
 
@@ -63,38 +55,38 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 		toolbar.setTitle(R.string.AddNewProperty);
 		if(toolbar!=null)
 			setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);	
-		DBController db = new DBController(context);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+		DbController db = DbController.getInstance(context);
+
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) 
 		{
 			featureId = extras.getLong("featureid");
-			serverFeatureId=extras.getString("Server_featureid");
+			isDispute = extras.getBoolean("isDispute");
 
-			String keyword="Property";
-			attribList = db.getFeatureGenaralInfo(featureId,keyword,cf.getLocale());
-			if(attribList.size()>0)
+			attributes = db.getPropAttributesByType(featureId, Attribute.TYPE_GENERAL_PROPERTY);
+			if(attributes.size()<1)
 			{
-				groupId = attribList.get(0).getGroupId();
+				// Try to get list of attributes of general type
+				attributes = db.getAttributesByType(Attribute.TYPE_GENERAL_PROPERTY);
 			}
-			db.close();
 		}
-
-		db.close();
 
 		try {
-			adapterList = new AttributeAdapter(context, attribList);
+			adapterList = new AttributeAdapter(context, attributes);
 		} 
 		catch (Exception e) {
-
 			e.printStackTrace();
 		}
+
 		listView.setAdapter(adapterList);
 
-		if(roleId==2)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
+		if(CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR)
 		{
 			btnSave.setEnabled(false);			
 		}
+
 		btnSave.setOnClickListener(new OnClickListener() 
 		{
 			@Override
@@ -103,13 +95,10 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 				saveData();
 			}			
 		});
-
-
-		btnBack.setOnClickListener(new OnClickListener() 
+		btnBack.setOnClickListener(new OnClickListener()
 		{			
 			@Override
 			public void onClick(View v) {
-
 				finish();
 			}
 		});
@@ -120,39 +109,36 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 		if(validate())
 		{
 			try {
-				if(groupId==0)
-				{
-					groupId = cf.getGroupId();
-				}
-				DBController sqllite = new DBController(context);
-				String keyword="Property";
-				boolean saveResult = sqllite.saveFormDataTemp(attribList,groupId,featureId,keyword);
-				sqllite.close();
+				boolean saveResult = DbController.getInstance(context).savePropAttributes(attributes, featureId);
+
 				if(saveResult){
-					Toast toast = Toast.makeText(context,R.string.data_saved, Toast.LENGTH_SHORT);
-					toast.setGravity(Gravity.CENTER, 0, 0);
-					toast.show();
-					finish();
-					Intent myIntent = new Intent(context, AddSocialTenureActivity.class);
-					myIntent.putExtra("featureid", featureId);
-					myIntent.putExtra("serverFeaterID",serverFeatureId);
-					startActivity(myIntent);
-				}else{							
-					Toast.makeText(context,R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
+					cf.showToast(context, R.string.data_saved, Toast.LENGTH_SHORT);
+
+					if(isDispute){
+						Intent myIntent = new Intent(context, AddDisputeActivity.class);
+						myIntent.putExtra("featureid", featureId);
+						startActivity(myIntent);
+					} else {
+						Intent myIntent = new Intent(context, AddSocialTenureActivity.class);
+						myIntent.putExtra("featureid", featureId);
+						startActivity(myIntent);
+					}
+				}else{
+					cf.showToast(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT);
 				}
 			} catch (Exception e) {
 				cf.appLog("", e);e.printStackTrace();
-				Toast.makeText(context,R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
+				cf.showToast(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT);
 			}
 		}
-		else{	    	 				
-			Toast.makeText(context,R.string.fill_mandatory, Toast.LENGTH_SHORT).show();
+		else{
+			cf.showToast(context, R.string.fill_mandatory, Toast.LENGTH_SHORT);
 		}
 	}
 
 	public boolean validate()
 	{
-		return GuiUtility.validateAttributes(attribList);
+		return GuiUtility.validateAttributes(attributes, true);
 	}
 
 	@Override

@@ -35,9 +35,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.rmsi.android.mast.activity.CaptureDataMapActivity;
 import com.rmsi.android.mast.activity.R;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.User;
 
@@ -53,6 +52,7 @@ public class CommonFunctions {
     String syncLogFileName = Environment.getExternalStorageDirectory() + "/MAST/MASTSync_LOG.txt";
     List<LatLng> points;
     int MAP_MODE = 0;
+
     private final String KEY_SERVER_ADDRESS = "server_address";
     private final String KEY_SNAP_TO_VERTEX = "snap_to_vertex";
     private final String KEY_ENABLE_LABELING = "enable_labeling";
@@ -63,12 +63,6 @@ public class CommonFunctions {
 
     //public static String SERVER_IP = "54.93.173.87";
 
-
-    public static String GEOM_POINT = "Point";
-    public static String GEOM_LINE = "Line";
-    public static String GEOM_POLYGON = "Polygon";
-    public static int ROLE_TRUSTED_INTERMEDIARY = 1;
-    public static int ROLE_ADJUDICATOR = 2;
     private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
 
 
@@ -254,8 +248,8 @@ public class CommonFunctions {
         editor.commit();
     }
 
-    public int getGroupId() {
-        return new DBController(mContext).getNewGroupId();
+    public Long getGroupId() {
+        return DbController.getInstance(mContext).getNewGroupId();
     }
 
     public void updatePolygonCount() {
@@ -438,11 +432,15 @@ public class CommonFunctions {
         alertDialogBuilder.show();
     }
 
-    public void showToast(Context context, String message, int length, int position) {
-        Toast toast = Toast.makeText(context, message, length);
+    public void showToast(Context context, String message, int duration, int position) {
+        Toast toast = Toast.makeText(context, message, duration);
         if (position != 0)
             toast.setGravity(position, 0, 0);
         toast.show();
+    }
+
+    public void showToast(Context context, int resourceId, int duration) {
+        showToast(context, context.getResources().getString(resourceId), duration, Gravity.CENTER);
     }
 
     public String getIMEI() {
@@ -548,18 +546,17 @@ public class CommonFunctions {
 
     public static int getRoleID() {
         if (roleId < 0) {
-            DBController sqllite = new DBController(mContext);
+            DbController sqllite = DbController.getInstance(mContext);
             User user = sqllite.getLoggedUser();
 
             if (user != null) {
                 roleStr = user.getRoleName();
                 sqllite.close();
                 if (roleStr.equals("ROLE_TRUSTED_INTERMEDIARY")) {
-                    roleId = CommonFunctions.ROLE_TRUSTED_INTERMEDIARY;
+                    roleId = User.ROLE_TRUSTED_INTERMEDIARY;
                 } else if (roleStr.equals("ROLE_ADJUDICATOR")) {
-                    roleId = CommonFunctions.ROLE_ADJUDICATOR;
+                    roleId = User.ROLE_ADJUDICATOR;
                 }
-
             }
         }
         return roleId;
@@ -607,7 +604,6 @@ public class CommonFunctions {
             appLog("", e);
             return null;
         }
-
     }
 
     public void saveGPSmode(int mAP_MODE, List<LatLng> gpspoints) {
@@ -647,32 +643,4 @@ public class CommonFunctions {
         }
         return sb.toString();
     }
-
-    public static String getResidentValue(long featureId) {
-        DBController sqllite = new DBController(mContext);
-        String residentValue = sqllite.getResidentValue(featureId);
-        return residentValue;
-
-    }
-
-    public static boolean personExist(long featureId) {
-        DBController sqllite = new DBController(mContext);
-        List<Attribute> tmpList2 = sqllite.getPersonList(featureId);
-        if (tmpList2.size() > 0)
-            return true;
-        else
-            return false;
-
-    }
-
-    public static boolean isNonNatural(long featureId) {
-        DBController sqllite = new DBController(mContext);
-        boolean isnonNatural = sqllite.IsNonNaturalPerson(featureId);
-        if (isnonNatural)
-            return true;
-        else
-            return false;
-
-    }
-
 }

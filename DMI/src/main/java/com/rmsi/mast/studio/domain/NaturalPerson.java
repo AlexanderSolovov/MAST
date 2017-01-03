@@ -89,6 +89,16 @@ public class NaturalPerson extends Person implements Serializable {
     @Column(name = "dob")
     private Date dob;
 
+    @Column(name = "share")
+    private String share;
+    
+    @ManyToOne
+    @JoinColumn(name = "acquisition_type")
+    private AcquisitionType acquisitionType;
+    
+    @Column(name = "dispute_id")
+    private Long disputeId;
+    
     public IdType getIdType() {
         return idType;
     }
@@ -111,6 +121,22 @@ public class NaturalPerson extends Person implements Serializable {
 
     public void setDob(Date dob) {
         this.dob = dob;
+    }
+
+    public String getShare() {
+        return share;
+    }
+
+    public void setShare(String share) {
+        this.share = share;
+    }
+
+    public AcquisitionType getAcquisitionType() {
+        return acquisitionType;
+    }
+
+    public void setAcquisitionType(AcquisitionType acquisitionType) {
+        this.acquisitionType = acquisitionType;
     }
 
     public Citizenship getCitizenship_id() {
@@ -157,11 +183,6 @@ public class NaturalPerson extends Person implements Serializable {
         this.alias = alias;
     }
 
-    /*
-	 * public int getGid() { return gid; }
-	 * 
-	 * public void setGid(int gid) { this.gid = gid; }
-     */
     public Gender getGender() {
         return gender;
     }
@@ -304,6 +325,14 @@ public class NaturalPerson extends Person implements Serializable {
 
     public void setPersonSubType(PersonType personSubType) {
         this.personSubType = personSubType;
+    }
+
+    public Long getDisputeId() {
+        return disputeId;
+    }
+
+    public void setDisputeId(Long disputeId) {
+        this.disputeId = disputeId;
     }
 
 }

@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
                 android:padding="5dp"
-                android:text="@string/spatialunit_lbl"
+                android:text="@string/Claim"
                 android:textColor="@color/black"
                 android:textSize="18dp" />
 
@@ -48,21 +48,64 @@
                 android:background="#CCCCCC" />
 
             <TextView
-                android:id="@+id/spatialunit_personType"
+                android:id="@+id/lblClaimType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:padding="5dp"
-                android:text="@string/spatialunit_personType_lbl"
+                android:text="@string/claimType"
                 android:textColor="@color/color_primary_dark"
                 android:textSize="@dimen/textSize" />
 
             <Spinner
-                android:id="@+id/spinner_person_type"
+                android:id="@+id/spinnerClaimType"
                 style="@style/Widget.AppCompat.Spinner"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
+            <TextView
+                android:id="@+id/lblPolygonNumber"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:entries="@array/personTypeArray" />
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/polygonNumber"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
+
+            <EditText
+                android:id="@+id/txtPolygonNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:padding="5dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
+            <TextView
+                android:id="@+id/lblClaimDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/surveyDate"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
+
+            <TextView
+                android:id="@+id/txtClaimDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textColor="@color/black"
+                android:textSize="@dimen/textSize" />
 
             <View
                 android:layout_width="match_parent"
@@ -132,53 +175,6 @@
                 android:layout_height="1dp"
                 android:background="#CCCCCC" />
 
-            <TextView
-                android:id="@+id/lblPolygonNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:text="@string/polygonNumber"
-                android:textColor="@color/color_primary_dark"
-                android:textSize="@dimen/textSize" />
-
-            <EditText
-                android:id="@+id/txtPolygonNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:inputType="textPersonName"
-                android:padding="5dp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#CCCCCC" />
-
-            <TextView
-                android:id="@+id/lblClaimDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:text="@string/surveyDate"
-                android:textColor="@color/color_primary_dark"
-                android:textSize="@dimen/textSize" />
-
-            <TextView
-                android:id="@+id/txtClaimDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:textColor="@color/black"
-                android:textSize="@dimen/textSize" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#CCCCCC" />
-
         </LinearLayout>
     </ScrollView>
 
@@ -197,6 +193,7 @@
             style="@android:style/Widget.ActionButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
+            android:id="@+id/layoutGeneral"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:clickable="false"
@@ -220,6 +217,7 @@
             style="@android:style/Widget.ActionButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
+            android:id="@+id/layoutRight"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:clickable="false"
@@ -235,25 +233,37 @@
                 android:contentDescription="@string/attribButtons"
                 android:gravity="center"
                 android:padding="10dp"
-                android:src="@drawable/add_tenure" />
-            <!--
-                        <TextView
-                            android:id="@+id/tenureCount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignEnd="@id/btn_tenureInfo"
-                            android:layout_alignRight="@id/btn_tenureInfo"
-                            android:layout_alignTop="@id/btn_tenureInfo"
-                            android:background="@drawable/count_style"
-                            android:text="@string/attribCount"
-                            android:textColor="@color/color_accent"
-                            android:textStyle="bold" /> -->
+                android:src="@drawable/certificate" />
         </RelativeLayout>
 
         <RelativeLayout
             style="@android:style/Widget.ActionButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
+            android:id="@+id/layoutDispute"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/btnDisputeInfo"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:contentDescription="@string/attribButtons"
+                android:gravity="center"
+                android:padding="10dp"
+                android:src="@drawable/dispute" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            style="@android:style/Widget.ActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:id="@+id/layoutPersons"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:clickable="false"
@@ -288,6 +298,7 @@
             style="@android:style/Widget.ActionButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
+            android:id="@+id/layoutMedia"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:clickable="false"
@@ -320,6 +331,7 @@
 
         <RelativeLayout
             style="@android:style/Widget.ActionButton"
+            android:id="@+id/layoutCustom"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_gravity="center"
@@ -339,18 +351,6 @@
                 android:padding="10dp"
                 android:src="@drawable/custom_attribute" />
 
-            <!--
-                 <TextView
-                android:id="@+id/customCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@id/btn_addcustom"
-                android:layout_alignRight="@id/btn_addcustom"
-                android:layout_alignTop="@id/btn_addcustom"
-                android:background="@drawable/count_style"
-                android:text="@string/attribCount"
-                android:textColor="@color/color_accent"
-                android:textStyle="bold" /> -->
         </RelativeLayout>
     </LinearLayout>
 

@@ -10,12 +10,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.Fragment.CompletedSurveyFragment;
 import com.rmsi.android.mast.Fragment.DraftSurveyFragment;
 import com.rmsi.android.mast.Fragment.RejectedSurveyFragment;
 import com.rmsi.android.mast.Fragment.SyncedSurveyFragment;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.tabs.SlidingTabLayout;
 import com.rmsi.android.mast.util.CommonFunctions;
 
@@ -86,7 +85,7 @@ public class ReviewDataActivity extends ActionBarActivity
 		 @Override
 		 public CharSequence getPageTitle(int position) {
 			 int count = 0;
-			 DBController db = new DBController(context);
+			 DbController db = DbController.getInstance(context);
 			 
 			 if(position==0)
 			 {				

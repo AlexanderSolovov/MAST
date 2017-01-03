@@ -29,21 +29,18 @@ import android.widget.Toast;
 
 import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.activity.LandingPageActivity;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 
-/**
- * @author Prashant.Nigam
- */
 public class DownloadService extends IntentService {
 
     public static final int STATUS_RUNNING = 0;
     public static final int STATUS_FINISHED = 1;
     public static final int STATUS_ERROR = 2;
     private int notificationID = 100;
-    //private int numMessages = 0;
     private NotificationManager mNotificationManager;
     private static final String TAG = "DownloadService";
     CommonFunctions cf = CommonFunctions.getInstance();
@@ -51,8 +48,7 @@ public class DownloadService extends IntentService {
     int roleId = 0;
     static String STATUS_COMPLETE = "complete";
     static String STATUS_FINAL = "final";
-    List<Attribute> attribList;
-    static int timeout = 10000; // 10 seconds 
+    static int timeout = 10000; // 10 seconds
 
     public DownloadService() {
         super(DownloadService.class.getName());
@@ -85,11 +81,9 @@ public class DownloadService extends IntentService {
             displayNotification("MAST", downloading, connectingToWevServer);
 
             try {
-                DBController database = null;
-                database = new DBController(getApplicationContext());
-                attribList = database.getGeneralAttribute(cf.getLocale());
+                DbController db = DbController.getInstance(getApplicationContext());
 
-                if (roleId == 1)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
+                if (roleId == User.ROLE_TRUSTED_INTERMEDIARY)
                 {
                     if (!dataToDownload.equalsIgnoreCase("final"))
                         result = downloadProjectData(userid);
@@ -99,9 +93,9 @@ public class DownloadService extends IntentService {
                     } else {
                         notificationMsg.append(failureMsgDisplay[0]);
                     }
-                } else if (roleId == 2) {
+                } else if (roleId == User.ROLE_ADJUDICATOR) {
 
-                    if (attribList.size() > 0) {
+                    if (db.getClaimTypes(false).size() > 0) {
                         if (dataToDownload.equalsIgnoreCase("final"))
                             result = downloadFinalData(userid);
                         else
@@ -154,7 +148,7 @@ public class DownloadService extends IntentService {
      */
     private boolean downloadProjectData(String userid) throws IOException {
         String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/user/download/configuration/" + userid;
-        DBController database = new DBController(getApplicationContext());
+        DbController database = DbController.getInstance(getApplicationContext());
         boolean result = false;
         InputStream is = null;
 
@@ -201,8 +195,8 @@ public class DownloadService extends IntentService {
         int count;
         try {
             String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/user/download/mbTiles/";
-            DBController database = null;
-            database = new DBController(getApplicationContext());
+            DbController database = null;
+            database = DbController.getInstance(getApplicationContext());
             List<ProjectSpatialDataDto> projectSpatialData = database.getProjectSpatialData();
             database.close();
             if (projectSpatialData.size() > 0) {
@@ -248,7 +242,7 @@ public class DownloadService extends IntentService {
      */
     private boolean downloadFinalData(String userid) throws IOException {
         String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/download/FinalDataSet/" + userid;
-        DBController database = new DBController(getApplicationContext());
+        DbController database = DbController.getInstance(getApplicationContext());
         boolean result = false;
 
         InputStream is = null;
@@ -383,7 +377,7 @@ public class DownloadService extends IntentService {
     private boolean downloadProjectDataForAdjudicator(String userid) throws IOException {
         String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/project/attributeValues/" + userid;
         boolean result = false;
-        DBController database = new DBController(getApplicationContext());
+        DbController database = DbController.getInstance(getApplicationContext());
 
         InputStream is = null;
 

@@ -11,9 +11,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
+import android.location.Criteria;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -65,8 +64,8 @@ import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -77,9 +76,8 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
-import com.google.maps.android.ui.IconGenerator;
 import com.rmsi.android.mast.adapter.AddFeaturesOptionsAdapter;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Bookmark;
 import com.rmsi.android.mast.domain.Feature;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
@@ -95,7 +93,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
 
-public class CaptureDataMapActivity extends ActionBarActivity {
+public class CaptureDataMapActivity extends ActionBarActivity implements OnMapReadyCallback {
     Context context = this;
     private GoogleMap googleMap;
     private List<Marker> currMarkers = new ArrayList<Marker>();
@@ -183,14 +181,21 @@ public class CaptureDataMapActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        String provider = locationManager.getBestProvider(criteria, true);
+
         locationListener = new MyLocationListener();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 10, locationListener);
+        if (provider != null) {
+            locationManager.requestLocationUpdates(provider, 30000, 10, locationListener);
+        }
+
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!isGPSEnabled) {
             cf.showGPSSettingsAlert(context);
         }
 
-        offlineSpatialData = new DBController(context).getProjectSpatialData();
+        offlineSpatialData = DbController.getInstance(context).getProjectSpatialData();
         mLayerTitles.add("Satellite Map");
         mLayerTitles.add("Captured features");
         //mLayerTitles.add("Offline data");
@@ -208,7 +213,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
         int width = displaymetrics.widthPixels;
         int newWidth = (width / 3) * 2;
 
-        // Set the adapter for the list view
+        // Set the dpAdapter for the list view
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
                 R.layout.item_list_multiple_choice, mLayerTitles));
         // Set the list's click listener
@@ -358,57 +363,50 @@ public class CaptureDataMapActivity extends ActionBarActivity {
 
         try {
             // Loading map
-            initializeMap();
+            ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
         }
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
-    /**
-     * function to load map If map is not created it will create it for you
-     */
-    private void initializeMap() {
+    @Override
+    public void onMapReady(GoogleMap map) {
+        googleMap = map;
+        // check if map is created successfully or not
         if (googleMap == null) {
-            googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+            Toast.makeText(getApplicationContext(), "Sorry! unable to create maps", Toast.LENGTH_SHORT).show();
+        } else {
+            googleMap.setOnMapLoadedCallback(new mapLoadedCallBackListener());
+            googleMap.setOnMarkerDragListener(new markerDragListener());
+            googleMap.setOnCameraIdleListener(new mapCameraChangeListener());
+            googleMap.setOnMapClickListener(new mapClickListener());
+            googleMap.setOnMarkerClickListener(new markerClickListener());
+            googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            //googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            //googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+            //googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+            //googleMap.setMapType(GoogleMap.MAP_TYPE_NONE);
 
-            // check if map is created successfully or not
-            if (googleMap == null) {
-                Toast.makeText(getApplicationContext(), "Sorry! unable to create maps", Toast.LENGTH_SHORT).show();
-            } else {
-                googleMap.setOnMapLoadedCallback(new mapLoadedCallBackListener());
-                googleMap.setOnMarkerDragListener(new markerDragListener());
-                googleMap.setOnCameraChangeListener(new mapCameraChangeListener());
-                googleMap.setOnMapClickListener(new mapClickListener());
-                googleMap.setOnMarkerClickListener(new markerClickListener());
-                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_NONE);
+            // Showing / hiding your current location
+            //googleMap.setMyLocationEnabled(true);
 
-                // Showing / hiding your current location
-                //googleMap.setMyLocationEnabled(true);
+            // Enable / Disable zooming controls
+            googleMap.getUiSettings().setZoomControlsEnabled(false);
+            // Enable / Disable my location button
+            googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+            // Enable / Disable Compass icon
+            googleMap.getUiSettings().setCompassEnabled(false);
+            // Enable / Disable Rotate gesture
+            googleMap.getUiSettings().setRotateGesturesEnabled(false);
+            // Enable / Disable zooming functionality
+            googleMap.getUiSettings().setZoomGesturesEnabled(true);
 
-                // Enable / Disable zooming controls
-                googleMap.getUiSettings().setZoomControlsEnabled(false);
-                // Enable / Disable my location button
-                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                // Enable / Disable Compass icon
-                googleMap.getUiSettings().setCompassEnabled(false);
-                // Enable / Disable Rotate gesture
-                googleMap.getUiSettings().setRotateGesturesEnabled(false);
-                // Enable / Disable zooming functionality
-                googleMap.getUiSettings().setZoomGesturesEnabled(true);
+            loadUserSelectedLayers();
 
-                loadUserSelectedLayers();
-
-                if (cf.getMAP_MODE() > 0)
-                    googlemapReinitialized = true;
-            }
+            if (cf.getMAP_MODE() > 0)
+                googlemapReinitialized = true;
         }
     }
 
@@ -668,9 +666,9 @@ public class CaptureDataMapActivity extends ActionBarActivity {
         }
     }
 
-    private class mapCameraChangeListener implements GoogleMap.OnCameraChangeListener {
+    private class mapCameraChangeListener implements GoogleMap.OnCameraIdleListener {
         @Override
-        public void onCameraChange(CameraPosition cameraPosition) {
+        public void onCameraIdle() {
             if (MAP_MODE == FEATURE_DRAW_MAP_MODE || MAP_MODE == FEATURE_EDIT_MODE ||
                     MAP_MODE == FEATURE_DRAW_LINE_GPS_MODE || MAP_MODE == FEATURE_DRAW_POLYGON_GPS_MODE) {
                 loadPointsForSnapping();
@@ -1035,31 +1033,31 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                 Polyline tmp = (Polyline) drawnFeature;
 
                 pointslist = tmp.getPoints();
-                geomtype = CommonFunctions.GEOM_LINE;
+                geomtype = Feature.GEOM_LINE;
             } else if (drawnFeature instanceof Marker) {
                 Marker tmp = (Marker) drawnFeature;
                 pointslist.add(tmp.getPosition());
-                geomtype = CommonFunctions.GEOM_POINT;
+                geomtype = Feature.GEOM_POINT;
             } else if (drawnFeature instanceof Polygon) {
                 Polygon tmp = (Polygon) drawnFeature;
                 pointslist = tmp.getPoints();
-                geomtype = CommonFunctions.GEOM_POLYGON;
+                geomtype = Feature.GEOM_POLYGON;
             }
 
             if (pointslist.size() > 0) {
                 String WKTStr = GisUtility.getWKTfromPoints(geomtype, pointslist);
                 String imei = cf.getIMEI();
-                DBController db = new DBController(context);
-                Long featureId = db.saveNewFeature(geomtype, WKTStr, imei);
+                DbController db = DbController.getInstance(context);
+                Long featureId = db.createFeature(geomtype, WKTStr, imei);
                 db.close();
                 if (featureId != 0) {
                     Toast.makeText(context, R.string.successFeatureSave, Toast.LENGTH_SHORT).show();
 
-                    if (geomtype.equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                    if (geomtype.equalsIgnoreCase(Feature.GEOM_LINE)) {
                         cf.updateLineCount();
-                    } else if (geomtype.equalsIgnoreCase(CommonFunctions.GEOM_POINT)) {
+                    } else if (geomtype.equalsIgnoreCase(Feature.GEOM_POINT)) {
                         cf.updatePointCount();
-                    } else if (geomtype.equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                    } else if (geomtype.equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                         cf.updatePolygonCount();
                     }
                     //refresh features from db
@@ -1088,20 +1086,20 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                 Polyline tmp = (Polyline) drawnFeature;
 
                 pointslist = tmp.getPoints();
-                geomtype = CommonFunctions.GEOM_LINE;
+                geomtype = Feature.GEOM_LINE;
             } else if (drawnFeature instanceof Marker) {
                 Marker tmp = (Marker) drawnFeature;
                 pointslist.add(tmp.getPosition());
-                geomtype = CommonFunctions.GEOM_POINT;
+                geomtype = Feature.GEOM_POINT;
             } else if (drawnFeature instanceof Polygon) {
                 Polygon tmp = (Polygon) drawnFeature;
                 pointslist = tmp.getPoints();
-                geomtype = CommonFunctions.GEOM_POLYGON;
+                geomtype = Feature.GEOM_POLYGON;
             }
 
             if (pointslist.size() > 0) {
                 String WKTStr = GisUtility.getWKTfromPoints(geomtype, pointslist);
-                DBController db = new DBController(context);
+                DbController db = DbController.getInstance(context);
                 boolean result = db.updateFeature(WKTStr, featureId);
                 db.close();
 
@@ -1118,7 +1116,6 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                 Toast.makeText(context, R.string.unableUpdatefeatureMsg, Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            //Toast.makeText(context,R.string.unableUpdatefeatureMsg, Toast.LENGTH_SHORT).show();
             cf.appLog("", e);
             e.printStackTrace();
         }
@@ -1227,7 +1224,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                 String[] tmpPoint1 = wktpoints[i].replaceAll(", ", ",").split(" ");
                 String[] tmpPoint2 = wktpoints[i + 1].replaceAll(", ", ",").split(" ");
                 allSnappingObjects.add(new SnappingObject(
-                        feature.getFeatureid(),
+                        feature.getId(),
                         new LatLng(Double.parseDouble(tmpPoint1[1]), Double.parseDouble(tmpPoint1[0])),
                         new LatLng(Double.parseDouble(tmpPoint2[1]), Double.parseDouble(tmpPoint2[0]))
                 ));
@@ -1237,7 +1234,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
 
     private void loadFeaturesFromDB() {
         try {
-            DBController dbObj = new DBController(context);
+            DbController dbObj = DbController.getInstance(context);
             List<Feature> features = dbObj.fetchFeatures();
             dbObj.close();
 
@@ -1251,7 +1248,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
             }
 
             for (Feature feature : features) {
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] wktpoints = coordinates.split(",");
@@ -1286,7 +1283,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
 
                     rectOptions.zIndex(4);
                     googleMap.addPolygon(rectOptions);
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] wktpoints = coordinates.replaceAll(", ", ",").split(",");
@@ -1311,7 +1308,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     }
                     rectOptions.zIndex(4);
                     googleMap.addPolyline(rectOptions);
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POINT)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] tmpPoint = coordinates.split(" ");
@@ -1319,7 +1316,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
 
                     // Add snepping point
-                    allSnappingObjects.add(new SnappingObject(feature.getFeatureid(), mapPoint, null));
+                    allSnappingObjects.add(new SnappingObject(feature.getId(), mapPoint, null));
 
                     CircleOptions circleOptions = new CircleOptions().center(mapPoint);
                     circleOptions.radius(3); // In meters
@@ -1404,7 +1401,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
             Toast toast = Toast.makeText(context, R.string.featureEditTipMsg, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
-            DBController db = new DBController(context);
+            DbController db = DbController.getInstance(context);
             Feature feature = db.fetchFeaturebyID(featureId);
 
             if (feature != null) {
@@ -1416,7 +1413,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                 if (!contextualMenuShown)
                     toolbar.startActionMode(myActionModeCallback);
 
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] wktpoints = coordinates.split(",");
@@ -1447,7 +1444,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     if (mapPoint != null) {
                         GisUtility.zoomToPolygon(googleMap, rectOptions);
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] wktpoints = coordinates.split(",");
@@ -1473,7 +1470,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     if (mapPoint != null) {
                         GisUtility.zoomToPolyline(googleMap, rectOptions);
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POINT)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
                     String coordinates = feature.getCoordinates();
                     //googleMap.clear();
                     String[] tmpPoint = coordinates.split(" ");
@@ -1625,14 +1622,14 @@ public class CaptureDataMapActivity extends ActionBarActivity {
     private void processFeaturesInfo(LatLng pointFromMap) {
         try {
             boolean result = false;
-            Long featureid = 0L;
+            long featureid = 0L;
             String featurestatus = "";
-            DBController dbObj = new DBController(context);
+            DbController dbObj = DbController.getInstance(context);
             List<Feature> features = dbObj.fetchFeatures();
             dbObj.close();
 
             for (Feature feature : features) {
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
                     Geometry geom = new WKTReader().read("POLYGON ((" + feature.getCoordinates() + "))");
 
@@ -1641,10 +1638,10 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     result = GisUtility.IsPointInPolygon(ptClicked, poly);
 
                     if (result) {
-                        featureid = feature.getFeatureid();
+                        featureid = feature.getId();
                         featurestatus = feature.getStatus();
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
                     Geometry geom = new WKTReader().read("LINESTRING (" + feature.getCoordinates() + ")");
@@ -1654,10 +1651,10 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     result = GisUtility.IsPointIntersectsLine(ptClicked, line);
 
                     if (result) {
-                        featureid = feature.getFeatureid();
+                        featureid = feature.getId();
                         featurestatus = feature.getStatus();
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POINT)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
                     Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
                     Geometry geom = new WKTReader().read("POINT (" + feature.getCoordinates() + ")");
@@ -1667,7 +1664,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     result = GisUtility.IsPointIntersectsPoint(ptClicked, point);
 
                     if (result) {
-                        featureid = feature.getFeatureid();
+                        featureid = feature.getId();
                         featurestatus = feature.getStatus();
                     }
                 }
@@ -1717,7 +1714,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        DBController db = new DBController(context);
+                        DbController db = DbController.getInstance(context);
                         boolean result = db.deleteFeature(featureId);
                         db.close();
                         if (result) {
@@ -1793,18 +1790,18 @@ public class CaptureDataMapActivity extends ActionBarActivity {
             String geomtype = "";
 
             if (MAP_MODE == MEASURE_FEATURE_AREA_MODE) {
-                geomtype = CommonFunctions.GEOM_POLYGON;
+                geomtype = Feature.GEOM_POLYGON;
             } else if (MAP_MODE == MEASURE_FEATURE_LENGTH_MODE) {
-                geomtype = CommonFunctions.GEOM_LINE;
+                geomtype = Feature.GEOM_LINE;
             }
 
-            DBController dbObj = new DBController(context);
+            DbController dbObj = DbController.getInstance(context);
             List<Feature> features = dbObj.fetchFeaturesByGeomtype(geomtype);
             dbObj.close();
             String coordinates = null;
 
             for (Feature feature : features) {
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
                     Geometry geom = new WKTReader().read("POLYGON ((" + feature.getCoordinates() + "))");
 
@@ -1815,7 +1812,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                     if (result) {
                         coordinates = feature.getCoordinates();
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
                     Geometry geom = new WKTReader().read("LINESTRING (" + feature.getCoordinates() + ")");
@@ -2059,7 +2056,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
     @SuppressWarnings("unchecked")
     private void showBookmarks() {
         try {
-            DBController db = new DBController(context);
+            DbController db = DbController.getInstance(context);
             Object[] obj = db.fetchAllBookmarks();
 
             final List<Bookmark> bookmarks = (List<Bookmark>) obj[0];
@@ -2115,7 +2112,7 @@ public class CaptureDataMapActivity extends ActionBarActivity {
                             bookmark.setZoomlevel(googleMap.getCameraPosition().zoom);
                             bookmark.setLatitude(googleMap.getCameraPosition().target.latitude);
                             bookmark.setLongitude(googleMap.getCameraPosition().target.longitude);
-                            DBController db = new DBController(context);
+                            DbController db = DbController.getInstance(context);
                             boolean result = db.saveBookmark(bookmark);
                             db.close();
                             if (result) {
@@ -2290,7 +2287,6 @@ public class CaptureDataMapActivity extends ActionBarActivity {
             if (MAP_MODE != FEATURE_EDIT_MODE) {
                 MAP_MODE = cf.getMAP_MODE();
             }
-            initializeMap();
             if (MAP_MODE != 0 && cf.getPoints() != null && googlemapReinitialized) {
                 googlemapReinitialized = false;
                 if ((MAP_MODE == FEATURE_DRAW_POLYGON_GPS_MODE || MAP_MODE == FEATURE_DRAW_POINT_GPS_MODE

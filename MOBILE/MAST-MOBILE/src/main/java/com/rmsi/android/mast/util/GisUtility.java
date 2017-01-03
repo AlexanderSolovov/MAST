@@ -1,15 +1,7 @@
 package com.rmsi.android.mast.util;
 
-import android.app.Application;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -22,7 +14,6 @@ import com.rmsi.android.mast.domain.Feature;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -216,14 +207,14 @@ public class GisUtility {
     public static String getWKTfromPoints(String geomtype, List<LatLng> pointslist)
     {
         String WKTString="";
-        if(geomtype.equalsIgnoreCase(CommonFunctions.GEOM_POINT))
+        if(geomtype.equalsIgnoreCase(Feature.GEOM_POINT))
         {
             LatLng point = pointslist.get(0);
 
             //WKTString = "POINT ("+point.longitude+" "+point.latitude+")";
             WKTString = point.longitude+" "+point.latitude;
         }
-        else if(geomtype.equalsIgnoreCase(CommonFunctions.GEOM_LINE))
+        else if(geomtype.equalsIgnoreCase(Feature.GEOM_LINE))
         {
             String WKTSubStr="";
 
@@ -241,7 +232,7 @@ public class GisUtility {
             //WKTString = "LINESTRING ("+WKTSubStr+")";
             WKTString = WKTSubStr;
         }
-        else if(geomtype.equalsIgnoreCase(CommonFunctions.GEOM_POLYGON))
+        else if(geomtype.equalsIgnoreCase(Feature.GEOM_POLYGON))
         {
             String WKTSubStr="";
 
@@ -412,8 +403,15 @@ public class GisUtility {
             Polygon poly = (Polygon) wktReader.read("POLYGON ((" + feature.getCoordinates() + "))");
             Point center = poly.getCentroid();
 
+            String label = "";
+            if(!StringUtility.isEmpty(feature.getPolygonNumber())){
+                label = feature.getPolygonNumber();
+            } else {
+                label = "Polygon " + feature.getId();
+            }
+
             return new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon("Polygon " + feature.getFeatureid())))
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(label)))
                     .position(new LatLng(center.getY(), center.getX()))
                     .anchor(0.5f, 0.5f);
         } catch (ParseException e) {

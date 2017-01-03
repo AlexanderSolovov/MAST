@@ -1,209 +1,229 @@
 package com.rmsi.android.mast.activity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rmsi.android.mast.activity.R;
-import com.rmsi.android.mast.adapter.AttributeAdapter;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.Fragment.PersonListFragment;
+import com.rmsi.android.mast.adapter.PersonListAdapter;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
-import com.rmsi.android.mast.domain.Option;
+import com.rmsi.android.mast.domain.Person;
+import com.rmsi.android.mast.domain.Property;
+import com.rmsi.android.mast.domain.ShareType;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GuiUtility;
 
+import java.util.List;
+
 public class AddNonNaturalPersonActivity extends ActionBarActivity {
 
-	Long featureId = 0L;
-	List<Attribute> attribList;
-	ListView listView;
-	final Context context = this;
-	AttributeAdapter adapterList;
-	Button btnSave,btnBack;
-	CommonFunctions cf = CommonFunctions.getInstance();
-	int roleId=0;
-	int groupId = 0;
-	long personCount;
-	String serverFeatureId,backStr,viewPersonStr;
+    private Long featureId = 0L;
+    private Long rightId = 0L;
+    private final Context context = this;
+    private CommonFunctions cf = CommonFunctions.getInstance();
+    private int roleId = 0;
+    private Person nonNaturalPerson;
+    private Property property;
+    private Spinner spinnerResident;
+    private PersonListFragment personsFragment;
+    private String msg, info;
+    private String shareTypeLabel;
+    private TextView lblShareType;
+    private boolean firstRun = true;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) 
-	{
-		super.onCreate(savedInstanceState);
-		
-		//Initializing context in common functions in case of a crash
-		try{CommonFunctions.getInstance().Initialize(getApplicationContext());}catch(Exception e){}
-		cf.loadLocale(getApplicationContext());
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        try {
+            CommonFunctions.getInstance().Initialize(getApplicationContext());
+        } catch (Exception e) {
+        }
 
-		setContentView(R.layout.activity_add_non_natural_person);
-		
-		roleId=CommonFunctions.getRoleID();
-		listView = (ListView) findViewById(R.id.list_view);
-		btnSave=(Button) findViewById(R.id.btn_save);
-		btnBack=(Button) findViewById(R.id.btn_back);
-		//addPerson=(Button) findViewById(R.id.btn_addPerson);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);		
-		toolbar.setTitle(R.string.title_activity_add_non_natural_person);
-						
-		if(toolbar!=null)
-			setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);	
-		DBController sqllite = new DBController(context);
-		
-		backStr=getResources().getString(R.string.back);
-		viewPersonStr=getResources().getString(R.string.view_person);
-		
-		Bundle extras = getIntent().getExtras();
-		if (extras != null) 
-		{
-			featureId = extras.getLong("featureid");
-			serverFeatureId=extras.getString("serverFeaterID");
-			String keyword="NonNatural";
-			attribList = sqllite.getFeatureGenaralInfo(featureId,keyword,cf.getLocale());
+        cf.loadLocale(getApplicationContext());
 
-			if(attribList.size()>0)
-			{
-				groupId = attribList.get(0).getGroupId();
-			}
+        setContentView(R.layout.activity_add_non_natural_person);
 
-			sqllite.close();
-		}
-		String addPerson="";
-		personCount=sqllite.getPersonCount(featureId);
-		if(personCount!=0)
-		{
-			addPerson=getResources().getString(R.string.edit_Person);
-			btnSave.setText(addPerson);
-			
-		}	
-		else if(personCount==0)
-		{
-			addPerson=getResources().getString(R.string.AddPerson);
-			btnSave.setText(addPerson);
-			
-		}	
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.title_activity_add_non_natural_person);
 
-		sqllite.close();
+        if (toolbar != null)
+            setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		try {
-			adapterList = new AttributeAdapter(context, attribList);
-		} 
-		catch (Exception e) {
+        roleId = CommonFunctions.getRoleID();
 
-			e.printStackTrace();
-		}
-		listView.setAdapter(adapterList);
-		
-		if(roleId==2)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-		{
-			//btnSave.setEnabled(false);
-			btnSave.setText(viewPersonStr);  //TODO  add in swahili
-			btnBack.setText(backStr);
+        shareTypeLabel = getResources().getString(R.string.shareType);
+        lblShareType = (TextView) findViewById(R.id.tenureType_lbl);
+        Button btnAddPerson = (Button) findViewById(R.id.btn_save);
+        Button btnNext = (Button) findViewById(R.id.btnNext);
+        spinnerResident = (Spinner) findViewById(R.id.spinnerResident);
+        personsFragment = (PersonListFragment) getFragmentManager().findFragmentById(R.id.compPersonsList);
+        LinearLayout mainLayout = (LinearLayout) findViewById(R.id.mainLayout);
+        LinearLayout personsLayout = (LinearLayout) findViewById(R.id.personsLayout);
 
-		}
-		btnSave.setOnClickListener(new OnClickListener() 
-		{
-			@Override
-			public void onClick(View v) 
-			{             
-				saveData();				
-			}			
-		});
+        String backStr = getResources().getString(R.string.back);
 
-		/*addPerson.setOnClickListener(new OnClickListener() 
-		{			
-			@Override
-			public void onClick(View v) {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+            rightId = extras.getLong("rightId");
+        }
 
-				Intent myIntent = new Intent(context,NonNaturalPersonListActivity.class);
-				myIntent.putExtra("featureid", featureId);
-				myIntent.putExtra("persontype", "nonNatural");
-				startActivity(myIntent);
+        DbController db = DbController.getInstance(context);
 
-			}
-		});*/
+        property = db.getProperty(featureId);
 
-		btnBack.setOnClickListener(new OnClickListener() 
-		{			
-			@Override
-			public void onClick(View v) {
+        if (property == null || property.getRight() == null) {
+            cf.showToast(context, R.string.PropertyNotFound, Toast.LENGTH_SHORT);
+            return;
+        }
 
-				if(personCount!=0)
-				{
-					if(roleId==2){
-						
-						finish();
-					}
-					else{
-					Intent myIntent  =  new Intent(context, DataSummaryActivity.class);
-					myIntent.putExtra("featureid", featureId);
-					myIntent.putExtra("Server_featureid", serverFeatureId);
-					myIntent.putExtra("className", "PersonListActivity");
-					startActivity(myIntent); 
-					}
-				}
-				
-				else if(personCount==0)
-				{
-					String add_person=getResources().getString(R.string.add_atlest_one_person);
-					String warningStr=getResources().getString(R.string.warning);
-					cf.showMessage(context,warningStr,add_person);	
-				}
-			}
-		});
+        if (property.getRight().getShareTypeId() > 0) {
+            ShareType shareType = db.getShareType(property.getRight().getShareTypeId());
+            if (shareType != null)
+                lblShareType.setText(shareTypeLabel + ": " + shareType.getName());
+        }
 
-	}
-	
-	public void saveData() 
-	{
-		if(validate())
-		{
-			try {
-				if(groupId==0)
-				{
-					groupId = cf.getGroupId();
-				}
-				DBController sqllite = new DBController(context);
-				String keyword="NonNaturalPerson";
-				boolean saveResult = sqllite.saveFormDataTemp(attribList,groupId,featureId,keyword);
+        if (property.getRight().getNonNaturalPerson() != null) {
+            nonNaturalPerson = property.getRight().getNonNaturalPerson();
+            if (nonNaturalPerson.getResident() == 1)
+                spinnerResident.setSelection(1);
+            else
+                spinnerResident.setSelection(2);
+        } else {
+            nonNaturalPerson = new Person();
+            nonNaturalPerson.setFeatureId(featureId);
+            nonNaturalPerson.setIsNatural(0);
+            nonNaturalPerson.setRightId(rightId);
 
+            spinnerResident.setSelection(0);
+        }
 
-				sqllite.close();
-				if(saveResult)
-				{
-					Intent myIntent = new Intent(context,NonNaturalPersonListActivity.class);
-					myIntent.putExtra("featureid", featureId);
-					myIntent.putExtra("persontype", "nonNatural");
-					startActivity(myIntent);
-					
-				}else{								
-					Toast.makeText(context,R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
-				}
-			} catch (Exception e) {
-				cf.appLog("", e);e.printStackTrace();
-				Toast.makeText(context,R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
-			}
-		}else{								
-			Toast.makeText(context,R.string.fill_mandatory, Toast.LENGTH_SHORT).show();
-		}
-	}
+        // Populate attributes
+        if (nonNaturalPerson.getAttributes() == null || nonNaturalPerson.getAttributes().size() < 1) {
+            // Pull attributes for non natural nonNaturalPerson
+            nonNaturalPerson.setAttributes(db.getAttributesByType(Attribute.TYPE_NON_NATURAL_PERSON));
+        }
 
-	public boolean validate()
-	{
-		return GuiUtility.validateAttributes(attribList);
-	}
+        if (nonNaturalPerson.getAttributes() != null) {
+            GuiUtility.appendLayoutWithAttributes(mainLayout, nonNaturalPerson.getAttributes());
+            // Move list of persons to the end
+            mainLayout.removeView(personsLayout);
+            mainLayout.addView(personsLayout);
+        }
+
+        if (roleId == User.ROLE_ADJUDICATOR) {
+            btnAddPerson.setEnabled(false);
+            btnNext.setText(backStr);
+            spinnerResident.setEnabled(false);
+        }
+
+        GuiUtility.bindActionOnSpinnerChange(spinnerResident, new Runnable() {
+            @Override
+            public void run() {
+                if(spinnerResident.getSelectedItemPosition() == 1)
+                    nonNaturalPerson.setResident(1);
+                else if(spinnerResident.getSelectedItemPosition() == 2)
+                    nonNaturalPerson.setResident(0);
+                else
+                    nonNaturalPerson.setResident(-1);
+            }
+        });
+
+        btnAddPerson.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveData(true);
+            }
+        });
+
+        btnNext.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (roleId == User.ROLE_ADJUDICATOR) {
+                    finish();
+                    return;
+                }
+
+                if(saveData(false) && property.validatePersonsList(context, true)){
+                    Intent myIntent = new Intent(context, MediaListActivity.class);
+                    myIntent.putExtra("featureid", featureId);
+                    startActivity(myIntent);
+                }
+            }
+        });
+    }
+
+    public boolean saveData(boolean showNextScreen) {
+        if (showNextScreen && property.getRight() != null && property.getRight().getNaturalPersons().size() > 0) {
+            msg = getResources().getString(R.string.can_add_only_one_person_with_non_natural_person);
+            info = getResources().getString(R.string.info);
+            cf.showMessage(context, info, msg);
+            return false;
+        }
+
+        if (!nonNaturalPerson.validate(context, property.getRight().getShareTypeId(), false, true)) {
+            return false;
+        }
+
+        try {
+            boolean saveResult = DbController.getInstance(context).savePerson(nonNaturalPerson);
+
+            if (saveResult) {
+                if(showNextScreen) {
+                    property.getRight().setNonNaturalPerson(nonNaturalPerson);
+                    Intent myIntent = new Intent(context, AddPersonActivity.class);
+                    myIntent.putExtra("groupid", 0L);
+                    myIntent.putExtra("featureid", featureId);
+                    myIntent.putExtra("subTypeId", 0);
+                    myIntent.putExtra("rightId", property.getRight().getId());
+                    startActivity(myIntent);
+                }
+                return true;
+            } else {
+                Toast.makeText(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            Toast.makeText(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        finish();
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!firstRun) {
+            // Refresh persons list
+            List<Person> persons = DbController.getInstance(context).getNaturalPersonsByRight(property.getRight().getId());
+            property.getRight().getNaturalPersons().clear();
+            property.getRight().getNaturalPersons().addAll(persons);
+        }
+        firstRun = false;
+        personsFragment.setPersons(property.getRight().getNaturalPersons());
+    }
+
+    public boolean validate() {
+        return GuiUtility.validateAttributes(nonNaturalPerson.getAttributes(), true);
+    }
 }

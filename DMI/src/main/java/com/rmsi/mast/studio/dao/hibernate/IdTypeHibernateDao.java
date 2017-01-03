@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class IdTypeHibernateDao extends GenericHibernateDAO<IdType, String> implements IdTypeDao {
+public class IdTypeHibernateDao extends GenericHibernateDAO<IdType, Integer> implements IdTypeDao {
     private static final Logger logger = Logger.getLogger(IdTypeHibernateDao.class);
 
     @Override

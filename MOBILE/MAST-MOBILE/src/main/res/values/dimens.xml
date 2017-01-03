@@ -13,5 +13,6 @@
     <dimen name="textSizeXL">24sp</dimen>
     <dimen name="textSizeXXL">28sp</dimen>
     <dimen name="navigation_drawer_width">240dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 
 </resources>

@@ -1,172 +1,131 @@
 package com.rmsi.android.mast.activity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.adapter.AttributeAdapter;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
-import com.rmsi.android.mast.domain.Option;
+import com.rmsi.android.mast.domain.Media;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GuiUtility;
 
-/**
- * @author Prashant.Nigam
- */
-public class AddMediaActivity extends ActionBarActivity 
-{
-	List<Attribute> attribList;
-	ListView listView;
-	final Context context = this;
-	AttributeAdapter	adapterList;
-	CommonFunctions cf = CommonFunctions.getInstance();
-	int groupId = 0;
-	Long featureId = 0L;
-	Button btnSave;
-	int roleId=0;
-	@Override
-	protected void onCreate(Bundle savedInstanceState) 
-	{
-		super.onCreate(savedInstanceState);
-		
-		//Initializing context in common functions in case of a crash
-		try{CommonFunctions.getInstance().Initialize(getApplicationContext());}catch(Exception e){}
-		cf.loadLocale(getApplicationContext());
+public class AddMediaActivity extends ActionBarActivity {
+    private ListView listView;
+    private final Context context = this;
+    private CommonFunctions cf = CommonFunctions.getInstance();
+    private Long mediaId = 0L;
+    private Long featureId = 0L;
+    private int roleId = 0;
+    private Media media = null;
+    private Long disputeId = 0L;
 
-		setContentView(R.layout.activity_add_media);
-		
-		roleId=CommonFunctions.getRoleID();
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		toolbar.setTitle(R.string.title_activity_add_media);
-		if(toolbar!=null)
-			setSupportActionBar(toolbar);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        try {
+            CommonFunctions.getInstance().Initialize(getApplicationContext());
+        } catch (Exception e) {
+        }
+        cf.loadLocale(getApplicationContext());
 
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setContentView(R.layout.activity_add_media);
+        listView = (ListView) findViewById(R.id.list_view);
+        roleId = CommonFunctions.getRoleID();
 
-		btnSave=(Button)findViewById(R.id.btn_save);
-		
-		if(roleId==2)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-		  {
-			btnSave.setEnabled(false);
-			
-		  }
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.title_activity_add_media);
+        if (toolbar != null)
+            setSupportActionBar(toolbar);
 
-		DBController sqllite = new DBController(context);
-		Bundle extras = getIntent().getExtras();
-		if (extras != null) 
-		{
-			int gId = extras.getInt("groupid");
-			featureId = extras.getLong("featureid");
-			if (gId != 0) 
-			{
-				groupId  = gId;
-			}
-			attribList = sqllite.getMultimediaFormDataByGroupId(groupId,cf.getLocale());
-		}
-		sqllite.close();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		listView = (ListView) findViewById(R.id.list_view);
-		try {
-			adapterList = new AttributeAdapter(context, attribList);
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+        Button btnSave = (Button) findViewById(R.id.btn_save);
 
-		listView.setAdapter(adapterList);
+        if (roleId == User.ROLE_ADJUDICATOR) {
+            btnSave.setEnabled(false);
+        }
 
-		
-		
-		btnSave.setOnClickListener(new OnClickListener() 
-		{
-			@Override
-			public void onClick(View v) 
-			{             
-				saveData();				
-			}			
-		});
+        DbController db = DbController.getInstance(context);
+        Bundle extras = getIntent().getExtras();
 
-		/*btnCancel.setOnClickListener(new OnClickListener() 
-		{			
-			@Override
-			public void onClick(View v) {
-				finish();				
-			}
-		});
-*/
+        if (extras != null) {
+            mediaId = extras.getLong("groupid");
+            featureId = extras.getLong("featureid");
+            disputeId = extras.getLong("disputeId");
+        }
 
-	}
+        if(mediaId != null && mediaId > 0){
+            media = db.getMedia(mediaId);
+        }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
-	{
-		finish();
-		return true;
-	}
+        if(media == null){
+            media = new Media();
+            media.setFeatureId(featureId);
+            media.setDisputeId(disputeId);
+        }
 
-	public void saveData() {
+        // Populate attributes
+        if (media.getAttributes() == null || media.getAttributes().size() < 1) {
+            // Pull attributes for natural person
+            media.setAttributes(db.getAttributesByType(Attribute.TYPE_MULTIMEDIA));
+        }
 
-		if(validate())
-		{
-			try {
-				DBController sqllite = new DBController(context);
-				String keyword="MEDIA";
-				boolean saveResult = sqllite.saveFormDataTemp(attribList,groupId,featureId,keyword);
-				sqllite.close();
-				if(saveResult)
-				{					
-					Toast toast = Toast.makeText(context,R.string.data_saved, Toast.LENGTH_SHORT);
-					toast.setGravity(Gravity.CENTER, 0, 0);
-					toast.show();
-					finish();
-				}else{			
-					Toast.makeText(context,R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
-				}
-			} catch (Exception e) {
-				cf.appLog("", e);e.printStackTrace();
-				Toast.makeText(context,R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
-			}
-		}else{
-			Toast.makeText(context,R.string.fill_mandatory, Toast.LENGTH_SHORT).show();
-		}
-	}
+        try {
+            listView.setAdapter(new AttributeAdapter(context, media.getAttributes()));
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+        }
 
-	public boolean validate()
-	{
-		return GuiUtility.validateAttributes(attribList);
-	}
+        btnSave.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveData();
+            }
+        });
+    }
 
-	@Override
-	public void onBackPressed()
-	{
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        finish();
+        return true;
+    }
 
-		if(roleId==2)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-		  {
-			finish();
-			
-		  }
-		else{
-			
-			 //Do nothing
-		}
-		
-	  
-	}
+    public void saveData() {
+        if (media.validate(context, true)) {
+            try {
+                boolean saveResult = DbController.getInstance(context).saveMedia(media);
 
+                if (saveResult) {
+                    cf.showToast(context, R.string.data_saved, Toast.LENGTH_SHORT);
+                    finish();
+                } else {
+                    cf.showToast(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT);
+                }
+            } catch (Exception e) {
+                cf.appLog("", e);
+                e.printStackTrace();
+                Toast.makeText(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(context, R.string.fill_mandatory, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (roleId == User.ROLE_ADJUDICATOR) {
+            finish();
+        }
+    }
 }

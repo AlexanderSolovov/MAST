@@ -1,5 +1,7 @@
 package com.rmsi.mast.studio.mobile.web;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,7 +9,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -40,6 +41,7 @@ import com.rmsi.mast.studio.domain.SocialTenureRelationship;
 import com.rmsi.mast.studio.domain.SourceDocument;
 import com.rmsi.mast.studio.domain.SpatialUnit;
 import com.rmsi.mast.studio.domain.SpatialUnitPersonWithInterest;
+import com.rmsi.mast.studio.domain.Surveyprojectattribute;
 import com.rmsi.mast.studio.domain.User;
 import com.rmsi.mast.studio.domain.fetch.SpatialunitDeceasedPerson;
 import com.rmsi.mast.studio.mobile.service.PersonService;
@@ -48,8 +50,14 @@ import com.rmsi.mast.studio.mobile.service.SpatialDataService;
 import com.rmsi.mast.studio.mobile.service.SpatialUnitService;
 import com.rmsi.mast.studio.mobile.service.SurveyProjectAttributeService;
 import com.rmsi.mast.studio.mobile.service.UserDataService;
+import com.rmsi.mast.studio.mobile.transferobjects.Attribute;
+import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.service.UserService;
 import com.rmsi.mast.studio.util.GeometryConversion;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Prashant.Nigam
@@ -80,16 +88,6 @@ public class MobileDataController {
 
     @Autowired
     com.rmsi.mast.studio.service.ProjectService studioProjectService;
-
-    private SpatialUnit spatialUnit;
-
-    private NaturalPerson naturalPerson;
-
-    private NonNaturalPerson nonNaturalPerson;
-
-    private SocialTenureRelationship socialTenure;
-
-    private AttributeValues attributeValues;
 
     private List<AttributeValues> attributeValuesList = new ArrayList<AttributeValues>();
 
@@ -222,12 +220,27 @@ public class MobileDataController {
                 configurationData.put("Hamlet", surveyProjectAttribute
                         .getProjectHamletsByProjectId(projectId));
 
-                // Add List of claim type
+                // Add List of claim types
                 configurationData.put("ClaimType", spatialUnitService.getClaimTypes());
-                
-                // Add List of claim type
+
+                // Add List of relationship types
                 configurationData.put("RelationshipType", personService.getRelationshipTypes());
-                
+
+                // Add List of share types
+                configurationData.put("ShareType", spatialUnitService.getShareTypes());
+
+                // Add List of right types
+                configurationData.put("RightType", spatialUnitService.getTenureClasses());
+
+                // Add List of genders
+                configurationData.put("Genders", spatialUnitService.getGenders());
+
+                // Add List of genders
+                configurationData.put("DisputeType", spatialUnitService.getDisputeTypes());
+
+                // Add List of genders
+                configurationData.put("AcquisitionType", spatialUnitService.getAcquisitionTypes());
+
                 // Return map containing Attributes and SpatialUnit for Download
                 // Configuration
                 return configurationData;
@@ -393,380 +406,77 @@ public class MobileDataController {
      * @return
      */
     @RequestMapping(value = "/sync/mobile/attributes/sync", method = RequestMethod.POST)
-    synchronized public Map<String, String> syncAttributes(
-            HttpServletRequest request, HttpServletResponse response) {
-
-        List<NaturalPerson> naturalPersonList = new ArrayList<NaturalPerson>();
-        List<NonNaturalPerson> nonNaturalPersonList = new ArrayList<NonNaturalPerson>();
-        List<SocialTenureRelationship> socialTenureList = new ArrayList<SocialTenureRelationship>();
-        List<SpatialUnitPersonWithInterest> nextOfKinList = new ArrayList<SpatialUnitPersonWithInterest>();
-        List<SpatialunitDeceasedPerson> deceasedPersonList = new ArrayList<SpatialunitDeceasedPerson>();
-
-        SpatialUnitPersonWithInterest nextOfKin;
-        SpatialunitDeceasedPerson deceasePerson;
-
+    synchronized public Map<String, String> syncAttributes(HttpServletRequest request, HttpServletResponse response) {
         Map<String, String> result = new IdentityHashMap<String, String>();
 
         try {
-
-            // Main Array
-            JSONArray attributesArray = new JSONArray(
-                    request.getParameter("syncData"));
-
-            for (int i = 0; i < attributesArray.length(); i++) {
-
-                // SurveyProject Object
-                JSONObject surveyProject = attributesArray.getJSONObject(i);
-
-                spatialUnit = new SpatialUnit();
-                naturalPerson = new NaturalPerson();
-                nonNaturalPerson = new NonNaturalPerson();
-                socialTenure = new SocialTenureRelationship();
-
-                if (surveyProject.has("SpatialFeatures")) {
-                    // SpatialFeature Array
-                    JSONArray spatialFeature = surveyProject
-                            .getJSONArray("SpatialFeatures");
-
-                    if (spatialFeature.length() > 0) {
-
-                        GeometryConversion geometryConversion = new GeometryConversion();
-
-                        // Saving FeatureId of mobile
-                        featureId = spatialFeature.get(0).toString();
-
-                        // Setting Geometry Type
-                        spatialUnit.setGtype(spatialFeature.get(1).toString());
-
-                        // Setting Coordinates based on gType
-                        if (spatialUnit.getGtype().equalsIgnoreCase("point")) {
-
-                            spatialUnit.setPoint(geometryConversion
-                                    .convertWktToPoint(spatialFeature.get(2)
-                                            .toString()));
-                            spatialUnit.getPoint().setSRID(4326);
-                            spatialUnit.setTheGeom(spatialUnit.getPoint());
-                        } else if (spatialUnit.getGtype().equalsIgnoreCase(
-                                "line")) {
-                            spatialUnit.setLine(geometryConversion
-                                    .convertWktToLineString(spatialFeature.get(
-                                            2).toString()));
-                            spatialUnit.getLine().setSRID(4326);
-                            spatialUnit.setTheGeom(spatialUnit.getLine());
-                        } else if (spatialUnit.getGtype().equalsIgnoreCase(
-                                "polygon")) {
-                            spatialUnit.setPolygon(geometryConversion
-                                    .convertWktToPolygon(spatialFeature.get(2)
-                                            .toString()));
-                            spatialUnit.setArea(spatialUnit.getPolygon()
-                                    .getArea());
-                            // spatialUnit.setArea(geometryConversion.getArea(spatialUnit.getPolygon()));
-                            spatialUnit.getPolygon().setSRID(4326);
-                            spatialUnit.setPerimeter((float) spatialUnit
-                                    .getPolygon().getLength());
-                            spatialUnit.setTheGeom(spatialUnit.getPolygon());
-                        }
-
-                        spatialUnit.getTheGeom().setSRID(4326);
-
-                        // Setting "Survey Date"
-                        spatialUnit.setSurveyDate(new SimpleDateFormat(
-                                "dd-MM-yyyy HH:mm:ss a").parse(spatialFeature
-                                .get(3).toString()));
-
-                        // Setting update time
-                        spatialUnit.setStatusUpdateTime(new SimpleDateFormat(
-                                "dd-MM-yyyy HH:mm:ss a").parse(spatialFeature
-                                .get(4).toString()));
-
-                        // Setting IMEI
-                        spatialUnit.setImeiNumber(spatialFeature.getString(5));
-
-                        // Setting PersonType
-                        if (spatialFeature.getString(6).equalsIgnoreCase(
-                                "Natural")) {
-                            naturalPerson.setPerson_type_gid(personService
-                                    .getPersonTypeById(1));
-                        } else if (spatialFeature.getString(6)
-                                .equalsIgnoreCase("Non-Natural")) {
-                            nonNaturalPerson.setPerson_type_gid(personService
-                                    .getPersonTypeById(2));
-                            naturalPerson.setPerson_type_gid(personService
-                                    .getPersonTypeById(1));
-                        }
-
-                        // Setting Project
-                        spatialUnit.setProject(spatialFeature.getString(7)
-                                .toString());
-
-                        // Setting User id
-                        spatialUnit.setUserid(Integer.parseInt(spatialFeature
-                                .getString(8)));
-
-                        // Setting Hamlet Id
-                        spatialUnit.setHamletId(Integer.parseInt(spatialFeature
-                                .getString(9)));
-
-                        // Setting Witness1
-                        spatialUnit.setWitness1(spatialFeature.getString(10));
-
-                        // Setting Witness2
-                        spatialUnit.setWitness2(spatialFeature.getString(11));
-
-                        // Setting active=true
-                        spatialUnit.setActive(true);
-                    }
-                }
-
-                if (surveyProject.has("NextOfKin")) {
-
-                    // NextOfKin Array
-                    JSONArray nextOfKinArr = surveyProject
-                            .getJSONArray("NextOfKin");
-
-                    if (nextOfKinArr.length() > 0) {
-
-                        for (int k = 0; k < nextOfKinArr.length(); k++) {
-                            nextOfKin = new SpatialUnitPersonWithInterest();
-                            nextOfKin.setPerson_name(nextOfKinArr.getJSONArray(k).getString(0));
-                            nextOfKinList.add(nextOfKin);
-                        }
-                    }
-                }
-
-                if (surveyProject.has("DeceasedPerson")) {
-
-                    // NextOfKin Array
-                    JSONArray deceasedPersonArr = surveyProject
-                            .getJSONArray("DeceasedPerson");
-
-                    if (deceasedPersonArr.length() > 0) {
-
-                        for (int k = 0; k < deceasedPersonArr.length(); k++) {
-                            JSONArray deceasedArr = deceasedPersonArr.getJSONArray(k);
-                            deceasePerson = new SpatialunitDeceasedPerson();
-                            deceasePerson.setFirstname(deceasedArr.getString(0));
-                            deceasePerson.setMiddlename(deceasedArr.getString(1));
-                            deceasePerson.setLastname(deceasedArr.getString(2));
-
-                            deceasedPersonList.add(deceasePerson);
-                        }
-                    }
-                }
-
-                if (surveyProject.has("AttributeValue")) {
-
-                    // AttributeValue Array
-                    JSONArray attributeValue = surveyProject
-                            .getJSONArray("AttributeValue");
-
-                    // Get General Array
-                    JSONArray general = attributeValue.getJSONArray(0);
-
-                    if (general.length() > 0) {
-
-                        attributeCategoryType = "general";
-
-                        for (int k = 0; k < general.length(); k++) {
-
-                            JSONArray generalArray = general.getJSONArray(k);
-
-                            setAttributes(generalArray.getString(0),
-                                    generalArray.getString(1),
-                                    generalArray.getInt(2),
-                                    generalArray.getString(3));
-                        }
-                    }
-
-                    // Get Natural Array
-                    JSONArray natural = attributeValue.getJSONArray(1);
-
-                    if (natural.length() > 0) {
-
-                        attributeCategoryType = "natural";
-
-                        for (int k = 0; k < natural.length(); k++) {
-
-                            JSONArray naturalArray = natural.getJSONArray(k);
-
-                            if (!prevGroupId.equalsIgnoreCase(naturalArray
-                                    .getString(1)) && !prevGroupId.isEmpty()) {
-                                naturalPersonList.add(naturalPerson);
-
-                                System.out.println("Natural List: "
-                                        + naturalPersonList);
-                                naturalListByGId.add(naturalList);
-                                prevGroupId = "";
-
-                                naturalPerson = new NaturalPerson();
-                                naturalList = new ArrayList<AttributeValues>();
-                                naturalPerson.setPerson_type_gid(personService
-                                        .getPersonTypeById(1));
-                            }
-
-                            setAttributes(naturalArray.getString(0),
-                                    naturalArray.getString(1),
-                                    naturalArray.getInt(2),
-                                    naturalArray.getString(3));
-
-                        }
-                        naturalPersonList.add(naturalPerson);
-                        System.out
-                                .println("Natural List: " + naturalPersonList);
-                        naturalListByGId.add(naturalList);
-                        prevGroupId = "";
-                        naturalPerson = new NaturalPerson();
-                        naturalList = new ArrayList<AttributeValues>();
-                    }
-
-                    // Get Non-Natural Array
-                    JSONArray nonNatural = attributeValue.getJSONArray(2);
-
-                    if (nonNatural.length() > 0
-                            && (nonNaturalPerson.getPerson_type_gid() != null)) {
-
-                        attributeCategoryType = "nonnatural";
-
-                        for (int k = 0; k < nonNatural.length(); k++) {
-                            JSONArray nonNaturalArray = nonNatural
-                                    .getJSONArray(k);
-
-                            setAttributes(nonNaturalArray.getString(0),
-                                    nonNaturalArray.getString(1),
-                                    nonNaturalArray.getInt(2),
-                                    nonNaturalArray.getString(3));
-
-                        }
-
-                        nonNaturalPersonList.add(nonNaturalPerson);
-                        System.out.println("Non Natural List: "
-                                + nonNaturalPersonList);
-                        nonNaturalListByGId.add(nonNaturalList);
-                        prevGroupId = "";
-                        nonNaturalPerson = new NonNaturalPerson();
-                    }
-
-                    // Get Tenure Array
-                    JSONArray tenure = attributeValue.getJSONArray(3);
-
-                    if (tenure.length() > 0) {
-
-                        attributeCategoryType = "tenure";
-
-                        for (int k = 0; k < tenure.length(); k++) {
-
-                            JSONArray tenureArray = tenure.getJSONArray(k);
-
-                            if (!prevGroupId.equalsIgnoreCase(tenureArray
-                                    .getString(1)) && !prevGroupId.isEmpty()) {
-                                socialTenureList.add(socialTenure);
-
-                                System.out
-                                        .println("Tenure List: " + tenureList);
-
-                                tenureListByGId.add(tenureList);
-                                tenureList = new ArrayList<AttributeValues>();
-                                prevGroupId = "";
-
-                                socialTenure = new SocialTenureRelationship();
-                            }
-
-                            setAttributes(tenureArray.getString(0),
-                                    tenureArray.getString(1),
-                                    tenureArray.getInt(2),
-                                    tenureArray.getString(3));
-
-                        }
-                        socialTenureList.add(socialTenure);
-
-                        System.out.println("Tenure List: " + tenureList);
-                        prevGroupId = "";
-
-                        tenureListByGId.add(tenureList);
-
-                        socialTenure = new SocialTenureRelationship();
-                        tenureList = new ArrayList<AttributeValues>();
-
-                    }
-
-                    // Get Custom Array
-                    JSONArray custom = attributeValue.getJSONArray(4);
-
-                    if (custom.length() > 0) {
-
-                        attributeCategoryType = "custom";
-
-                        AttributeValues attributeValues = new AttributeValues();
-
-                        for (int k = 0; k < custom.length(); k++) {
-
-                            JSONArray customArray = custom.getJSONArray(k);
-
-                            if (!prevGroupId.equalsIgnoreCase(customArray
-                                    .getString(1)) && !prevGroupId.isEmpty()) {
-                                attributeValuesList.add(attributeValues);
-
-                                System.out.println("Attribute Values List: "
-                                        + attributeValuesList);
-
-                                prevGroupId = "";
-                            }
-
-                            setAttributes(customArray.getString(0),
-                                    customArray.getString(1),
-                                    customArray.getInt(2),
-                                    customArray.getString(3));
-                        }
-                    }
-                }
-                addAttributeValues();
-                result.put(
-                        featureId,
-                        mobileUserService.syncSurveyProjectData(spatialUnit,
-                                deceasedPersonList, nextOfKinList, naturalPersonList,
-                                nonNaturalPersonList, socialTenureList,
-                                attributeValuesList, attributeValuesMap)
-                        .toString());
-                System.out.println("Data Persisted Successfully");
-
-                /**
-                 * Clearing all lists and map *
-                 */
-                // Clearing all local lists
-                naturalPersonList.clear();
-                nonNaturalPersonList.clear();
-                socialTenureList.clear();
-                nextOfKinList.clear();
-                deceasedPersonList.clear();
-
-                // Clear all static lists and map
-                clearAll();
-
+            //BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream()));
+            String projectName = request.getParameter("projectName");
+            int userId = Integer.parseInt(request.getParameter("userId"));
+            String jsonString = request.getParameter("data");
+
+            if (StringUtils.isEmpty(jsonString)) {
+                return result;
             }
-            return result;
-        } catch (JSONException jsex) {
-            logger.error("Exception", jsex);
-            result.put("Exception", jsex.toString());
-            jsex.printStackTrace();
+
+            // Transfor JSON to transfer object
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<Property>>() {
+            }.getType();
+            List<Property> properties = gson.fromJson(jsonString, type);
+
+            return mobileUserService.saveClaims(properties, projectName, userId);
         } catch (Exception e) {
             logger.error("Exception", e);
             result.put("Exception at feature Id: " + featureId, e.toString());
             e.printStackTrace();
-        } finally {
-
-            /**
-             * Clearing all lists and map *
-             */
-            // Clearing all local lists
-            naturalPersonList.removeAll(Collections.singleton(naturalPerson));
-            nonNaturalPersonList.removeAll(Collections
-                    .singleton(nonNaturalPerson));
-            socialTenureList.removeAll(Collections.singleton(socialTenure));
-
-            // Clear all static lists and map
-            clearAll();
+            return result;
         }
-        return result;
+    }
+
+    /**
+     * Sets Spatial unit object attributes based on property object
+     */
+    private void setPropAttibutes(SpatialUnit parcel, Property prop) {
+        if (parcel == null || prop == null || prop.getAttributes() == null || prop.getAttributes().size() < 1) {
+            return;
+        }
+
+        for (Attribute attribute : prop.getAttributes()) {
+            if (attribute.getId() == 9) {
+                parcel.setProposedUse(spatialUnitService.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
+            } else if (attribute.getId() == 15) {
+                parcel.setHousehidno(Integer.parseInt(attribute.getValue()));
+            } else if (attribute.getId() == 16) {
+                parcel.setExistingUse(spatialUnitService.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
+            } else if (attribute.getId() == 17) {
+                parcel.setComments(attribute.getValue());
+            } else if (attribute.getId() == 28) {
+                parcel.setLandOwner(attribute.getValue());
+            } else if (attribute.getId() == 34) {
+                parcel.setAddress1(attribute.getValue());
+            } else if (attribute.getId() == 35) {
+                parcel.setAddress2(attribute.getValue());
+            } else if (attribute.getId() == 36) {
+                parcel.setPostal_code(attribute.getValue());
+            } else if (attribute.getId() == 37) {
+                parcel.setTypeName(spatialUnitService.getLandTypeById(Integer.parseInt(attribute.getValue())));
+            } else if (attribute.getId() == 38) {
+                parcel.setSoilQuality(spatialUnitService.getSoilQualityValuesById(Integer.parseInt(attribute.getValue())));
+            } else if (attribute.getId() == 39) {
+                parcel.setSlope(spatialUnitService.getSlopeValuesById(Integer.parseInt(attribute.getValue())));
+            } else if (attribute.getId() == 44) {
+                parcel.setNeighborNorth(attribute.getValue());
+            } else if (attribute.getId() == 45) {
+                parcel.setNeighborSouth(attribute.getValue());
+            } else if (attribute.getId() == 46) {
+                parcel.setNeighborEast(attribute.getValue());
+            } else if (attribute.getId() == 47) {
+                parcel.setNeighborWest(attribute.getValue());
+            } else if (attribute.getId() == 53) {
+                parcel.setOtherUseType(attribute.getValue());
+            }
+        }
     }
 
     @RequestMapping(value = "/sync/mobile/sync/RejectedSpatialUnit/{userId}", method = RequestMethod.POST)
@@ -915,363 +625,6 @@ public class MobileDataController {
             System.out.println("Exception while downloading: " + ioex);
             return "Downloading Fail: IO Exception";
         }
-    }
-
-    /**
-     * Setting the attributes according to category in their specific tables
-     *
-     * @param attributeFeatureId
-     * @param currentGroupId
-     * @param attributeId
-     * @param value
-     */
-    private void setAttributes(String attributeFeatureId,
-            String currentGroupId, int attributeId, String value) {
-
-        try {
-
-            if (featureId.equals(attributeFeatureId)) {
-
-                if (attributeCategoryType.equalsIgnoreCase("general")) {
-
-                    if (attributeId == 9) {
-                        spatialUnit.setProposedUse(spatialUnitService
-                                .getLandUseTypeById(Integer.parseInt(value)));
-                    } else if (attributeId == 15) {
-                        spatialUnit.setHousehidno(Integer.parseInt(value));
-                    } else if (attributeId == 16) {
-                        spatialUnit.setExistingUse(spatialUnitService
-                                .getLandUseTypeById(Integer.parseInt(value)));
-                    } else if (attributeId == 17) {
-                        spatialUnit.setComments(value);
-                    } else if (attributeId == 28) {
-                        spatialUnit.setLandOwner(value);
-                    } else if (attributeId == 34) {
-                        spatialUnit.setAddress1(value);
-                    } else if (attributeId == 35) {
-                        spatialUnit.setAddress2(value);
-                    } else if (attributeId == 36) {
-                        spatialUnit.setPostal_code(value);
-                    } else if (attributeId == 37) {
-                        spatialUnit.setTypeName(spatialUnitService
-                                .getLandTypeById(Integer.parseInt(value)));
-                    } else if (attributeId == 38) {
-                        spatialUnit.setSoilQuality(spatialUnitService
-                                .getSoilQualityValuesById(Integer
-                                        .parseInt(value)));
-                    } else if (attributeId == 39) {
-                        spatialUnit.setSlope(spatialUnitService
-                                .getSlopeValuesById(Integer.parseInt(value)));
-                    } else if (attributeId == 44) {
-                        spatialUnit.setNeighborNorth(value);
-                    } else if (attributeId == 45) {
-                        spatialUnit.setNeighborSouth(value);
-                    } else if (attributeId == 46) {
-                        spatialUnit.setNeighborEast(value);
-                    } else if (attributeId == 47) {
-                        spatialUnit.setNeighborWest(value);
-                    } else if (attributeId == 53) {
-                        spatialUnit.setOtherUseType(value);
-                    }
-                } else if (attributeCategoryType.equalsIgnoreCase("natural")) {
-
-                    if (prevGroupId.isEmpty()
-                            || prevGroupId.equalsIgnoreCase(currentGroupId)) {
-
-                        if (prevGroupId.isEmpty()) {
-                            prevGroupId = currentGroupId;
-                            naturalPerson.setMobileGroupId(currentGroupId);
-                        }
-                        naturalPerson.setAlias("");
-                        if (attributeId == 1) {
-                            naturalPerson.setFirstName(value);
-                        } else if (attributeId == 2) {
-                            naturalPerson.setLastName(value);
-                        } else if (attributeId == 3) {
-                            naturalPerson.setMiddleName(value);
-                        } else if (attributeId == 29) {
-                            naturalPerson.setAlias(value);
-                        } else if (attributeId == 4) {
-                            naturalPerson.setGender(spatialUnitService
-                                    .getGenderById(Long.parseLong(value)));
-                        } else if (attributeId == 5) {
-                            naturalPerson.setMobile(value);
-                        } else if (attributeId == 30) {
-                            naturalPerson.setIdentity(value);
-                        } else if (attributeId == 21) {
-                            naturalPerson.setAge(Integer.parseInt(value));
-                        } else if (attributeId == 19) {
-                            naturalPerson.setOccupation(value);
-                        } else if (attributeId == 20) {
-                            naturalPerson.setEducation(personService
-                                    .getEducationLevelById(Integer
-                                            .parseInt(value)));
-                        } else if (attributeId == 25) {
-                            naturalPerson.setTenure_Relation(value);
-                        } else if (attributeId == 26) {
-                            naturalPerson.setHouseholdRelation(value);
-                        } else if (attributeId == 27) {
-                            naturalPerson.setWitness(value);
-                        } else if (attributeId == 22) {
-                            naturalPerson
-                                    .setMarital_status(spatialUnitService
-                                            .getMartitalStatus(Integer
-                                                    .parseInt(value)));
-                        } else if (attributeId == 40) {
-                            if (value.equalsIgnoreCase("yes")) {
-                                value = "true";
-                            } else {
-                                value = "false";
-                            }
-                            naturalPerson.setOwner(Boolean.valueOf(value));
-                        } else if (attributeId == 41) {
-                            naturalPerson.setAdministator(value);
-                        } else if (attributeId == 42) {
-                            /*naturalPerson.setCitizenship(value);*/
-                            naturalPerson
-                                    .setCitizenship_id(spatialUnitService
-                                            .getCitizenship(Integer.parseInt(value)));
-                        } else if (attributeId == 43) {
-                            if (value.equalsIgnoreCase("yes")) {
-                                value = "true";
-                            } else {
-                                value = "false";
-                            }
-                            naturalPerson.setResident_of_village(Boolean
-                                    .valueOf(value));
-                        } // parse in long instead of Int 25-Sep
-                        else if (attributeId == 54) {
-
-                            try {
-                                if (value.equals("10")) {
-                                    naturalPerson
-                                            .setPersonSubType(personService
-                                                    .getPersonTypeById(3l));
-                                } else if (value.equals("11")) {
-                                    naturalPerson
-                                            .setPersonSubType(personService
-                                                    .getPersonTypeById(4l));
-                                } else if (value.equals("12")) {
-                                    naturalPerson
-                                            .setPersonSubType(personService
-                                                    .getPersonTypeById(5l));
-                                } else {
-                                    naturalPerson
-                                            .setPersonSubType(personService
-                                                    .getPersonTypeById(Long.parseLong(value)));
-                                }
-                            } catch (Exception e) {
-                                logger.error(e);
-                            }
-
-                            /*	else if(value.equals("11"))
-								naturalPerson
-										.setPersonSubType(personService
-												.getPersonTypeById(4l));
-								
-							else if(value.equals("12"))
-								naturalPerson
-										.setPersonSubType(personService
-												.getPersonTypeById(5l));
-                             */
-                        }
-                    }
-                } else if (attributeCategoryType.equalsIgnoreCase("nonnatural")
-                        && !currentGroupId.equals("null")) {
-                    if (prevGroupId.isEmpty()
-                            || prevGroupId.equalsIgnoreCase(currentGroupId)) {
-
-                        if (prevGroupId.isEmpty()) {
-                            prevGroupId = currentGroupId;
-
-                            nonNaturalPerson.setMobileGroupId(currentGroupId);
-                        }
-
-                        if (attributeId == 6) {
-                            nonNaturalPerson.setInstitutionName(value);
-                        } else if (attributeId == 7) {
-                            nonNaturalPerson.setAddress(value);
-                        } else if (attributeId == 8) {
-                            nonNaturalPerson.setPhoneNumber(value);
-                        } else if (attributeId == 52) {
-                            nonNaturalPerson.setGroupType(spatialUnitService
-                                    .getGroupTypeById(Integer.parseInt(value)));
-                        }
-                    }
-                } else if (attributeCategoryType.equalsIgnoreCase("tenure")) {
-                    if (prevGroupId.isEmpty()
-                            || prevGroupId.equalsIgnoreCase(currentGroupId)) {
-
-                        if (prevGroupId.isEmpty()) {
-                            prevGroupId = currentGroupId;
-                        }
-
-                        socialTenure.setIsActive(true);
-
-                        if (attributeId == 31) {
-                            socialTenure.setShare_type(spatialUnitService
-                                    .getShareTypeById(Integer.parseInt(value)));
-                        } /*
-						 * else if (attributeId == 12) {
-						 * socialTenure.setShare(Integer.parseInt(value)); }
-                         */ else if (attributeId == 24) {
-                            socialTenure
-                                    .setOccupancyTypeId(spatialUnitService
-                                            .getOccupancyTypeById(Integer
-                                                    .parseInt(value)));
-                        } else if (attributeId == 23) {
-                            socialTenure
-                                    .setTenureclassId(spatialUnitService
-                                            .getTenureClassById(Integer
-                                                    .parseInt(value)));
-
-                            // updated on 20-Oct as resident introduced for tenure class
-                            if (value.equals("30")) {
-                                socialTenure.setResident(false);
-                            } else if (value.equals("29")) {
-                                socialTenure.setResident(true);
-                            }
-                        } else if (attributeId == 55) {
-                            if (value.equalsIgnoreCase("Yes")) {
-                                value = "true";
-                                socialTenure.setResident(true);
-                            } else {
-                                value = "false";
-                                socialTenure.setResident(false);
-                            }
-
-                        } else if (attributeId == 32) {
-                            try {
-                                socialTenure
-                                        .setSocial_tenure_startdate(new SimpleDateFormat(
-                                                "dd/MM/yyyy").parse(value
-                                                .trim()));
-                            } catch (java.text.ParseException e) {
-                                e.printStackTrace();
-                            }
-                        } else if (attributeId == 33) {
-                            try {
-                                socialTenure
-                                        .setSocial_tenure_enddate(new SimpleDateFormat(
-                                                "dd/MM/yyyy").parse(value
-                                                .trim()));
-                            } catch (java.text.ParseException e) {
-                                e.printStackTrace();
-                            }
-                        } else if (attributeId == 13) {
-                            socialTenure.setTenureDuration(Float
-                                    .parseFloat(value));
-                        }
-                    }
-                }
-
-                // Persisting data in AttributesValue
-                if (!value.equals("null")) {
-                    if (attributeId != 54) {
-                        addAllAttributeValues(value, attributeId);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("Exception", ex);
-            throw ex;
-        }
-    }
-
-    /**
-     * Persists data in AttributeValues and adds it to the list based on the
-     * category
-     *
-     * @param value
-     * @param attributeId
-     */
-    private void addAllAttributeValues(String value, int attributeId) {
-
-        attributeValues = new AttributeValues();
-
-        try {
-            // Setting Data in AttributeValues entity
-            attributeValues.setValue(value);
-            // attributeValues.setAttributevalueid((long) attributeId);
-            attributeValues.setUid(surveyProjectAttribute
-                    .getSurveyProjectAttributeId((long) attributeId,
-                            spatialUnit.getProject()));
-
-            if (attributeCategoryType.equalsIgnoreCase("general")
-                    || attributeCategoryType.equalsIgnoreCase("custom")) {
-
-                attributeValuesList.add(attributeValues);
-
-            } else if (attributeCategoryType.equalsIgnoreCase("natural")) {
-
-                naturalList.add(attributeValues);
-
-            } else if (attributeCategoryType.equalsIgnoreCase("nonnatural")) {
-
-                nonNaturalList.add(attributeValues);
-
-            } else if (attributeCategoryType.equalsIgnoreCase("tenure")) {
-
-                tenureList.add(attributeValues);
-            }
-        } catch (Exception ex) {
-            logger.error("Exception", ex);
-            System.out.println("Attribute ID::::" + attributeId);
-            throw ex;
-        }
-
-    }
-
-    /**
-     * Adds lists into HashMap
-     */
-    private void addAttributeValues() {
-
-        /**
-         * If natural person list is not empty than add it to the concurrent map
-         */
-        if (naturalListByGId.size() > 0) {
-            attributeValuesMap.put("NaturalPerson", naturalListByGId);
-        }
-
-        /**
-         * If non natural person list is not empty than add it to the concurrent
-         * map
-         */
-        if (nonNaturalListByGId.size() > 0) {
-            attributeValuesMap.put("NonNaturalPerson", nonNaturalListByGId);
-        }
-
-        attributeValuesMap.put("SocialTenure", tenureListByGId);
-    }
-
-    /**
-     * Clears all data in list and HashMap
-     */
-    private void clearAll() {
-
-        // Clears attribute value list
-        attributeValuesList.clear();
-
-        // Clears person List
-        naturalList.clear();
-
-        nonNaturalList.clear();
-
-        // Clears tenure list
-        tenureList.clear();
-
-        // Clears natural list by gid
-        naturalListByGId.clear();
-
-        // Clears non natural list by gid
-        nonNaturalListByGId.clear();
-
-        // Clears tenure List by GId
-        tenureListByGId.clear();
-
-        // Clears attribute values Hash Map
-        attributeValuesMap.clear();
     }
 
     private String saveSourceDocumentAttributes(SourceDocument sourceDocument,

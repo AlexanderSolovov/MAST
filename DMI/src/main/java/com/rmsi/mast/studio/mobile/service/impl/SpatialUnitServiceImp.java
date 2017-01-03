@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.rmsi.mast.studio.mobile.service.impl;
 
 import com.rmsi.mast.studio.dao.AcquisitionTypeDao;
@@ -39,8 +36,10 @@ import com.rmsi.mast.studio.mobile.dao.hibernate.SpatialUnitHibernateDao;
 import com.rmsi.mast.studio.mobile.service.SpatialUnitService;
 import com.rmsi.mast.studio.util.GeometryConversion;
 import com.rmsi.mast.studio.dao.ClaimTypeDao;
+import com.rmsi.mast.studio.dao.DisputeTypeDao;
 import com.rmsi.mast.studio.dao.DocumentTypeDao;
 import com.rmsi.mast.studio.domain.AcquisitionType;
+import com.rmsi.mast.studio.domain.DisputeType;
 import com.rmsi.mast.studio.domain.DocumentType;
 
 @Service
@@ -84,6 +83,9 @@ public class SpatialUnitServiceImp implements SpatialUnitService {
 
     @Autowired
     ClaimTypeDao claimTypeDAO;
+    
+    @Autowired
+    DisputeTypeDao disputeTypeDao;
     
     @Autowired
     AcquisitionTypeDao acquisitionTypeDao;
@@ -130,10 +132,7 @@ public class SpatialUnitServiceImp implements SpatialUnitService {
 
     @Override
     public ShareType getShareTypeById(int tenureRelationId) {
-
-        return tenureRelationTypeDao
-                .getTenureRelationshipTypeById(tenureRelationId);
-
+        return tenureRelationTypeDao.getTenureRelationshipTypeById(tenureRelationId);
     }
 
     @Override
@@ -215,6 +214,21 @@ public class SpatialUnitServiceImp implements SpatialUnitService {
     }
     
     @Override
+    public List<DisputeType> getDisputeTypes(){
+        return disputeTypeDao.findAll();
+    }
+    
+    @Override
+    public DisputeType getDisputeTypeById(int code){
+        return disputeTypeDao.findById(code, true);
+    }
+    
+    @Override
+    public List<AcquisitionType> getAcquisitionTypes(){
+        return acquisitionTypeDao.findAll();
+    }
+    
+    @Override
     public AcquisitionType getAcquisitionTypeByAttributeOptionId(int optId){
         return acquisitionTypeDao.getTypeByAttributeOptionId(optId);
     }
@@ -222,5 +236,20 @@ public class SpatialUnitServiceImp implements SpatialUnitService {
     @Override
     public DocumentType getDocumentTypeByAttributeOptionId(int optId){
         return documentTypeDao.getTypeByAttributeOptionId(optId);
+    }
+
+    @Override
+    public List<ShareType> getShareTypes() {
+        return tenureRelationTypeDao.findAll();
+    }
+
+    @Override
+    public List<TenureClass> getTenureClasses() {
+        return tenureClassDao.findAll();
+    }
+    
+    @Override
+    public List<Gender> getGenders(){
+        return genderDao.findAll();
     }
 }

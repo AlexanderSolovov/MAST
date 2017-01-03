@@ -358,11 +358,11 @@
 
     <!-- add on 3/Nov/2015 -->
 
-    <string name="data_summary_label1_1">Aina ya Miliki :</string>
-    <string name="data_summary_label1_owner">Mmiliki :</string>
-    <string name="data_summary_label4_admin">Msimamizi :</string>
-    <string name="data_summary_label5_Guardian">Mlezi :</string>
-    <string name="data_summary_label5_POI">Mtu mwenye maslahi :</string>
+    <string name="data_summary_label1_1">Aina ya Miliki:</string>
+    <string name="data_summary_label1_owner">Mmiliki:</string>
+    <string name="data_summary_label4_admin">Msimamizi:</string>
+    <string name="data_summary_label5_Guardian">Mlezi:</string>
+    <string name="data_summary_label5_POI">Mtu mwenye maslahi:</string>
 
     <string name="FieldDataUploadedSuccessfully">Upandishwaji wa taarifa umefanikiwa</string>
     <string name="MultimediaUploadedSuccessfully">Upandishwaji wa Maltimedia umefanikiwa</string>
@@ -382,6 +382,7 @@
     <string name="select_witness1">Mhakiki 1</string>
     <string name="select_witness2">Mhakiki 2</string>
     <string name="polygonNumber">Namba ya kudai</string>
+    <string name="claimType">Aina madai</string>
     <string name="surveyDate">Tarehe madai</string>
     <string name="nextKin">Jaza mtu mwenye maslahi</string>
     <string name="tittle_addDeceased">Jaza jina la marehemu</string>
@@ -473,5 +474,66 @@
     <string name="view_person">Mtazamo Mtu</string>
     <string name="can_add_only_one_person_with_non_natural_person">Unaweza kujaza mtu mmoja tu kwenye “Taasisi”</string>
     <string name="please_add_atleast_one_admin">Tafadhali Kuongeza angalau Msimamizi moja</string>
+    <string name="nonNatural">Non-Natural</string>
+    <string name="selectPersonType">Chagua aina ya mtu</string>
+    <string name="personType">Aina ya mtu</string>
+    <string name="accept">Kukubali</string>
+    <string name="AddNewPropertyDetails">Kuongeza Mali Maelezo</string>
+    <string name="rightType">Aina ya upangaji</string>
+    <string name="shareType">Kazi aina</string>
+    <string name="certDate">Tarehe cheti</string>
+    <string name="juridicalArea">Eneo la kisheria</string>
+    <string name="certNumber">Idadi cheti</string>
+    <string name="FillCertNumber">Kujaza idadi cheti</string>
+    <string name="FillJuridicalArea">Kujaza katika eneo juridical</string>
+    <string name="SelectCertDate">Tarehe cheti kuchagua</string>
+    <string name="SelectRightType">Chagua aina ya upangaji</string>
+    <string name="SelectShareType">Chagua aina ya kumiliki ardhi</string>
+    <string name="SelectResidency">Kuchagua ukaazi</string>
+    <string name="Guardian">Mlezi</string>
+    <string name="administrator">Msimamizi</string>
+    <string name="RightNotFound">Umiliki haki jina lake halikupatikana</string>
+    <string name="PropertyNotFound">Madai jina lake halikupatikana</string>
+    <string name="EnterClaimNumber">Kuingia idadi Madai</string>
+    <string name="SelectClaimDate">Tarehe Chagua Madai</string>
+    <string name="SelectClaimType">Aina Teule Madai</string>
+    <string name="SelectOption">Kuchagua chaguo</string>
+    <string name="ClaimDateInFuture">Tarehe madai hawezi kuwa katika siku zijazo</string>
+    <string name="ClaimNumberUnique">Zinazotolewa madai namba tayari ipo</string>
+    <string name="RelationshipType">Aina uhusiano</string>
+    <string name="SelectRelationshipType">Chagua aina ya uhusiano</string>
+    <string name="AddNonNaturalPerson">Kuongeza Non-Mtindo mtu</string>
+    <string name="RepresentativePerson">Mwakilishi Mtu</string>
+    <string name="Claim">Madai</string>
+    <string name="Dob">Tarehe Ya Ku Zaliwa</string>
+    <string name="FillGeneralProperties">Kujaza mali ya jumla ya madai</string>
+    <string name="FillRequiredFieldsOngeneralProp">Kujaza katika nyanja required juu ya mali ya jumla</string>
+    <string name="FillRequiredFieldsOnRight">Kujaza mashamba required kwa umiliki za kijamii</string>
+    <string name="FillMediaAttributes">Kujaza sifa multimedia</string>
+    <string name="FillCustomAttributes">Kujaza sifa desturi</string>
+    <string name="FillRequiredFieldsOnNonPerson">Kujaza katika nyanja required kwa mtu yasiyo ya asili</string>
+    <string name="FillRequiredFieldsOnPerson">Kujaza katika nyanja required kwa mtu</string>
+    <string name="AgeMustBe18or100">Mtu umri lazima kati ya 18 na miaka 110</string>
+    <string name="AgeLessThan18">Mmiliki umri lazima kuwa chini ya miaka 18</string>
+    <string name="SingleShareCheck">Umiliki Single lazima kuwa na tu 1 mmiliki</string>
+    <string name="MultiJointShareError">Nyingi pamoja kumiliki ardhi lazima kuwa na wamiliki 2 tu</string>
+    <string name="MultiCommonShareError">Nyingi kumiliki ardhi katika kawaida lazima angalau 2 wamiliki na hakuna aina nyingine mtu</string>
+    <string name="GuardianShareError">Mlezi kumiliki ardhi lazima kuwa na Watoto moja au zaidi na hadi 2 walezi</string>
+    <string name="ProbateShareError">Upangaji katika probate lazima kuwa na marehemu mtu na hadi 2 watawala. wamiliki nyingi unaweza kuongezwa vilevile.</string>
+    <string name="FillShareSize">Kujaza katika uwanja kushiriki ukubwa</string>
+    <string name="ShareSize">Kushiriki ukubwa</string>
+    <string name="Next">Ijayo</string>
+    <string name="Close">Funga</string>
+    <string name="Finish">Kumaliza</string>
+    <string name="AddDisputeDetails">Kuongeza maelezo mzozo</string>
+    <string name="Dispute">Mzozo</string>
+    <string name="DisputeType">Aina mzozo</string>
+    <string name="DisputeDescription">Mzozo maelezo</string>
+    <string name="DisputingParties">Wakijadiliana watu</string>
+    <string name="SelectDisputeType">Chagua aina mzozo</string>
+    <string name="AddDisputingPersons">Kuongeza angalau 2 watu wakijadiliana</string>
+    <string name="AcquisitionType">Upatikanaji aina</string>
+    <string name="SelectAcquisitionType">Chagua aina ya manunuzi</string>
+    <string name="DisputeDetails">Maelezo mzozo</string>
 
 </resources>

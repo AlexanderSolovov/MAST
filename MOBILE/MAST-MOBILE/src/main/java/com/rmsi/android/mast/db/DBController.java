@@ -1,5 +1,6 @@
 package com.rmsi.android.mast.db;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,27 +16,42 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.rmsi.android.mast.activity.R;
+import com.rmsi.android.mast.domain.AcquisitionType;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Bookmark;
+import com.rmsi.android.mast.domain.ClaimType;
+import com.rmsi.android.mast.domain.DeceasedPerson;
+import com.rmsi.android.mast.domain.Dispute;
+import com.rmsi.android.mast.domain.DisputeType;
 import com.rmsi.android.mast.domain.Feature;
+import com.rmsi.android.mast.domain.Gender;
 import com.rmsi.android.mast.domain.Media;
 import com.rmsi.android.mast.domain.Option;
+import com.rmsi.android.mast.domain.Person;
+import com.rmsi.android.mast.domain.PersonOfInterest;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
+import com.rmsi.android.mast.domain.Property;
+import com.rmsi.android.mast.domain.RefData;
+import com.rmsi.android.mast.domain.RelationshipType;
+import com.rmsi.android.mast.domain.Right;
+import com.rmsi.android.mast.domain.RightType;
+import com.rmsi.android.mast.domain.ShareType;
 import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.StringUtility;
 
-public class DBController extends SQLiteOpenHelper {
+public class DbController extends SQLiteOpenHelper {
     Context contxt;
-    SQLiteDatabase myDataBase;
+    private static DbController instance;
+    SQLiteDatabase db;
 
     static String DBPATH = "/" + CommonFunctions.parentFolderName + "/" + CommonFunctions.dbFolderName + "/mast_mobile.db";
     static String DB_FULL_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + DBPATH;
@@ -48,30 +64,20 @@ public class DBController extends SQLiteOpenHelper {
     private static String STATUS_VERIFIED_SYNCED = "verified&synced";
     private static String STATUS_REJECTED = "rejected";
     private static String STATUS_FINAL = "final";
-    private static String CAT_General = "1";
-    private static String CAT_NaturalPerson = "2";
-    private static String CAT_Multimedia = "3";
-    private static String CAT_Tenure = "4";
-    private static String CAT_NonNaturalPerson = "5";
-    private static String CAT_Custom = "6";
-    private static String CAT_General_Property = "7";
-    private static String PERSON_SubType_Admin = "Administrator";
-    private static String PERSON_SubType_Owner = "Owner";
-    private static String PERSON_SubType_Guardian = "Guardian";
-    private static String NonNaturalPerson = "Non-Natural";
     private static int DB_VERSION = 6;
-    private static int CONTROL_STIRNG = 1;
-    private static int CONTROL_DATE = 2;
-    private static int CONTROL_BOOLEAN = 3;
-    private static int CONTROL_NUMBER = 4;
-    private static int CONTROL_SPINNER = 5;
     CommonFunctions cf = null;
 
-    public DBController(Context applicationcontext) {
+    public static synchronized DbController getInstance(Context context) {
+        if (instance == null) {
+            instance = new DbController(context.getApplicationContext());
+        }
+        return instance;
+    }
+
+    private DbController(Context applicationcontext) {
         super(applicationcontext, DB_FULL_PATH, null, DB_VERSION);
         this.contxt = applicationcontext;
         cf = CommonFunctions.getInstance();
-        //Initializing context in common functions in case of a crash
         try {
             cf.Initialize(applicationcontext.getApplicationContext());
         } catch (Exception e) {
@@ -80,6 +86,7 @@ public class DBController extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Main tables
         String query_table1 = "CREATE TABLE SPATIAL_FEATURES (" +
                 "FEATURE_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "SERVER_FEATURE_ID TEXT," +
@@ -88,50 +95,106 @@ public class DBController extends SQLiteOpenHelper {
                 "CREATEDTIME TEXT," +
                 "STATUS TEXT," +
                 "COMPLETEDTIME TEXT," +
-                "SERVER_PK TEXT," +
                 "IMEI TEXT," +
-                "PERSON_TYPE TEXT," +
                 "HAMLET_ID INTEGER," +
                 "WITNESS_1 TEXT," +
                 "WITNESS_2 TEXT," +
-                "CLAIM_TYPE TEXT," +
+                "CLAIM_TYPE INTEGER," +
                 "POLYGON_NUMBER TEXT," +
                 "SURVEY_DATE TEXT" +
                 ")";
-        String query_table2 = "CREATE TABLE ATTRIBUTE_MASTER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ATTRIB_ID INTEGER,ATTRIBUTE_TYPE STRING,ATTRIBUTE_CONTROLTYPE INTEGER,ATTRIBUTE_NAME TEXT,LISTING TEXT,ATTRIBUTE_NAME_OTHER TEXT,VALIDATION TEXT)";
-        String query_table3 = "CREATE TABLE OPTIONS(OPTION_ID TEXT,ATTRIB_ID INTEGER,OPTION_NAME TEXT,OPTION_NAME_OTHER TEXT)";
-        String query_table4 = "CREATE TABLE FORM_VALUES(GROUP_ID INTEGER,ATTRIB_ID INTEGER,ATTRIB_VALUE TEXT,FEATURE_ID TEXT)";
-        String query_table5 = "CREATE TABLE USER(USER_ID TEXT,USER_NAME TEXT,PASSWORD TEXT,ROLE_ID TEXT,ROLE_NAME TEXT)";
-        String query_table6 = "CREATE TABLE BOOKMARKS(ID INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT,LATITUDE TEXT,LONGITUDE TEXT,ZOOMLEVEL TEXT)";
-        String query_table7 = "CREATE TABLE MEDIA(MEDIA_ID INTEGER PRIMARY KEY,FEATURE_ID TEXT,TYPE TEXT,PATH TEXT,ATTRIB_1 TEXT,ATTRIB_2 TEXT,SYNCED INTEGER DEFAULT 0)";
-        String query_table8 = "CREATE TABLE PERSON(ID INTEGER PRIMARY KEY,ATTRIB_1 TEXT,ATTRIB_2 TEXT,FEATURE_ID TEXT,SERVER_PK TEXT,PERSON_SUBTYPE TEXT)";
 
         String query_table10 = "CREATE TABLE SOCIAL_TENURE(" +
                 "ID INTEGER PRIMARY KEY," +
-                "ATTRIB_1 TEXT," +
-                "ATTRIB_2 TEXT," +
-                "PERSON_ID INTEGER," +
-                "FEATURE_ID TEXT," +
-                "SERVER_PK TEXT," +
+                "FEATURE_ID INTEGER," +
+                "SERVER_PK INTEGER," +
+                "SHARE_TYPE INTEGER," +
+                "RELATIONSHIP_ID INTEGER," +
+                "RIGHT_TYPE INTEGER," +
                 "CERT_NUMBER TEXT," +
                 "CERT_ISSUE_DATE TEXT," +
                 "JURIDICAL_AREA REAL" +
                 ")";
-        String query_table11 = "CREATE TABLE GROUPID_SEQ(VALUE INTEGER)";
-        String query_table12 = "CREATE TABLE PERSON_MEDIA(ID INTEGER PRIMARY KEY AUTOINCREMENT,PERSON_ID TEXT,TYPE TEXT,PATH TEXT,FEATURE_ID TEXT,SYNCED INTEGER DEFAULT 0)";
-        String query_table13 = "CREATE TABLE PROJECT_SPATIAL_DATA(SERVER_PK INTEGER,PROJECT_NAME TEXT,FILE_NAME TEXT,FILE_EXT TEXT,ALIAS TEXT,VILLAGE_NAME TEXT)";
 
-        String query_table14 = "CREATE TABLE HAMLET_DETAILS(ID INTEGER PRIMARY KEY, HAMLET_NAME TEXT, HAMLET_LEADER TEXT)";
-        String query_table15 = "CREATE TABLE ADJUDICATOR_DETAILS(ID INTEGER PRIMARY KEY,ADJUDICATOR_NAME TEXT)";
+        String query_table8 = "CREATE TABLE PERSON(" +
+                "ID INTEGER PRIMARY KEY," +
+                "SOCIAL_TENURE_ID INTEGER," +
+                "DISPUTE_ID INTEGER," +
+                "ACQUISITION_TYPE_ID INTEGER," +
+                "SHARE TEXT," +
+                "RESIDENT INTEGER," +
+                "IS_NATURAL INTEGER," +
+                "FEATURE_ID INTEGER," +
+                "SERVER_PK INTEGER," +
+                "PERSON_SUBTYPE INTEGER" +
+                ")";
+
         String query_table16 = "CREATE TABLE NEXT_KIN_DETAILS(" +
                 "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "NEXT_KIN_NAME TEXT," +
                 "DOB TEXT," +
                 "GENDER_ID INTEGER," +
                 "RELATIONSHIP_ID INTEGER," +
+                "FEATURE_ID INTEGER" +
+                ")";
+
+        String query_table17 = "CREATE TABLE DECEASED_PERSON(" +
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "FIRST_NAME TEXT," +
+                "MIDDLE_NAME TEXT," +
+                "LAST_NAME TEXT," +
+                "FEATURE_ID INTEGER" +
+                ")";
+
+        String tableDispute = "CREATE TABLE DISPUTE(" +
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "SERVER_ID INTEGER," +
+                "FEATURE_ID INTEGER," +
+                "DISPUTE_TYPE INTEGER," +
+                "DESCRIPTION TEXT," +
+                "REG_DATE TEXT" +
+                ")";
+
+        String query_table7 = "CREATE TABLE MEDIA(" +
+                "MEDIA_ID INTEGER PRIMARY KEY," +
+                "FEATURE_ID INTEGER," +
+                "PERSON_ID INTEGER," +
+                "DISPUTE_ID INTEGER," +
+                "TYPE TEXT," +
+                "PATH TEXT," +
+                "SYNCED INTEGER DEFAULT 0" +
+                ")";
+
+        // Attributes
+        String query_table2 = "CREATE TABLE ATTRIBUTE_MASTER(" +
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "ATTRIB_ID INTEGER," +
+                "ATTRIBUTE_TYPE STRING," +
+                "ATTRIBUTE_CONTROLTYPE INTEGER," +
+                "ATTRIBUTE_NAME TEXT," +
+                "LISTING INTEGER," +
+                "ATTRIBUTE_NAME_OTHER TEXT," +
+                "VALIDATION TEXT" +
+                ")";
+
+        String query_table3 = "CREATE TABLE OPTIONS(" +
+                "OPTION_ID TEXT," +
+                "ATTRIB_ID INTEGER," +
+                "OPTION_NAME TEXT," +
+                "OPTION_NAME_OTHER TEXT)";
+
+        String query_table4 = "CREATE TABLE FORM_VALUES(" +
+                "GROUP_ID INTEGER," +
+                "ATTRIB_ID INTEGER," +
+                "ATTRIB_VALUE TEXT," +
                 "FEATURE_ID TEXT" +
                 ")";
-        String query_table17 = "CREATE TABLE DECEASED_PERSON(ID INTEGER PRIMARY KEY AUTOINCREMENT,FIRST_NAME TEXT,MIDDLE_NAME TEXT,LAST_NAME TEXT,FEATURE_ID TEXT)";
+
+        // Ref data
+        String query_table11 = "CREATE TABLE GROUPID_SEQ(VALUE INTEGER)";
+        String query_table13 = "CREATE TABLE PROJECT_SPATIAL_DATA(SERVER_PK INTEGER,PROJECT_NAME TEXT,FILE_NAME TEXT,FILE_EXT TEXT,ALIAS TEXT,VILLAGE_NAME TEXT)";
+        String query_table14 = "CREATE TABLE HAMLET_DETAILS(ID INTEGER PRIMARY KEY, HAMLET_NAME TEXT, HAMLET_LEADER TEXT)";
+        String query_table15 = "CREATE TABLE ADJUDICATOR_DETAILS(ID INTEGER PRIMARY KEY,ADJUDICATOR_NAME TEXT)";
 
         String query_table18 = "CREATE TABLE CLAIM_TYPE(" +
                 "CODE TEXT PRIMARY KEY," +
@@ -145,6 +208,47 @@ public class DBController extends SQLiteOpenHelper {
                 "NAME_OTHER_LANG TEXT," +
                 "ACTIVE INTEGER" +
                 ")";
+
+        String query_table20 = "CREATE TABLE SHARE_TYPE(" +
+                "CODE INTEGER PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT," +
+                "ACTIVE INTEGER DEFAULT 1" +
+                ")";
+
+        String query_table21 = "CREATE TABLE RIGHT_TYPE(" +
+                "CODE INTEGER PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT," +
+                "ACTIVE INTEGER," +
+                "FOR_ADJUDICATION INTEGER" +
+                ")";
+
+        String query_table22 = "CREATE TABLE GENDER(" +
+                "CODE INTEGER PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT," +
+                "ACTIVE INTEGER DEFAULT 1" +
+                ")";
+
+        String tableDisputeType = "CREATE TABLE DISPUTE_TYPE(" +
+                "CODE INTEGER PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT," +
+                "ACTIVE INTEGER DEFAULT 1" +
+                ")";
+
+        String tableAcquisitionType = "CREATE TABLE ACQUISITION_TYPE(" +
+                "CODE INTEGER PRIMARY KEY," +
+                "NAME TEXT," +
+                "NAME_OTHER_LANG TEXT," +
+                "ACTIVE INTEGER DEFAULT 1" +
+                ")";
+
+        // System
+        String query_table5 = "CREATE TABLE USER(USER_ID TEXT,USER_NAME TEXT,PASSWORD TEXT,ROLE_ID TEXT,ROLE_NAME TEXT)";
+        String query_table6 = "CREATE TABLE BOOKMARKS(ID INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT,LATITUDE TEXT,LONGITUDE TEXT,ZOOMLEVEL TEXT)";
+
 
         try {
             dropTable(db, "SPATIAL_FEATURES");
@@ -172,7 +276,6 @@ public class DBController extends SQLiteOpenHelper {
 
             db.execSQL(query_table10);
             db.execSQL(query_table11);
-            db.execSQL(query_table12);
             db.execSQL(query_table13);
             db.execSQL(query_table14);
             db.execSQL(query_table15);
@@ -180,6 +283,12 @@ public class DBController extends SQLiteOpenHelper {
             db.execSQL(query_table17);
             db.execSQL(query_table18);
             db.execSQL(query_table19);
+            db.execSQL(query_table20);
+            db.execSQL(query_table21);
+            db.execSQL(query_table22);
+            db.execSQL(tableAcquisitionType);
+            db.execSQL(tableDisputeType);
+            db.execSQL(tableDispute);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -189,36 +298,31 @@ public class DBController extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (newVersion > oldVersion) {
-            //db.execSQL("ALTER TABLE HAMLET_DETAILS ADD COLUMN HAMLET_LEADER TEXT");
-//            db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN CLAIM_TYPE TEXT");
-          //  db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN POLYGON_NUMBER TEXT");
-            //db.execSQL("ALTER TABLE SPATIAL_FEATURES ADD COLUMN SURVEY_DATE TEXT");
-
-//
-//            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN CERT_NUMBER TEXT");
-//            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN CERT_ISSUE_DATE TEXT");
-//            db.execSQL("ALTER TABLE SOCIAL_TENURE ADD COLUMN JURIDICAL_AREA REAL");
-//
-//            db.execSQL("ALTER TABLE NEXT_KIN_DETAILS ADD COLUMN GENDER_ID INTEGER");
-//            db.execSQL("ALTER TABLE NEXT_KIN_DETAILS ADD COLUMN DOB TEXT");
-//            db.execSQL("ALTER TABLE NEXT_KIN_DETAILS ADD COLUMN RELATIONSHIP_ID INTEGER");
-//
-//            db.execSQL("CREATE TABLE CLAIM_TYPE(CODE TEXT PRIMARY KEY, NAME TEXT, NAME_OTHER_LANG TEXT)");
-//            db.execSQL("CREATE TABLE RELATIONSHIP_TYPE(CODE INTEGER PRIMARY KEY, NAME TEXT, NAME_OTHER_LANG TEXT, ACTIVE INTEGER)");
         }
     }
 
-    public boolean checkDataBase() {
-        SQLiteDatabase checkDB = null;
-        try {
-            checkDB = getReadableDatabase();
-        } catch (SQLiteException e) {
-            // database does't exist yet.
+    private SQLiteDatabase getDb() {
+        if (db == null || !db.isOpen()) {
+            db = getWritableDatabase();
         }
-        if (checkDB != null) {
-            checkDB.close();
-        }
-        return checkDB != null ? true : false;
+        return db;
+    }
+
+    private void cleanDb(SQLiteDatabase db) {
+        db.delete("FORM_VALUES", null, null);
+        db.delete("PERSON", null, null);
+        db.delete("MEDIA", null, null);
+        db.delete("SPATIAL_FEATURES", null, null);
+        db.delete("SOCIAL_TENURE", null, null);
+        db.delete("PROJECT_SPATIAL_DATA", null, null);
+        db.delete("OPTIONS", null, null);
+        db.delete("ATTRIBUTE_MASTER", null, null);
+
+        db.delete(ClaimType.TABLE_NAME, null, null);
+        db.delete(RightType.TABLE_NAME, null, null);
+        db.delete(ShareType.TABLE_NAME, null, null);
+        db.delete(RelationshipType.TABLE_NAME, null, null);
+        db.delete(Gender.TABLE_NAME, null, null);
     }
 
     public void dropTable(SQLiteDatabase database, String tableName) {
@@ -227,37 +331,44 @@ public class DBController extends SQLiteOpenHelper {
         database.execSQL(query);
     }
 
-    private List<Feature> getFeatures(String query){
+    private List<Feature> getFeatures(String query) {
         List<Feature> features = new ArrayList<Feature>();
+        Cursor cursor = null;
+
         try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(query, null);
+            cursor = getDb().rawQuery(query, null);
             if (cursor.moveToFirst()) {
-                int colId = cursor.getColumnIndex("FEATURE_ID");
-                int colServerId = cursor.getColumnIndex("SERVER_FEATURE_ID");
-                int colCoordinates = cursor.getColumnIndex("COORDINATES");
-                int colGeomType = cursor.getColumnIndex("GEOMTYPE");
-                int colStatus = cursor.getColumnIndex("STATUS");
-                int colPolygonNumber = cursor.getColumnIndex("POLYGON_NUMBER");
-                int colSurveyDate = cursor.getColumnIndex("SURVEY_DATE");
+                int indxId = cursor.getColumnIndex(Feature.COL_ID);
+                int indxServerId = cursor.getColumnIndex(Feature.COL_SERVER_ID);
+                int indxCoordinates = cursor.getColumnIndex(Feature.COL_COORDINATES);
+                int indxGeomType = cursor.getColumnIndex(Feature.COL_GEOM_TYPE);
+                int indxStatus = cursor.getColumnIndex(Feature.COL_STATUS);
+                int indxPolygonNumber = cursor.getColumnIndex(Feature.COL_POLYGON_NUMBER);
+                int indxSurveyDate = cursor.getColumnIndex(Feature.COL_SURVEY_DATE);
+
                 do {
                     Feature feature = new Feature();
-                    feature.setFeatureid(cursor.getLong(colId));
-                    feature.setServer_featureid(cursor.getString(colServerId));
-                    feature.setCoordinates(cursor.getString(colCoordinates));
-                    feature.setGeomtype(cursor.getString(colGeomType));
-                    feature.setStatus(cursor.getString(colStatus));
-                    feature.setPolygonNumber(cursor.getString(colPolygonNumber));
-                    feature.setSurveyDate(cursor.getString(colSurveyDate));
+                    feature.setId(cursor.getLong(indxId));
+                    feature.setServerId(cursor.getLong(indxServerId));
+                    feature.setCoordinates(cursor.getString(indxCoordinates));
+                    feature.setGeomType(cursor.getString(indxGeomType));
+                    feature.setStatus(cursor.getString(indxStatus));
+                    feature.setPolygonNumber(cursor.getString(indxPolygonNumber));
+                    feature.setSurveyDate(cursor.getString(indxSurveyDate));
                     features.add(feature);
                 }
                 while (cursor.moveToNext());
             }
-            cursor.close();
-            close();
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
+        } finally {
+            try {
+                cursor.close();
+            } catch (Exception e) {
+                cf.appLog("", e);
+                e.printStackTrace();
+            }
         }
         return features;
     }
@@ -267,23 +378,20 @@ public class DBController extends SQLiteOpenHelper {
         return getFeatures(q);
     }
 
-    public Long saveNewFeature(String geomtype, String wKTStr, String imei) {
+    public Long createFeature(String geomtype, String wKTStr, String imei) {
         Long featureId = 0L;
         try {
-            SQLiteDatabase db = getWritableDatabase();
             // Inserting into Features
             String time = sdf.format(new Date());
             ContentValues value = new ContentValues();
-            value.put("coordinates", wKTStr);
-            value.put("geomtype", geomtype);
-            value.put("createdtime", time);
-            value.put("status", STATUS_DRAFT);
-            value.put("IMEI", imei);
+            value.put(Feature.COL_COORDINATES, wKTStr);
+            value.put(Feature.COL_GEOM_TYPE, geomtype);
+            value.put(Property.COL_CREATION_DATE, time);
+            value.put(Property.COL_STATUS, STATUS_DRAFT);
+            value.put(Property.COL_IMEI, imei);
 
-            db.insert("SPATIAL_FEATURES", null, value);
-
-            featureId = getNewFeatureId();
-
+            getDb().insert(Feature.TABLE_NAME, null, value);
+            featureId = getGeneratedId(Feature.TABLE_NAME);
         } catch (Exception e) {
             e.printStackTrace();
             cf.appLog("", e);
@@ -295,13 +403,10 @@ public class DBController extends SQLiteOpenHelper {
     public boolean updateFeature(String wKTStr, Long featureId) {
         String whereClause = "FEATURE_ID = " + featureId;
         try {
-            SQLiteDatabase db = getWritableDatabase();
             // updating  Features
             ContentValues value = new ContentValues();
             value.put("coordinates", wKTStr);
-
-            db.update("SPATIAL_FEATURES", value, whereClause, null);
-
+            getDb().update("SPATIAL_FEATURES", value, whereClause, null);
         } catch (Exception e) {
             e.printStackTrace();
             cf.appLog("", e);
@@ -310,58 +415,61 @@ public class DBController extends SQLiteOpenHelper {
         return true;
     }
 
-    private Long getNewFeatureId() // for fetching new value from features
-    {
-        String sql = "select seq from sqlite_sequence where name='SPATIAL_FEATURES'";
-        Long featureid = null;
-        SQLiteDatabase database = getReadableDatabase();
-
-        Cursor cursor = database.rawQuery(sql, null);
+    /**
+     * Returns autogenerated ID for the given table.
+     */
+    private Long getGeneratedId(String tableName) {
+        String sql = "select seq from sqlite_sequence where name='" + tableName + "'";
+        Long id = null;
+        Cursor cursor = getDb().rawQuery(sql, null);
 
         if (cursor.moveToFirst()) {
             do {
-                featureid = cursor.getLong(0);
+                id = cursor.getLong(0);
             } while (cursor.moveToNext());
         }
         cursor.close();
-        return featureid;
+        return id;
     }
 
     public List<Feature> fetchDraftFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_DRAFT + "'";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + " = '" + STATUS_DRAFT + "'";
         return getFeatures(q);
     }
 
     public List<Feature> fetchCompletedFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID = '' or SERVER_FEATURE_ID is null)";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + "='" +
+                STATUS_COMPLETE + "' AND (" + Feature.COL_SERVER_ID + " = '' OR " + Feature.COL_SERVER_ID + " IS NULL)";
         return getFeatures(q);
     }
 
     public List<Feature> fetchSyncededFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + "='" +
+                STATUS_COMPLETE + "' AND (" + Feature.COL_SERVER_ID + " != '' AND " + Feature.COL_SERVER_ID + " IS NOT NULL)";
         return getFeatures(q);
     }
 
     public List<Feature> fetchVerifiedFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES where status in ('" + STATUS_VERIFIED + "','" + STATUS_VERIFIED_SYNCED + "')";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + " IN ('" +
+                STATUS_VERIFIED + "','" + STATUS_VERIFIED_SYNCED + "')";
         return getFeatures(q);
     }
 
     public List<Feature> fetchFinalFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_FINAL + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + "='" +
+                STATUS_FINAL + "' AND (" + Feature.COL_SERVER_ID + " != '' AND " + Feature.COL_SERVER_ID + " IS NOT NULL)";
         return getFeatures(q);
     }
 
     public boolean deleteFeature(Long featureid) {
-        String whereClause = "FEATURE_ID =" + featureid;
+        String whereClause = Feature.COL_ID + "=" + featureid;
         try {
-            myDataBase = getReadableDatabase();
-            myDataBase.delete("SPATIAL_FEATURES", whereClause, null);
-            myDataBase.delete("FORM_VALUES", whereClause, null);
-            myDataBase.delete("PERSON", whereClause, null);
-            myDataBase.delete("PERSON_MEDIA", whereClause, null);
-            myDataBase.delete("SOCIAL_TENURE", whereClause, null);
-            myDataBase.delete("MEDIA", whereClause, null);
+            getDb().delete(Feature.TABLE_NAME, whereClause, null);
+            getDb().delete(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, whereClause, null);
+            getDb().delete(Person.TABLE_NAME, whereClause, null);
+            getDb().delete(Right.TABLE_NAME, whereClause, null);
+            getDb().delete(Media.TABLE_NAME, whereClause, null);
+            getDb().delete(Dispute.TABLE_NAME, whereClause, null);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -371,15 +479,13 @@ public class DBController extends SQLiteOpenHelper {
     }
 
     public boolean markFeatureAsComplete(Long featureid) {
-        SQLiteDatabase database = getWritableDatabase();
         ContentValues values = new ContentValues();
-        String whereClause = "FEATURE_ID = " + featureid;
+        String whereClause = Feature.COL_ID + " = " + featureid;
         try {
             String time = sdf.format(new Date());
-            values.put("status", STATUS_COMPLETE);
-            values.put("completedtime", time);
-
-            database.update("SPATIAL_FEATURES", values, whereClause, null);
+            values.put(Feature.COL_STATUS, STATUS_COMPLETE);
+            values.put(Property.COL_COMPLETION_DATE, time);
+            getDb().update(Feature.TABLE_NAME, values, whereClause, null);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -389,15 +495,13 @@ public class DBController extends SQLiteOpenHelper {
     }
 
     public boolean markFeatureAsVerified(Long featureid) {
-        SQLiteDatabase database = getWritableDatabase();
         ContentValues values = new ContentValues();
-        String whereClause = "FEATURE_ID = " + featureid;
+        String whereClause = Feature.COL_ID + " = " + featureid;
         try {
             String time = sdf.format(new Date());
-            values.put("status", STATUS_VERIFIED);
-            values.put("completedtime", time);
-
-            database.update("SPATIAL_FEATURES", values, whereClause, null);
+            values.put(Feature.COL_STATUS, STATUS_VERIFIED);
+            values.put(Property.COL_COMPLETION_DATE, time);
+            getDb().update(Feature.TABLE_NAME, values, whereClause, null);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -406,382 +510,231 @@ public class DBController extends SQLiteOpenHelper {
         return true;
     }
 
-    public List<Attribute> getPersonAttribute(SQLiteDatabase database, String lang) {
-
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryValues = "SELECT  * FROM ATTRIBUTE_MASTER where ATTRIBUTE_TYPE ='" + CAT_NaturalPerson + "'";//  ORDER BY ATTRIB_ID";
-
-
-        Cursor cursor = database.rawQuery(selectQueryValues, null);
-        //  id    ATTRIB_ID INTEGER   ATTRIBUTE_TYPE STRING     ATTRIBUTE_CONTROLTYPE INTEGER     ATTRIBUTE_NAME TEXT)";
-        //  0	          1						2								3							4
-        Attribute attrib;
-        if (cursor.moveToFirst()) {
-            do {
-                attrib = new Attribute();
-                attrib.setAttributeid(cursor.getInt(1));
-                attrib.setAttributeType(cursor.getString(2));
-                attrib.setControlType(cursor.getInt(3));
-
-                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                    attrib.setAttributeName(cursor.getString(6));
-                } else {
-                    attrib.setAttributeName(cursor.getString(4));
-                }
-                attrib.setListing(cursor.getInt(5));
-
-                if (attrib.getControlType() == 5) {
-                    List<Option> optionList = new ArrayList<Option>();
-                    Option option = null;
-
-                    option = new Option();
-                    option.setOptionId(0L);
-                    option.setOptionName(contxt.getResources().getString(R.string.select));
-                    optionList.add(option);
-
-                    String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                    Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
-
-                    if (cursor2.moveToFirst()) {
-                        do {
-                            option = new Option();
-                            option.setOptionId(cursor2.getLong(0));
-                            StringBuffer multiLnagText = new StringBuffer();
-                            if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                option.setOptionName(cursor2.getString(3));
-                            } else {
-                                option.setOptionName(cursor2.getString(2));
-                            }
-                            if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                multiLnagText.append(cursor2.getString(3));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            } else {
-                                multiLnagText.append(cursor2.getString(2));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            }
-                            optionList.add(option);
-                        } while (cursor2.moveToNext());
-                    }
-                    cursor2.close();
-                    attrib.setOptionsList(optionList);
-                }
-
-                attrib.setValidation(cursor.getString(7));
-                attribList.add(attrib);
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-    }
-
-    public List<Attribute> getNonNaturalPersonAttribute(SQLiteDatabase database, String lang) {
-
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryValues = "SELECT  * FROM ATTRIBUTE_MASTER where ATTRIBUTE_TYPE ='" + CAT_NonNaturalPerson + "'";
-
-
-        Cursor cursor = database.rawQuery(selectQueryValues, null);
-        //  id    ATTRIB_ID INTEGER   ATTRIBUTE_TYPE STRING     ATTRIBUTE_CONTROLTYPE INTEGER     ATTRIBUTE_NAME TEXT)";
-        //  0	          1						2								3							4
-        Attribute attrib;
-        if (cursor.moveToFirst()) {
-            do {
-                attrib = new Attribute();
-                attrib.setAttributeid(cursor.getInt(1));
-                attrib.setAttributeType(cursor.getString(2));
-                attrib.setControlType(cursor.getInt(3));
-                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                    attrib.setAttributeName(cursor.getString(6));
-                } else {
-                    attrib.setAttributeName(cursor.getString(4));
-                }
-                attrib.setListing(cursor.getInt(5));
-
-                if (attrib.getControlType() == 5) {
-                    List<Option> optionList = new ArrayList<Option>();
-                    Option option = null;
-
-                    option = new Option();
-                    option.setOptionId(0L);
-                    option.setOptionName(contxt.getResources().getString(R.string.select));
-                    optionList.add(option);
-                    String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                    Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
-
-                    if (cursor2.moveToFirst()) {
-                        do {
-                            option = new Option();
-                            option.setOptionId(cursor2.getLong(0));
-                            StringBuffer multiLnagText = new StringBuffer();
-                            if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                option.setOptionName(cursor2.getString(3));
-                            } else {
-                                option.setOptionName(cursor2.getString(2));
-                            }
-                            if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                multiLnagText.append(cursor2.getString(3));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            } else {
-                                multiLnagText.append(cursor2.getString(2));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            }
-                            optionList.add(option);
-                        } while (cursor2.moveToNext());
-                    }
-                    cursor2.close();
-                    attrib.setOptionsList(optionList);
-                }
-                attribList.add(attrib);
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-    }
-
-
-    public List<Attribute> getGeneralAttribute(String lang) {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryValues = "SELECT  * FROM ATTRIBUTE_MASTER where ATTRIBUTE_TYPE ='" + CAT_General + "'";
-
-        Cursor cursor = db.rawQuery(selectQueryValues, null);
-        //id    ATTRIB_ID INTEGER   ATTRIBUTE_TYPE STRING     ATTRIBUTE_CONTROLTYPE INTEGER     ATTRIBUTE_NAME TEXT)";
-        //	          0						1								2							3
-        Attribute attrib;
-        if (cursor.moveToFirst()) {
-            do {
-                attrib = new Attribute();
-                attrib.setAttributeid(cursor.getInt(1));
-                attrib.setAttributeType(cursor.getString(2));
-                attrib.setControlType(cursor.getInt(3));
-                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                    attrib.setAttributeName(cursor.getString(6));
-                } else {
-                    attrib.setAttributeName(cursor.getString(4));
-                }
-
-                if (attrib.getControlType() == 5) {
-                    List<Option> optionList = new ArrayList<Option>();
-                    Option option = null;
-
-                    option = new Option();
-                    option.setOptionId(0L);
-                    option.setOptionName(contxt.getResources().getString(R.string.select));
-                    optionList.add(option);
-
-
-                    String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                    Cursor cursor2 = db.rawQuery(selectQueryOptions, null);
-
-                    if (cursor2.moveToFirst()) {
-                        do {
-                            option = new Option();
-                            option.setOptionId(cursor2.getLong(0));
-                            StringBuffer multiLnagText = new StringBuffer();
-                            if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                option.setOptionName(cursor2.getString(3));
-                            } else {
-                                option.setOptionName(cursor2.getString(2));
-                            }
-                            if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                multiLnagText.append(cursor2.getString(3));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            } else {
-                                multiLnagText.append(cursor2.getString(2));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            }
-                            optionList.add(option);
-                        } while (cursor2.moveToNext());
-                    }
-                    cursor2.close();
-                    attrib.setOptionsList(optionList);
-                }
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-    }
-
-
-    public List<Attribute> getTenureAttribute(SQLiteDatabase database, String lang) {
-
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryValues = "SELECT  * FROM ATTRIBUTE_MASTER where ATTRIBUTE_TYPE ='" + CAT_Tenure + "'";
-
-
-        Cursor cursor = database.rawQuery(selectQueryValues, null);
-        //id    ATTRIB_ID INTEGER   ATTRIBUTE_TYPE STRING     ATTRIBUTE_CONTROLTYPE INTEGER     ATTRIBUTE_NAME TEXT)";
-        //	          0						1								2							3
-        Attribute attrib;
-        if (cursor.moveToFirst()) {
-            do {
-                attrib = new Attribute();
-                attrib.setAttributeid(cursor.getInt(1));
-                attrib.setAttributeType(cursor.getString(2));
-                attrib.setControlType(cursor.getInt(3));
-                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                    attrib.setAttributeName(cursor.getString(6));
-                } else {
-                    attrib.setAttributeName(cursor.getString(4));
-                }
-                attrib.setListing(cursor.getInt(5));
-                if (attrib.getControlType() == 5) {
-                    List<Option> optionList = new ArrayList<Option>();
-                    Option option = null;
-
-                    option = new Option();
-                    option.setOptionId(0L);
-                    option.setOptionName(contxt.getResources().getString(R.string.select));
-                    optionList.add(option);
-
-                    String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                    Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
-                    if (cursor2.moveToFirst()) {
-                        do {
-                            option = new Option();
-                            option.setOptionId(cursor2.getLong(0));
-                            StringBuffer multiLnagText = new StringBuffer();
-                            if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                option.setOptionName(cursor2.getString(3));
-                            } else {
-                                option.setOptionName(cursor2.getString(2));
-                            }
-                            if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                multiLnagText.append(cursor2.getString(3));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            } else {
-                                multiLnagText.append(cursor2.getString(2));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            }
-                            optionList.add(option);
-                        } while (cursor2.moveToNext());
-                    }
-                    cursor2.close();
-                    attrib.setOptionsList(optionList);
-                }
-                attrib.setValidation(cursor.getString(7));
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-    }
-
-
-    public Feature fetchFeaturebyID(Long featureId) {
-        String q = "SELECT * FROM SPATIAL_FEATURES where FEATURE_ID = " + featureId;
-        List<Feature> features = getFeatures(q);
-        if(features !=null && features.size() > 0){
-            return features.get(0);
-        }
-        return null;
-    }
-
-    public List<Attribute> getFormDataByGroupId(int GroupId, String lang) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryQues = "SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE FROM ATTRIBUTE_MASTER AS AM LEFT JOIN form_VALUES AS FM ON AM.ATTRIB_ID = FM.ATTRIB_ID where FM.GROUP_ID=" + GroupId;//+" ORDER BY AM.ATTRIB_ID";
-
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            try {
-                do {
-
-                    Attribute attrib = new Attribute();
-                    attrib.setAttributeid(cursor.getInt(1));
-                    if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                        attrib.setAttributeName(cursor.getString(6));
-                    } else {
-                        attrib.setAttributeName(cursor.getString(4));
-                    }
-                    attrib.setControlType(cursor.getInt(3));
-                    attrib.setValidation(cursor.getString(7));
-                    attrib.setFieldValue(cursor.getString(9));
-                    attrib.setListing(cursor.getInt(5));
-                    if (attrib.getControlType() == 5) {
-                        List<Option> optionList = new ArrayList<Option>();
-                        Option option = new Option();
-                        option.setOptionId(0L);
-                        option.setOptionName(contxt.getResources().getString(R.string.select));
-                        optionList.add(option);
-                        String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                        Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
-
-                        if (cursor2.moveToFirst()) {
-                            do {
-                                option = new Option();
-                                option.setOptionId(cursor2.getLong(0));
-                                StringBuffer multiLnagText = new StringBuffer();
-                                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                    option.setOptionName(cursor2.getString(3));
-                                } else {
-                                    option.setOptionName(cursor2.getString(2));
-                                }
-                                if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                    multiLnagText.append(cursor2.getString(3));
-                                    multiLnagText.append("&#&" + cursor2.getString(2));
-                                    option.setOptionMultiLang(multiLnagText.toString());
-                                } else {
-                                    multiLnagText.append(cursor2.getString(2));
-                                    multiLnagText.append("&#&" + cursor2.getString(2));
-                                    option.setOptionMultiLang(multiLnagText.toString());
-                                }
-                                optionList.add(option);
-                            } while (cursor2.moveToNext());
-                        }
-                        cursor2.close();
-                        attrib.setOptionsList(optionList);
-                    }
-                    attribList.add(attrib);
-                } while (cursor.moveToNext());
-            } catch (Exception e) {
-                cf.appLog("", e);
-                e.printStackTrace();
-            }
-        }
-        cursor.close();
-        return attribList;
-    }
-
-    public boolean deleteRecord(int groupId, String keyword) {
-        SQLiteDatabase db = getWritableDatabase();
-        //"CREATE TABLE FORM_VALUES(ATTRIB_ID INTEGER,ATTRIB_VALUE TEXT,OPTION_ID TEXT,OPTION_VALUE TEXT,FEATURE_ID)";
+    public List<Property> createPropertyList(String sql) {
+        Cursor cur = null;
+        List<Property> properties = new ArrayList<>();
 
         try {
-            String deleteWhereSql = "GROUP_ID=" + groupId;
-            String delteWhere = "ID=" + groupId;
-            String delteWherePersonId = "PERSON_ID=" + groupId;
+            cur = getDb().rawQuery(sql, null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(Feature.COL_ID);
+                int indxServerId = cur.getColumnIndex(Feature.COL_SERVER_ID);
+                int indxCoordinates = cur.getColumnIndex(Feature.COL_COORDINATES);
+                int indxGeomType = cur.getColumnIndex(Feature.COL_GEOM_TYPE);
+                int indxStatus = cur.getColumnIndex(Feature.COL_STATUS);
+                int indxPolygonNumber = cur.getColumnIndex(Feature.COL_POLYGON_NUMBER);
+                int indxSurveyDate = cur.getColumnIndex(Feature.COL_SURVEY_DATE);
+                int indxAdjudicator1 = cur.getColumnIndex(Property.COL_ADJUDICATOR1);
+                int indxAdjudicator2 = cur.getColumnIndex(Property.COL_ADJUDICATOR2);
+                int indxClaimType = cur.getColumnIndex(Property.COL_CLAIM_TYPE_CODE);
+                int indxComletionDate = cur.getColumnIndex(Property.COL_COMPLETION_DATE);
+                int indxCreationDate = cur.getColumnIndex(Property.COL_CREATION_DATE);
+                int indxHamletId = cur.getColumnIndex(Property.COL_HAMLET_ID);
+                int indxImei = cur.getColumnIndex(Property.COL_IMEI);
 
-            String delteWhereMediaId = "MEDIA_ID=" + groupId;
-            // delete data frm master table(FORM_VALUES)
-            db.delete("FORM_VALUES", deleteWhereSql, null);
+                do{
+                    Property property = new Property();
+                    property.setId(cur.getLong(indxId));
+                    if (!cur.isNull(indxServerId))
+                        property.setServerId(cur.getLong(indxServerId));
+                    property.setCoordinates(cur.getString(indxCoordinates));
+                    property.setGeomType(cur.getString(indxGeomType));
+                    property.setStatus(cur.getString(indxStatus));
+                    property.setPolygonNumber(cur.getString(indxPolygonNumber));
+                    property.setSurveyDate(cur.getString(indxSurveyDate));
+                    property.setAdjudicator1(cur.getString(indxAdjudicator1));
+                    property.setAdjudicator2(cur.getString(indxAdjudicator2));
+                    property.setClaimTypeCode(cur.getString(indxClaimType));
+                    property.setCompletionDate(cur.getString(indxComletionDate));
+                    property.setCreationDate(cur.getString(indxCreationDate));
+                    property.setHamletId(cur.getLong(indxHamletId));
+                    property.setImei(cur.getString(indxImei));
 
-            //Delete data from respective table
+                    property.setDeceasedPerson(getDeceasedPersonByProp(property.getId()));
+                    property.setMedia(getMediaByProp(property.getId()));
+                    property.setRight(getRightByProp(property.getId()));
+                    property.setPersonOfInterests(getPersonOfInterestsByProp(property.getId()));
+                    property.setDispute(getDisputeByProp(property.getId()));
 
-            if (keyword.equalsIgnoreCase("person")) {
-                db.delete("PERSON", delteWhere, null);
-                db.delete("PERSON_MEDIA", delteWherePersonId, null);
-            } else if (keyword.equalsIgnoreCase("tenure")) {
-                db.delete("SOCIAL_TENURE", delteWhere, null);
-            } else if (keyword.equalsIgnoreCase("media")) {
-                db.delete("MEDIA", delteWhereMediaId, null);
-            } else if (keyword.equalsIgnoreCase("POI")) {
-                db.delete("NEXT_KIN_DETAILS", delteWhere, null);
-            } else if (keyword.equalsIgnoreCase("DeceasedPerson")) {
-                db.delete("DECEASED_PERSON", delteWhere, null);
+                    List<Attribute> attributes = getPropAttributes(property.getId());
+                    property.setAttributes(attributes);
+
+                    properties.add(property);
+                }
+                while (cur.moveToNext());
+
             }
+            return properties;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return properties;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * Returns property object by id.
+     */
+    public Property getProperty(Long propId) {
+        List<Property> properties = createPropertyList("SELECT * FROM " + Feature.TABLE_NAME +
+                " WHERE " + Feature.COL_ID + " = " + propId.toString());
+        if(properties.size() > 0)
+            return properties.get(0);
+        else
+            return null;
+    }
+
+    /**
+     * Checks if claim number is unique.
+     *
+     * @param propId      Property ID, to exclude from search results.
+     * @param claimNumber Claim number to test
+     */
+    public boolean isClaimNumberUnique(Long propId, String claimNumber) {
+        Cursor cur = null;
+        try {
+            String q = "SELECT 1 FROM " + Feature.TABLE_NAME + " WHERE " +
+                    Feature.COL_ID + "!=" + propId + " AND " +
+                    Feature.COL_POLYGON_NUMBER + "='" + StringUtility.empty(claimNumber) + "'";
+            cur = getDb().rawQuery(q, null);
+            if (cur.moveToFirst())
+                return false;
+            else
+                return true;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception ex) {
+            }
+        }
+    }
+
+    /**
+     * Returns ownership right by property
+     */
+    public Right getRightByProp(Long propId) {
+        Cursor cur = null;
+        Right right = null;
+
+        try {
+            cur = getDb().rawQuery("SELECT * FROM " + Right.TABLE_NAME +
+                    " WHERE " + Right.COL_FEATURE_ID + " = " + propId.toString(), null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(Right.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(Right.COL_FEATURE_ID);
+                int indxRightTypeId = cur.getColumnIndex(Right.COL_RIGHT_TYPE_ID);
+                int indxRelationshipType = cur.getColumnIndex(Right.COL_RELATIONSHIP_ID);
+                int indxServerId = cur.getColumnIndex(Right.COL_SERVER_ID);
+                int indxShareTypeId = cur.getColumnIndex(Right.COL_SHARE_TYPE_ID);
+                int indxCertNumber = cur.getColumnIndex(Right.COL_CERT_NUMBER);
+                int indxCertDate = cur.getColumnIndex(Right.COL_CERT_DATE);
+                int indxJuridicalArea = cur.getColumnIndex(Right.COL_JURIDICAL_AREA);
+
+                right = new Right();
+                right.setId(cur.getLong(indxId));
+                right.setFeatureId(cur.getLong(indxFeatureId));
+                right.setRightTypeId(cur.getInt(indxRightTypeId));
+                right.setServerId(cur.getLong(indxServerId));
+                right.setRelationshipId(cur.getInt(indxRelationshipType));
+                right.setShareTypeId(cur.getInt(indxShareTypeId));
+                right.setCertNumber(cur.getString(indxCertNumber));
+                right.setCertDate(cur.getString(indxCertDate));
+                right.setJuridicalArea(cur.getDouble(indxJuridicalArea));
+
+                right.setNaturalPersons(getNaturalPersonsByRight(right.getId()));
+                right.setNonNaturalPerson(getNonNaturalPersonsByRight(right.getId()));
+                right.setAttributes(getAttributesByGroupId(right.getId()));
+            }
+            return right;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return right;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * Returns dispute by property
+     */
+    public Dispute getDisputeByProp(Long propId) {
+        Cursor cur = null;
+        Dispute dispute = null;
+
+        try {
+            cur = getDb().rawQuery("SELECT * FROM " + Dispute.TABLE_NAME +
+                    " WHERE " + Dispute.COL_FEATURE_ID + " = " + propId.toString(), null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(Dispute.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(Dispute.COL_FEATURE_ID);
+                int indxServerId = cur.getColumnIndex(Dispute.COL_SERVER_ID);
+                int indxTypeId = cur.getColumnIndex(Dispute.COL_DISPUTE_TYPE_ID);
+                int indxDescription = cur.getColumnIndex(Dispute.COL_DESCRIPTION);
+                int indxRegDate = cur.getColumnIndex(Dispute.COL_REG_DATE);
+
+                dispute = new Dispute();
+                dispute.setId(cur.getLong(indxId));
+                dispute.setFeatureId(cur.getLong(indxFeatureId));
+                dispute.setServerId(cur.getLong(indxServerId));
+                dispute.setDisputeTypeId(cur.getInt(indxTypeId));
+                dispute.setDescription(cur.getString(indxDescription));
+                dispute.setRegDate(cur.getString(indxRegDate));
+
+                dispute.setDisputingPersons(getDisputingPersons(dispute.getId()));
+                dispute.setMedia(getMediaByDispute(dispute.getId()));
+            }
+            return dispute;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return dispute;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * Saves dispute
+     */
+    public boolean saveDispute(Dispute dispute) {
+        try {
+            if (dispute == null) {
+                return true;
+            }
+
+            if (dispute.getId() == null || dispute.getId() < 1) {
+                dispute.setId(getNewGroupId());
+            } else {
+                // Delete from dispute
+                getDb().delete(Dispute.TABLE_NAME, Person.COL_ID + "=" + dispute.getId(), null);
+            }
+
+            // Insert person
+            ContentValues row = new ContentValues();
+            row.put(Dispute.COL_ID, dispute.getId());
+            row.put(Dispute.COL_DISPUTE_TYPE_ID, dispute.getDisputeTypeId());
+            row.put(Dispute.COL_FEATURE_ID, dispute.getFeatureId());
+            row.put(Dispute.COL_SERVER_ID, dispute.getServerId());
+            row.put(Dispute.COL_DESCRIPTION, dispute.getDescription());
+            row.put(Dispute.COL_REG_DATE, dispute.getRegDate());
+
+            getDb().insert(Dispute.TABLE_NAME, null, row);
 
             return true;
         } catch (Exception e) {
@@ -791,125 +744,699 @@ public class DBController extends SQLiteOpenHelper {
         }
     }
 
-    public List<Attribute> getFeatureGenaralInfo(Long featureId, String keyword, String lang) {
-        String attributeType = null;
-        SQLiteDatabase database = getReadableDatabase();
+    private List<Person> createPersonsList(String sql) {
+        Cursor cur = null;
+        List<Person> persons = new ArrayList<Person>();
 
-        if (keyword.equalsIgnoreCase("general")) {
-            attributeType = CAT_General;
-        } else if (keyword.equalsIgnoreCase("NonNatural")) {
-            attributeType = CAT_NonNaturalPerson;
-        } else if (keyword.equalsIgnoreCase("custom")) {
-            attributeType = CAT_Custom;
-        } else if (keyword.equalsIgnoreCase("Property")) {
-            attributeType = CAT_General_Property;
-        } else if (keyword.equalsIgnoreCase("SocialTenure")) {
-            attributeType = CAT_Tenure;
+        try {
+            cur = getDb().rawQuery(sql, null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(Person.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(Person.COL_FEATURE_ID);
+                int indxServerId = cur.getColumnIndex(Person.COL_SERVER_ID);
+                int indxRightId = cur.getColumnIndex(Person.COL_RIGHT_ID);
+                int indxIsNatural = cur.getColumnIndex(Person.COL_IS_NATURAL);
+                int indxResident = cur.getColumnIndex(Person.COL_RESIDENT);
+                int indxSubTypeId = cur.getColumnIndex(Person.COL_SUBTYPE);
+                int indxShareSize = cur.getColumnIndex(Person.COL_SHARE);
+                int indxDisputeId = cur.getColumnIndex(Person.COL_DISPUTE_ID);
+                int indxAcquisitionTypeId = cur.getColumnIndex(Person.COL_ACQUISITION_TYPE_ID);
+
+                do {
+                    Person person = new Person();
+                    person.setId(cur.getLong(indxId));
+                    person.setFeatureId(cur.getLong(indxFeatureId));
+                    person.setRightId(cur.getLong(indxRightId));
+                    person.setServerId(cur.getLong(indxServerId));
+                    person.setIsNatural(cur.getInt(indxIsNatural));
+                    person.setResident(cur.getInt(indxResident));
+                    person.setSubTypeId(cur.getInt(indxSubTypeId));
+                    person.setShare(cur.getString(indxShareSize));
+                    person.setDisputeId(cur.getLong(indxDisputeId));
+                    person.setAcquisitionTypeId(cur.getInt(indxAcquisitionTypeId));
+
+                    person.setAttributes(getAttributesByGroupId(person.getId()));
+                    person.setMedia(getMediaByPerson(person.getId()));
+                    persons.add(person);
+                } while (cur.moveToNext());
+            }
+
+            return persons;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return persons;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+            }
         }
+    }
 
-        String sql = "SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE,SF.PERSON_TYPE,SF.HAMLET_ID,SF.WITNESS_1,SF.WITNESS_2"
-                + " FROM ATTRIBUTE_MASTER AS AM"
-                + " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID = " + featureId
-                + " LEFT JOIN SPATIAL_FEATURES AS SF ON FM.FEATURE_ID = SF.FEATURE_ID"
-                + " where AM.ATTRIBUTE_TYPE = '" + attributeType + "'";
+    /**
+     * Returns person by id
+     */
+    public Person getPerson(Long personId) {
+        String sql = "SELECT * FROM " + Person.TABLE_NAME + " WHERE " + Person.COL_ID + " = " + personId.toString();
+        List<Person> persons = createPersonsList(sql);
+        if (persons != null && persons.size() > 0)
+            return persons.get(0);
+        else
+            return null;
+    }
 
+    /**
+     * Returns natural persons by ownership right
+     */
+    public List<Person> getNaturalPersonsByRight(Long rightId) {
+        String sql = "SELECT * FROM " + Person.TABLE_NAME + " WHERE " +
+                Person.COL_RIGHT_ID + " = " + rightId.toString() + " AND " + Person.COL_IS_NATURAL + "=1";
+        return createPersonsList(sql);
+    }
 
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        Cursor cursor = database.rawQuery(sql, null);
+    /**
+     * Returns non-natural person by ownership right
+     */
+    public Person getNonNaturalPersonsByRight(Long rightId) {
+        String sql = "SELECT * FROM " + Person.TABLE_NAME + " WHERE " +
+                Person.COL_RIGHT_ID + " = " + rightId.toString() + " AND " + Person.COL_IS_NATURAL + "=0";
+        List<Person> persons = createPersonsList(sql);
+        if (persons != null && persons.size() > 0)
+            return persons.get(0);
+        else
+            return null;
+    }
 
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-                attrib.setAttributeid(cursor.getInt(1));
-                attrib.setControlType(cursor.getInt(3));
-                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                    attrib.setAttributeName(cursor.getString(6));
-                } else {
-                    attrib.setAttributeName(cursor.getString(4));
-                }
+    /**
+     * Returns disputing persons by dispute id
+     */
+    public List<Person> getDisputingPersons(Long disputeId) {
+        String sql = "SELECT * FROM " + Person.TABLE_NAME + " WHERE " +
+                Person.COL_DISPUTE_ID + " = " + disputeId.toString() + " AND " + Person.COL_IS_NATURAL + "=1";
+        return createPersonsList(sql);
+    }
 
-                attrib.setValidation(cursor.getString(7));
-                attrib.setGroupId(cursor.getInt(8));
-                attrib.setFieldValue(cursor.getString(9));
-                attrib.setPersonType(cursor.getString(10));
-                attrib.setHamletId(cursor.getInt(11));
-                attrib.setWitness1(cursor.getString(12));
-                attrib.setWitness2(cursor.getString(13));
+    /**
+     * Deletes person by id
+     */
+    public boolean deletePerson(Long id) {
+        try {
+            getDb().delete(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, Attribute.COL_VALUE_GROUP_ID + "=" + id, null);
+            getDb().delete(Media.TABLE_NAME, Media.COL_PERSON_ID + "=" + id, null);
+            int deletedCount = getDb().delete(Person.TABLE_NAME, Person.COL_ID + "=" + id, null);
+            return deletedCount > 0;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-                if (attrib.getControlType() == 5) {
+    private DeceasedPerson createDeceasedPerson(String sql) {
+        Cursor cur = null;
+        try {
+            cur = getDb().rawQuery(sql, null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(DeceasedPerson.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(DeceasedPerson.COL_FEATURE_ID);
+                int indxFirstName = cur.getColumnIndex(DeceasedPerson.COL_FIRST_NAME);
+                int indxLastName = cur.getColumnIndex(DeceasedPerson.COL_LAST_NAME);
+                int indxMiddleName = cur.getColumnIndex(DeceasedPerson.COL_MIDDLE_NAME);
 
-                    Option option = null;
-                    List<Option> optionList = new ArrayList<Option>();
-                    option = new Option();
-                    option.setOptionId(0L);
-                    option.setOptionName(contxt.getResources().getString(R.string.select));
-                    optionList.add(option);
+                DeceasedPerson person = new DeceasedPerson();
+                person.setId(cur.getLong(indxId));
+                person.setFeatureId(cur.getLong(indxFeatureId));
+                person.setFirstName(cur.getString(indxFirstName));
+                person.setLastName(cur.getString(indxLastName));
+                person.setMiddleName(cur.getString(indxMiddleName));
+                return person;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+            }
+        }
+    }
 
-                    String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                    Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
+    /**
+     * Returns deceased person by id.
+     */
+    public DeceasedPerson getDeceasedPerson(Long id) {
+        String sql = "SELECT * FROM " + DeceasedPerson.TABLE_NAME + " WHERE " + DeceasedPerson.COL_ID + " = " + id.toString();
+        return createDeceasedPerson(sql);
+    }
 
-                    if (cursor2.moveToFirst()) {
-                        do {
-                            option = new Option();
-                            option.setOptionId(cursor2.getLong(0));
-                            StringBuffer multiLnagText = new StringBuffer();
-                            if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                option.setOptionName(cursor2.getString(3));
-                            } else {
-                                option.setOptionName(cursor2.getString(2));
-                            }
-                            if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                multiLnagText.append(cursor2.getString(3));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            } else {
-                                multiLnagText.append(cursor2.getString(2));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            }
-                            optionList.add(option);
-                        } while (cursor2.moveToNext());
+    /**
+     * Returns deceased person by property id.
+     */
+    public DeceasedPerson getDeceasedPersonByProp(Long propId) {
+        String sql = "SELECT * FROM " + DeceasedPerson.TABLE_NAME + " WHERE " + DeceasedPerson.COL_FEATURE_ID + "=" + propId.toString();
+        return createDeceasedPerson(sql);
+    }
+
+    /**
+     * Saves deceased person
+     */
+    public boolean saveDeceasedPerson(DeceasedPerson person) {
+        try {
+            if (person == null) {
+                return true;
+            }
+
+            if (person.getId() == null || person.getId() < 1) {
+                person.setId(getNewGroupId());
+            } else {
+                // Delete from deceased person
+                getDb().delete(DeceasedPerson.TABLE_NAME, DeceasedPerson.COL_ID + "=" + person.getId(), null);
+            }
+
+            // Insert person
+            ContentValues row = new ContentValues();
+            row.put(DeceasedPerson.COL_ID, person.getId());
+            row.put(DeceasedPerson.COL_FEATURE_ID, person.getFeatureId());
+            row.put(DeceasedPerson.COL_FIRST_NAME, person.getFirstName());
+            row.put(DeceasedPerson.COL_LAST_NAME, person.getLastName());
+            row.put(DeceasedPerson.COL_MIDDLE_NAME, person.getMiddleName());
+
+            return getDb().insert(DeceasedPerson.TABLE_NAME, null, row) > 0;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Deletes deceased person by id
+     */
+    public boolean deleteDeceasedPerson(Long id) {
+        try {
+            int deletedCount = getDb().delete(DeceasedPerson.TABLE_NAME, DeceasedPerson.COL_ID + "=" + id, null);
+            return deletedCount > 0;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<PersonOfInterest> createPersonOfInterestsList(String sql) {
+        Cursor cur = null;
+        List<PersonOfInterest> persons = new ArrayList<PersonOfInterest>();
+
+        try {
+            cur = getDb().rawQuery(sql, null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(PersonOfInterest.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(PersonOfInterest.COL_FEATURE_ID);
+                int indxName = cur.getColumnIndex(PersonOfInterest.COL_NAME);
+                int indxDob = cur.getColumnIndex(PersonOfInterest.COL_DOB);
+                int indxGenderId = cur.getColumnIndex(PersonOfInterest.COL_GENDER_ID);
+                int indxRelationshipId = cur.getColumnIndex(PersonOfInterest.COL_RELATIONSHIP_ID);
+
+                do {
+                    PersonOfInterest person = new PersonOfInterest();
+                    person.setId(cur.getLong(indxId));
+                    person.setFeatureId(cur.getLong(indxFeatureId));
+                    person.setName(cur.getString(indxName));
+                    person.setDob(cur.getString(indxDob));
+                    person.setGenderId(cur.getInt(indxGenderId));
+                    person.setRelationshipId(cur.getInt(indxRelationshipId));
+                    persons.add(person);
+                } while (cur.moveToNext());
+            }
+
+            return persons;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return persons;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * Returns list of person of interest by property ID
+     */
+    public List<PersonOfInterest> getPersonOfInterestsByProp(Long propId) {
+        return createPersonOfInterestsList("SELECT * FROM " + PersonOfInterest.TABLE_NAME +
+                " WHERE " + PersonOfInterest.COL_FEATURE_ID + "=" + propId);
+    }
+
+    /**
+     * Saves person of interest
+     */
+    public boolean savePersonOfInterest(PersonOfInterest person) {
+        try {
+            if (person == null) {
+                return true;
+            }
+
+            if (person.getId() == null || person.getId() < 1) {
+                person.setId(getNewGroupId());
+            } else {
+                // Delete from person of interest
+                getDb().delete(PersonOfInterest.TABLE_NAME, PersonOfInterest.COL_ID + "=" + person.getId(), null);
+            }
+
+            // Insert person
+            ContentValues row = new ContentValues();
+            row.put(PersonOfInterest.COL_ID, person.getId());
+            row.put(PersonOfInterest.COL_FEATURE_ID, person.getFeatureId());
+            row.put(PersonOfInterest.COL_DOB, person.getDob());
+            row.put(PersonOfInterest.COL_GENDER_ID, person.getGenderId());
+            row.put(PersonOfInterest.COL_RELATIONSHIP_ID, person.getRelationshipId());
+            row.put(PersonOfInterest.COL_NAME, person.getName());
+
+            getDb().insert(PersonOfInterest.TABLE_NAME, null, row);
+            return true;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Deletes person of interest by id
+     */
+    public boolean deletePersonOfInterest(Long id) {
+        try {
+            int deletedCount = getDb().delete(PersonOfInterest.TABLE_NAME, PersonOfInterest.COL_ID + "=" + id, null);
+            return deletedCount > 0;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<Media> createMediaList(String sql) {
+        Cursor cur = null;
+        List<Media> mediaList = new ArrayList<Media>();
+
+        try {
+            cur = getDb().rawQuery(sql, null);
+            if (cur.moveToFirst()) {
+                int indxId = cur.getColumnIndex(Media.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(Media.COL_FEATURE_ID);
+                int indxPath = cur.getColumnIndex(Media.COL_PATH);
+                int indxType = cur.getColumnIndex(Media.COL_TYPE);
+                int indxPersonId = cur.getColumnIndex(Media.COL_PERSON_ID);
+                int indxSynced = cur.getColumnIndex(Media.COL_SYNCED);
+                int indxDisputeId = cur.getColumnIndex(Media.COL_DISPUTE_ID);
+
+                do {
+                    Media media = new Media();
+                    media.setId(cur.getLong(indxId));
+                    media.setFeatureId(cur.getLong(indxFeatureId));
+                    media.setPath(cur.getString(indxPath));
+                    media.setType(cur.getString(indxType));
+                    if (!cur.isNull(indxPersonId))
+                        media.setPersonId(cur.getLong(indxPersonId));
+                    if (!cur.isNull(indxDisputeId))
+                        media.setDisputeId(cur.getLong(indxDisputeId));
+                    media.setSynced(cur.getInt(indxSynced));
+                    media.setAttributes(getAttributesByGroupId(media.getId()));
+
+                    mediaList.add(media);
+                } while (cur.moveToNext());
+            }
+            return mediaList;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return mediaList;
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception e) {
+                cf.appLog("", e);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Returns media by id.
+     */
+    public Media getMedia(Long id) {
+        String sql = "SELECT * FROM " + Media.TABLE_NAME + " WHERE " + Media.COL_ID + " = " + id.toString();
+        List<Media> list = createMediaList(sql);
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns media list by property id.
+     */
+    public List<Media> getMediaByProp(Long propId) {
+        String sql = "SELECT * FROM " + Media.TABLE_NAME +
+                " WHERE " + Media.COL_FEATURE_ID + " = " + propId.toString() +
+                " AND (" + Media.COL_PERSON_ID + " IS NULL" +
+                "  OR " + Media.COL_PERSON_ID + " = 0)" +
+                " AND (" + Media.COL_DISPUTE_ID + " IS NULL" +
+                "  OR " + Media.COL_DISPUTE_ID + " = 0)";
+        return createMediaList(sql);
+    }
+
+    /**
+     * Returns media list by person id.
+     */
+    public List<Media> getMediaByPerson(Long personId) {
+        String sql = "SELECT * FROM " + Media.TABLE_NAME + " WHERE " + Media.COL_PERSON_ID + " = " + personId.toString();
+        return createMediaList(sql);
+    }
+
+    /**
+     * Returns media list by dispute.
+     */
+    public List<Media> getMediaByDispute(Long disputeId) {
+        String sql = "SELECT * FROM " + Media.TABLE_NAME + " WHERE " + Media.COL_DISPUTE_ID + " = " + disputeId.toString();
+        return createMediaList(sql);
+    }
+
+    public Feature fetchFeaturebyID(Long featureId) {
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_ID + "=" + featureId;
+        List<Feature> features = getFeatures(q);
+        if (features != null && features.size() > 0) {
+            return features.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * Deletes media
+     */
+    public boolean deleteMedia(Long mediaId) {
+        try {
+            getDb().delete(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, Attribute.COL_VALUE_GROUP_ID + "=" + mediaId, null);
+            int deletedCount = getDb().delete(Media.TABLE_NAME, Media.COL_ID + "=" + mediaId, null);
+            return deletedCount > 0;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Deletes media by person
+     */
+    public boolean deleteMediaByPerson(Long personId) {
+        try {
+            int deletedCount = getDb().delete(Media.TABLE_NAME, Media.COL_PERSON_ID + "=" + personId, null);
+            return deletedCount > 0;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<Attribute> createAttributeList(String sql) {
+        Cursor cur = null;
+        List<Attribute> attributes = new ArrayList<Attribute>();
+
+        try {
+            cur = getDb().rawQuery(sql, null);
+            if (cur.moveToFirst()) {
+                String lang = cf.getLocale();
+                int indxId = cur.getColumnIndex(Attribute.COL_ID);
+                int indxFeatureId = cur.getColumnIndex(Attribute.COL_VALUE_FEATURE_ID);
+                int indxType = cur.getColumnIndex(Attribute.COL_TYPE);
+                int indxControlType = cur.getColumnIndex(Attribute.COL_CONTROL_TYPE);
+                int indxName = cur.getColumnIndex(Attribute.COL_NAME);
+                int indxNameOtherLang = cur.getColumnIndex(Attribute.COL_NAME_OTHER_LANG);
+                int indxListing = cur.getColumnIndex(Attribute.COL_LISTING);
+                int indxValidate = cur.getColumnIndex(Attribute.COL_VALIDATE);
+                int indxGroupId = cur.getColumnIndex(Attribute.COL_VALUE_GROUP_ID);
+                int indxValue = cur.getColumnIndex(Attribute.COL_VALUE_VALUE);
+
+                int indxOptionId = -1;
+                int indxOptionName = -1;
+                int indxOptionNameOtherLang = -1;
+
+                do {
+                    Attribute attribute = new Attribute();
+                    attribute.setId(cur.getLong(indxId));
+                    if (!cur.isNull(indxFeatureId))
+                        attribute.setFeatureId(cur.getLong(indxFeatureId));
+                    else
+                        attribute.setFeatureId(0L);
+                    attribute.setType(cur.getString(indxType));
+                    attribute.setControlType(cur.getInt(indxControlType));
+                    if (!cur.isNull(indxListing))
+                        attribute.setListing(cur.getInt(indxListing));
+                    else
+                        attribute.setListing(0);
+                    attribute.setValidate(cur.getString(indxValidate));
+                    if (!cur.isNull(indxGroupId))
+                        attribute.setGroupId(cur.getLong(indxGroupId));
+                    else
+                        attribute.setGroupId(0L);
+                    if (!cur.isNull(indxValue))
+                        attribute.setValue(cur.getString(indxValue));
+                    if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cur.getString(indxNameOtherLang))) {
+                        attribute.setName(cur.getString(indxNameOtherLang));
+                    } else {
+                        attribute.setName(cur.getString(indxName));
                     }
-                    cursor2.close();
-                    attrib.setOptionsList(optionList);
-                }
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
+
+                    if (attribute.getControlType() == 5) { // Spinner
+                        List<Option> optionList = new ArrayList<Option>();
+                        Option option = new Option();
+                        option.setId(0L);
+                        option.setName(contxt.getResources().getString(R.string.select));
+                        optionList.add(option);
+                        String selectQueryOptions = "SELECT  * FROM " + Option.TABLE_NAME +
+                                " WHERE " + Option.COL_ATTRIBUTE_ID + "=" + attribute.getId();
+
+                        Cursor cur2 = getDb().rawQuery(selectQueryOptions, null);
+
+                        if (cur2.moveToFirst()) {
+                            if (indxOptionId < 0) {
+                                indxOptionId = cur2.getColumnIndex(Option.COL_ID);
+                                indxOptionName = cur2.getColumnIndex(Option.COL_NAME);
+                                indxOptionNameOtherLang = cur2.getColumnIndex(Option.COL_NAME_OTHER_LANG);
+                            }
+
+                            do {
+                                option = new Option();
+                                option.setId(cur2.getLong(indxOptionId));
+                                StringBuffer multiLnagText = new StringBuffer();
+                                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cur2.getString(indxOptionNameOtherLang))) {
+                                    option.setName(cur2.getString(indxOptionNameOtherLang));
+                                } else {
+                                    option.setName(cur2.getString(indxOptionName));
+                                }
+                                if (!TextUtils.isEmpty(cur2.getString(indxOptionNameOtherLang))) {
+                                    multiLnagText.append(cur2.getString(indxOptionNameOtherLang));
+                                    multiLnagText.append("&#&" + cur2.getString(indxOptionName));
+                                    option.setNameOtherLang(multiLnagText.toString());
+                                } else {
+                                    multiLnagText.append(cur2.getString(indxOptionName));
+                                    multiLnagText.append("&#&" + cur2.getString(indxOptionName));
+                                    option.setNameOtherLang(multiLnagText.toString());
+                                }
+                                optionList.add(option);
+                            } while (cur2.moveToNext());
+                        }
+                        cur2.close();
+                        attribute.setOptionsList(optionList);
+                    }
+
+                    attributes.add(attribute);
+
+                } while (cur.moveToNext());
+            }
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+        } finally {
+            try {
+                cur.close();
+            } catch (Exception ex) {
+            }
         }
-        cursor.close();
-        return attribList;
+
+        return attributes;
+    }
+
+    private String getAttributeSelectQuery(String wherePart) {
+        String sql = "SELECT AM." + Attribute.COL_ID +
+                ", AM." + Attribute.COL_TYPE +
+                ", AM." + Attribute.COL_CONTROL_TYPE +
+                ", AM." + Attribute.COL_NAME +
+                ", AM." + Attribute.COL_NAME_OTHER_LANG +
+                ", AM." + Attribute.COL_LISTING +
+                ", AM." + Attribute.COL_VALIDATE +
+                ", AV." + Attribute.COL_VALUE_FEATURE_ID +
+                ", AV." + Attribute.COL_VALUE_GROUP_ID +
+                ", AV." + Attribute.COL_VALUE_VALUE +
+                " FROM " + Attribute.TABLE_NAME + " AS AM LEFT JOIN " +
+                Attribute.TABLE_ATTRIBUTE_VALUE_NAME + " AS AV ON " +
+                "AM." + Attribute.COL_ID + " = AV." + Attribute.COL_VALUE_ATTRIBUTE_ID;
+        if (!StringUtility.isEmpty(wherePart)) {
+            sql = sql + " WHERE " + wherePart;
+        }
+        sql = sql + " ORDER BY AM." + Attribute.COL_LISTING + ", AM." + Attribute.COL_NAME;
+        return sql;
+    }
+
+    private String getAttributeSelectQueryByType(String typeId) {
+        String sql = "SELECT " +
+                Attribute.COL_ID +
+                ", " + Attribute.COL_TYPE +
+                ", " + Attribute.COL_CONTROL_TYPE +
+                ", " + Attribute.COL_NAME +
+                ", " + Attribute.COL_NAME_OTHER_LANG +
+                ", " + Attribute.COL_LISTING +
+                ", " + Attribute.COL_VALIDATE +
+                ", 0 AS " + Attribute.COL_VALUE_FEATURE_ID +
+                ", 0 AS " + Attribute.COL_VALUE_GROUP_ID +
+                ", '' AS " + Attribute.COL_VALUE_VALUE +
+                " FROM " + Attribute.TABLE_NAME +
+                " WHERE " + Attribute.COL_TYPE + "='" + typeId + "'" +
+                " ORDER BY " + Attribute.COL_LISTING + ", " + Attribute.COL_NAME;
+        return sql;
+    }
+
+    /**
+     * Returns list of attributes by group ID (person, media, etc)
+     */
+    public List<Attribute> getAttributesByGroupId(Long groupId) {
+        String wherePart = " AV." + Attribute.COL_VALUE_GROUP_ID + "=" + groupId;
+        return createAttributeList(getAttributeSelectQuery(wherePart));
+    }
+
+    /**
+     * Returns property attributes by type. Expected types are as follows: GENERAL, GENERAL_PROPERTY, CUSTOM
+     */
+    public List<Attribute> getPropAttributesByType(Long featureId, String attributeType) {
+        String wherePart = " AM." + Attribute.COL_TYPE + " = '" + attributeType + "' " +
+                "AND AV." + Attribute.COL_VALUE_FEATURE_ID + "=" + featureId;
+        return createAttributeList(getAttributeSelectQuery(wherePart));
+    }
+
+    /**
+     * Returns property attributes, including GENERAL, GENERAL_PROPERTY, CUSTOM
+     */
+    public List<Attribute> getPropAttributes(Long featureId) {
+        String wherePart = " AM." + Attribute.COL_TYPE + " IN ('" + Attribute.TYPE_GENERAL +
+                "','" + Attribute.TYPE_GENERAL_PROPERTY + "','" + Attribute.TYPE_CUSTOM + "') " +
+                "AND AV." + Attribute.COL_VALUE_FEATURE_ID + "=" + featureId;
+        return createAttributeList(getAttributeSelectQuery(wherePart));
+    }
+
+    /**
+     * Returns attributes list by type. Returned list doesn't conatain actual values and should be used for new objects.
+     */
+    public List<Attribute> getAttributesByType(String attributeType) {
+        return createAttributeList(getAttributeSelectQueryByType(attributeType));
+    }
+
+    /**
+     * Saves property attributes such as General or Custom.
+     *
+     * @param attributes List of attributes to save
+     * @param propId     Property ID to link with attributs
+     */
+    public boolean savePropAttributes(List<Attribute> attributes, Long propId) {
+        if (attributes == null || attributes.size() < 1) {
+            return true;
+        }
+
+        // Get group ID from the first element. It's supposed that all elemets have the same group ID.
+        Long groupId = attributes.get(0).getGroupId();
+
+        if (groupId == null || groupId < 1) {
+            groupId = getNewGroupId();
+        }
+
+        for (Attribute attribute : attributes) {
+            attribute.setGroupId(groupId);
+            attribute.setFeatureId(propId);
+        }
+
+        return saveAttributesList(attributes);
+    }
+
+    /**
+     * Saves provided attributes list
+     */
+    private boolean saveAttributesList(List<Attribute> attributes) {
+        List<ContentValues> rows = new ArrayList<ContentValues>();
+
+        if (attributes == null || attributes.size() < 1) {
+            return true;
+        }
+
+        // Get group ID from the first element. It's supposed that all elemets have the same group ID.
+        Long groupId = attributes.get(0).getGroupId();
+
+        if (groupId != 0) {
+            try {
+                String whereGroupId = Attribute.COL_VALUE_GROUP_ID + "=" + groupId;
+                getDb().delete(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, whereGroupId, null);
+
+                for (Attribute attribute : attributes) {
+                    if (attribute.getValue() != null) {
+                        ContentValues row = new ContentValues();
+                        row.put(Attribute.COL_VALUE_GROUP_ID, groupId);
+                        row.put(Attribute.COL_VALUE_ATTRIBUTE_ID, attribute.getId());
+                        row.put(Attribute.COL_VALUE_VALUE, attribute.getValue());
+                        row.put(Attribute.COL_VALUE_FEATURE_ID, attribute.getFeatureId());
+                        getDb().insert(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, null, row);
+                    }
+                }
+                return true;
+            } catch (Exception e) {
+                cf.appLog("", e);
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
     }
 
     public List<Feature> fetchFeaturesByGeomtype(String geomtype) {
-        String q = "SELECT * FROM SPATIAL_FEATURES WHERE GEOMTYPE = '" + geomtype + "'";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_GEOM_TYPE + "='" + geomtype + "'";
         return getFeatures(q);
     }
 
-    // MOVE CONTENT VALUES HERE
-    public void InsertValues(List<ContentValues> valueList,
-                             String TableName) {
-        SQLiteDatabase database = getWritableDatabase();
-
-        int rows = database.delete(TableName, "1", null);
-        System.out.println(rows + " rows deleted from table " + TableName);
-
+    public void insertValues(List<ContentValues> valueList, String tableName) {
+        int rows = getDb().delete(tableName, "1", null);
+        System.out.println(rows + " rows deleted from table " + tableName);
         try {
             for (ContentValues contentValues : valueList) {
-                database.insert(TableName, null, contentValues);
-
+                getDb().insert(tableName, null, contentValues);
             }
             System.out.println("Data Inserted");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        database.close();
     }
 
     public User getLoggedUser() {
-        SQLiteDatabase database = getReadableDatabase();
         User user = null;
         String selectSQLUser = "SELECT * FROM USER ";
-        Cursor cursor = database.rawQuery(selectSQLUser, null);
+        Cursor cursor = getDb().rawQuery(selectSQLUser, null);
 
         if (cursor.moveToFirst()) {
             user = new User();
@@ -917,27 +1444,9 @@ public class DBController extends SQLiteOpenHelper {
             user.setUserName(cursor.getString(1));
             user.setPassword(cursor.getString(2));
             user.setRoleName(cursor.getString(4));
-
         }
         cursor.close();
-
-        //close();
         return user;
-    }
-
-    public boolean removeLoggedUser() {
-        SQLiteDatabase database = getWritableDatabase();
-        try {
-
-            int rows = database.delete("USER", null, null);
-            cleandb(database);
-            close();
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 
     public Object[] fetchAllBookmarks() {
@@ -946,8 +1455,7 @@ public class DBController extends SQLiteOpenHelper {
         List<Bookmark> bookmarks = new ArrayList<Bookmark>();
         List<String> bookmarksStr = new ArrayList<String>();
         try {
-            myDataBase = getReadableDatabase();
-            Cursor cursor = myDataBase.rawQuery(q, null);
+            Cursor cursor = getDb().rawQuery(q, null);
             if (cursor.moveToFirst()) {
                 do {
                     Bookmark bookmark = new Bookmark();
@@ -972,17 +1480,14 @@ public class DBController extends SQLiteOpenHelper {
         try {
             // query to remove the oldest bookmarks if more than 5 are in the database
             String removeSql = "id = (SELECT id FROM BOOKMARKS order by id desc LIMIT 1 OFFSET 5)";
-            SQLiteDatabase db = getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put("NAME", bkmrk.getName());
             values.put("LATITUDE", bkmrk.getLatitude());
             values.put("LONGITUDE", bkmrk.getLongitude());
             values.put("ZOOMLEVEL", bkmrk.getZoomlevel());
 
-            db.insert("BOOKMARKS", null, values);
-
-            db.delete("BOOKMARKS", removeSql, null);
-
+            getDb().insert("BOOKMARKS", null, values);
+            getDb().delete("BOOKMARKS", removeSql, null);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -991,191 +1496,12 @@ public class DBController extends SQLiteOpenHelper {
         return true;
     }
 
-    public void insertMedia(Media MediaValue) {
-        SQLiteDatabase database = getWritableDatabase();
-        try {
-            //FEATURE_ID TEXT,TYPE TEXT,PATH TEXT
-            ContentValues values = new ContentValues();
-            values.put("FEATURE_ID", MediaValue.getFeatureId());
-            values.put("TYPE", MediaValue.getMediaType());
-            values.put("PATH", MediaValue.getMediaPath());
-            values.put("MEDIA_ID", MediaValue.getMediaId());
-            database.insert("MEDIA", null, values);
-
-            System.out.println("Data Inserted");
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-        }
-        database.close();
-    }
-
-    public List<Attribute> getMultimediaFormDataByGroupId(int GroupId, String lang) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryQues = "SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE FROM ATTRIBUTE_MASTER AS AM LEFT JOIN form_VALUES AS FM "
-                + "ON AM.ATTRIB_ID = FM.ATTRIB_ID and FM.GROUP_ID=" + GroupId + " where attribute_type = '" + CAT_Multimedia + "'";
-
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            do {
-
-                Attribute attrib = new Attribute();
-                attrib.setAttributeid(cursor.getInt(1));
-                if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6))) {
-                    attrib.setAttributeName(cursor.getString(6));
-                } else {
-                    attrib.setAttributeName(cursor.getString(4));
-                }
-                attrib.setControlType(cursor.getInt(3));
-                attrib.setValidation(cursor.getString(7));
-                attrib.setFieldValue(cursor.getString(9));
-                attrib.setListing(cursor.getInt(5));
-                if (attrib.getControlType() == 5) {
-                    List<Option> optionList = new ArrayList<Option>();
-                    Option option = null;
-
-                    option = new Option();
-                    option.setOptionId(0L);
-                    option.setOptionName(contxt.getResources().getString(R.string.select));
-                    optionList.add(option);
-
-                    String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID =" + attrib.getAttributeid();
-                    Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
-
-                    if (cursor2.moveToFirst()) {
-                        do {
-                            option = new Option();
-                            option.setOptionId(cursor2.getLong(0));
-                            StringBuffer multiLnagText = new StringBuffer();
-                            if (lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))) {
-                                option.setOptionName(cursor2.getString(3));
-                            } else {
-                                option.setOptionName(cursor2.getString(2));
-                            }
-                            if (!TextUtils.isEmpty(cursor2.getString(3))) {
-                                multiLnagText.append(cursor2.getString(3));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            } else {
-                                multiLnagText.append(cursor2.getString(2));
-                                multiLnagText.append("&#&" + cursor2.getString(2));
-                                option.setOptionMultiLang(multiLnagText.toString());
-                            }
-                            optionList.add(option);
-                        } while (cursor2.moveToNext());
-                    }
-                    cursor2.close();
-                    attrib.setOptionsList(optionList);
-                }
-
-                attribList.add(attrib);
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-
-    }
-
-
-    public boolean saveFormDataTemp(List<Attribute> attribList, int groupid, long featureId, String keyword) {
-        ContentValues values = new ContentValues();
-        List<ContentValues> valueList = new ArrayList<ContentValues>();
-        SQLiteDatabase db = getWritableDatabase();
-        //"CREATE TABLE FORM_VALUES(ATTRIB_ID INTEGER,ATTRIB_VALUE TEXT,OPTION_ID TEXT,OPTION_VALUE TEXT,FEATURE_ID)";
-        if (groupid != 0) {
-            try {
-                String deleteWhereSql = "GROUP_ID=" + groupid;
-                db.delete("FORM_VALUES", deleteWhereSql, null);
-
-
-                String deleteDataWhereID = "ID=" + groupid;
-                db.delete("PERSON", deleteDataWhereID, null);
-
-                db.delete("SOCIAL_TENURE", deleteDataWhereID, null);
-
-                //for adding values in person,property,socialTenure and media
-
-                ContentValues tableValues = new ContentValues();
-                tableValues.put("ID", groupid);
-                tableValues.put("FEATURE_ID", featureId);
-
-
-                for (Attribute attribute : attribList) {
-                    if (attribute.getFieldValue() != null) {
-                        values = new ContentValues();
-                        values.put("GROUP_ID", groupid);
-                        values.put("ATTRIB_ID", attribute.getAttributeid());
-                        values.put("ATTRIB_VALUE", attribute.getFieldValue());
-                        values.put("FEATURE_ID", featureId);
-                        valueList.add(values);
-                        if (attribute.getListing() == 1)
-                            tableValues.put("ATTRIB_1", attribute.getFieldValue());
-                        if (attribute.getListing() == 2)
-                            tableValues.put("ATTRIB_2", attribute.getFieldValue());
-
-						/*if(attribute.getAttributeid()==54)
-                        {
-							String selectQueryOptions = "SELECT OPTION_NAME from OPTIONS WHERE OPTION_ID ="+ attribute.getFieldValue();
-							Cursor cursor = db.rawQuery(selectQueryOptions, null);
-							if (cursor.moveToFirst())
-							{
-								do {
-									tableValues.put("PERSON_SUBTYPE",cursor.getString(0));
-
-							}while (cursor.moveToNext());
-
-							cursor.close();
-
-						}
-						}*/
-                    }
-                }
-
-                for (ContentValues contentValues : valueList) {
-                    db.insert("FORM_VALUES", null, contentValues);
-                }
-
-                if (keyword.equalsIgnoreCase("PERSON")) {
-                    db.insert("PERSON", null, tableValues);
-                } else if (keyword.equalsIgnoreCase("SOCIAL_TENURE")) {
-
-
-                    db.insert("SOCIAL_TENURE", null, tableValues);
-
-                } else if (keyword.equalsIgnoreCase("MEDIA")) {
-                    tableValues.remove("ID");
-                    db.update("MEDIA", tableValues, "MEDIA_ID = " + groupid, null);
-
-                } else if (keyword.equalsIgnoreCase("Natural") || keyword.equalsIgnoreCase("Non-Natural")) {
-                    ContentValues valuesForpersonType = new ContentValues();
-                    valuesForpersonType.put("PERSON_TYPE", keyword);
-                    valueList.add(values);
-                    db.update("SPATIAL_FEATURES", valuesForpersonType, "FEATURE_ID = " + featureId, null);
-
-                }
-
-                return true;
-
-            } catch (Exception e) {
-                cf.appLog("", e);
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    public int getNewGroupId() // for fetching new value from group ids
-    {
+    public Long getNewGroupId() {
         String sql = "SELECT * FROM GROUPID_SEQ";
-        int groupid = 0;
-        SQLiteDatabase database = getWritableDatabase();
-        Cursor cursor = database.rawQuery(sql, null);
+        Long groupid = 0L;
+        Cursor cursor = getDb().rawQuery(sql, null);
         if (cursor.moveToFirst()) {
-            groupid = cursor.getInt(0);
+            groupid = cursor.getLong(0);
         }
         cursor.close();
 
@@ -1183,289 +1509,31 @@ public class DBController extends SQLiteOpenHelper {
             groupid++;
             ContentValues value = new ContentValues();
             value.put("value", groupid);
-            database.insert("GROUPID_SEQ", null, value);
+            getDb().insert("GROUPID_SEQ", null, value);
         } else {
             groupid++;
             ContentValues value = new ContentValues();
             value.put("value", groupid);
-            database.update("GROUPID_SEQ", value, null, null);
+            getDb().update("GROUPID_SEQ", value, null, null);
         }
         return groupid;
     }
 
-
-    public List<Attribute> getPersonList(Long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryQues = "SELECT * from PERSON where FEATURE_ID =" + featureId;
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-                attrib.setGroupId(cursor.getInt(0));
-
-                String value1, value2;
-                if (TextUtils.isEmpty(cursor.getString(2)))
-                    value2 = "";
-                else
-                    value2 = cursor.getString(2);
-
-                if (TextUtils.isEmpty(cursor.getString(1)))
-                    value1 = "";
-                else
-                    value1 = cursor.getString(1);
-                String personSubType = cursor.getString(5);
-                String fieldValue = "";
-                if (!TextUtils.isEmpty(personSubType)) {
-                    String lang = "";
-                    lang = cf.getLocale();
-                    if (personSubType.equalsIgnoreCase("Owner")) // TODO check for swahili language will b added.
-                    {
-                        fieldValue = value1 + " " + value2;
-                    } else if (personSubType.equalsIgnoreCase("Administrator")) {
-                        if (lang.equalsIgnoreCase("sw")) {
-                            personSubType = "Msimamizi";
-                            fieldValue = value1 + " " + value2 + " (" + personSubType + ")";
-                        } else {
-                            fieldValue = value1 + " " + value2 + " (" + personSubType + ")";
-                        }
-                    } else if (personSubType.equalsIgnoreCase("Guardian")) {
-
-                        if (lang.equalsIgnoreCase("sw")) {
-                            personSubType = "Mlezi";
-                            fieldValue = value1 + " " + value2 + " (" + personSubType + ")";
-                        } else {
-                            fieldValue = value1 + " " + value2 + " (" + personSubType + ")";
-                        }
-
-                    }
-
-
-                } else {
-                    fieldValue = value1 + " " + value2;
-                }
-                attrib.setFieldValue(fieldValue);
-                attrib.setFEATURE_ID(cursor.getLong(3));
-                attrib.setPersonSubType(cursor.getString(5));
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-
-    }
-
-    public List<Attribute> getTenureList(Long featureId, String lang) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        boolean isNonNatural = IsNonNaturalPerson(featureId);
-
-        if (isNonNatural) {
-
-			/*//String selectQueryQues ="SELECT * from SOCIAL_TENURE AS ST" +
-                    " left join peRSON AS P ON ST.PERSON_ID=P.ID" + " where ST.FEATURE_ID ="+ featureId;*/
-
-            String selectQueryQues = "select ST.ID,ST.PERSON_ID,FV.ATTRIB_VALUE,ST.FEATURE_ID,FV.ATTRIB_ID from soCIAL_TENURE as ST" +
-                    " LEFT JOIN FORM_VALUES AS FV ON  FV.GROUP_ID=ST.PERSON_ID AND ST.FEATURE_ID = '" + featureId + "'" +
-                    " LEFT JOIN ATTRIBUTE_MASTER AS AM ON AM.ATTRIB_ID=FV.ATTRIB_ID" + " WHERE LISTING = '1'";
-
-            try {
-                Cursor cursor = database.rawQuery(selectQueryQues, null);
-                if (cursor.moveToFirst()) {
-                    do {
-                        StringBuffer fieldValue = new StringBuffer();
-                        Attribute attrib = new Attribute();
-                        attrib.setGroupId(cursor.getInt(0));
-                        attrib.setPeronId(cursor.getInt(1));
-                        String value1;
-                        if (TextUtils.isEmpty(cursor.getString(2)))
-                            value1 = "";
-                        else
-                            value1 = cursor.getString(2);
-                        if (lang != null) {
-                            try {
-                                if (!value1.isEmpty()) {
-                                    if (lang.equalsIgnoreCase("sw"))
-                                        fieldValue.append(value1.split("&#&")[0]).append(" ");
-                                    else fieldValue.append(value1.split("&#&")[1]).append(" ");
-
-                                }
-                            } catch (Exception e) {
-                                fieldValue.append(value1);
-                            }
-                        } else
-                            fieldValue.append(value1);
-                        attrib.setFieldValue(fieldValue.toString());
-                        attrib.setPeronId(cursor.getInt(3));
-
-                        attribList.add(attrib);
-                    } while (cursor.moveToNext());
-                }
-                cursor.close();
-            } catch (Exception e) {
-
-                e.printStackTrace();
-            }
-
-        } else {
-
-            String selectQueryQues = "SELECT * from SOCIAL_TENURE AS ST" +
-                    " left join peRSON AS P ON ST.PERSON_ID=P.ID" + " where ST.FEATURE_ID =" + featureId;
-
-            Cursor cursor = database.rawQuery(selectQueryQues, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    StringBuffer fieldValue = new StringBuffer();
-                    Attribute attrib = new Attribute();
-                    attrib.setGroupId(cursor.getInt(0));
-                    attrib.setPeronId(cursor.getInt(3));
-                    String value1, value2;
-
-                    if (TextUtils.isEmpty(cursor.getString(8)))
-                        value2 = "";
-                    else
-                        value2 = cursor.getString(8);
-
-                    if (TextUtils.isEmpty(cursor.getString(7)))
-                        value1 = "";
-                    else
-                        value1 = cursor.getString(7);
-                    if (lang != null) {
-                        try {
-                            if (!value1.isEmpty()) {
-                                if (lang.equalsIgnoreCase("sw"))
-                                    fieldValue.append(value1.split("&#&")[0]).append(" ");
-                                else fieldValue.append(value1.split("&#&")[1]).append(" ");
-
-                            }
-                            if (!value2.isEmpty()) {
-                                if (lang.equalsIgnoreCase("sw"))
-                                    fieldValue.append(value2.split("&#&")[0]);
-                                else fieldValue.append(value1.split("&#&")[1]).append(" ");
-                            }
-                        } catch (Exception e) {
-                            fieldValue.append(value1 + " " + value2);
-                        }
-                    } else
-                        fieldValue.append(value1 + " " + value2);
-                    attrib.setFieldValue(fieldValue.toString());
-                    attrib.setPeronId(cursor.getInt(3));
-
-                    attribList.add(attrib);
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-
-        }
-
-        return attribList;
-    }
-
-    public List<Attribute> getMediaList(Long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryQues = "SELECT * from MEDIA where FEATURE_ID =" + featureId;
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-                attrib.setGroupId(cursor.getInt(0));
-                String value1, value2;
-                if (TextUtils.isEmpty(cursor.getString(5)))
-                    value2 = "";
-                else
-                    value2 = cursor.getString(5);
-
-                if (TextUtils.isEmpty(cursor.getString(4)))
-                    value1 = "";
-                else
-                    value1 = cursor.getString(4);
-                String fieldValue = value1 + " " + value2;
-                attrib.setFieldValue(fieldValue);
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-    }
-
-    public Media getMediaFile(int groupid) {
-        SQLiteDatabase database = getReadableDatabase();
-        Media media = new Media();
-        String selectQueryQues = "SELECT * from MEDIA where MEDIA_ID =" + groupid;
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            media.setMediaId(cursor.getInt(0));
-            media.setMediaPath(cursor.getString(3));
-            media.setMediaType(cursor.getString(2));
-        }
-        cursor.close();
-        return media;
-    }
-
-    public boolean inserPersontMedia(Media MediaValue) {
-        SQLiteDatabase database = getWritableDatabase();
-        try {
-            //PERSON_ID TEXT,TYPE TEXT,PATH TEXT,FEATURE_ID TEXT
-            ContentValues values = new ContentValues();
-            values.put("PERSON_ID", MediaValue.getMediaId());
-            values.put("TYPE", MediaValue.getMediaType());
-            values.put("FEATURE_ID", MediaValue.getFeatureId());
-            values.put("PATH", MediaValue.getMediaPath());
-
-            database.insert("PERSON_MEDIA", null, values);
-
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-            return false;
-        } finally {
-            database.close();
-        }
-        return true;
-    }
-
-    public List<Media> getMediaPathByGroupId(int GroupId) {
-
-        SQLiteDatabase database = getReadableDatabase();
-        List<Media> mediaList = new ArrayList<Media>();
-        String selectQueryQues = "SELECT PATH FROM PERSON_MEDIA where PERSON_ID=" + GroupId;
-
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            try {
-                do {
-                    Media media = new Media();
-                    media.setMediaPath(cursor.getString(0));
-                    mediaList.add(media);
-                } while (cursor.moveToNext());
-            } catch (Exception e) {
-                cf.appLog("", e);
-                e.printStackTrace();
-            }
-        }
-        cursor.close();
-        return mediaList;
-
-    }
-
     public boolean saveProjectData(String data) {
-        SQLiteDatabase database = getWritableDatabase();
-        //ContentValues values = new ContentValues();
-
         try {
             JSONObject projectdata = new JSONObject(data);
-            database.delete("PROJECT_SPATIAL_DATA", null, null);
-            database.delete("OPTIONS", null, null);
-            database.delete("ATTRIBUTE_MASTER", null, null);
-            database.delete("HAMLET_DETAILS", null, null);
-            database.delete("ADJUDICATOR_DETAILS", null, null);
-            database.delete("RELATIONSHIP_TYPE", null, null);
-            database.delete("CLAIM_TYPE", null, null);
+            getDb().delete("PROJECT_SPATIAL_DATA", null, null);
+            getDb().delete("OPTIONS", null, null);
+            getDb().delete(Attribute.TABLE_NAME, null, null);
+            getDb().delete("HAMLET_DETAILS", null, null);
+            getDb().delete("ADJUDICATOR_DETAILS", null, null);
+            getDb().delete(RelationshipType.TABLE_NAME, null, null);
+            getDb().delete(ClaimType.TABLE_NAME, null, null);
+            getDb().delete(ShareType.TABLE_NAME, null, null);
+            getDb().delete(RightType.TABLE_NAME, null, null);
+            getDb().delete(Gender.TABLE_NAME, null, null);
+            getDb().delete(DisputeType.TABLE_NAME, null, null);
+            getDb().delete(AcquisitionType.TABLE_NAME, null, null);
 
             if (projectdata.has("Extent")) {
                 String mapExtent = projectdata.getString("Extent");
@@ -1490,7 +1558,7 @@ public class DBController extends SQLiteOpenHelper {
                             projectValues.put("VILLAGE_NAME", projectdata.getString("Village"));
                         }
 
-                        database.insert("PROJECT_SPATIAL_DATA", null, projectValues);
+                        getDb().insert("PROJECT_SPATIAL_DATA", null, projectValues);
                     }
                 }
             }
@@ -1504,7 +1572,7 @@ public class DBController extends SQLiteOpenHelper {
                         hamlets.put("ID", hamlet.getInt("id"));
                         hamlets.put("HAMLET_NAME", hamlet.getString("hamletName"));
                         hamlets.put("HAMLET_LEADER", hamlet.getString("hamletLeaderName"));
-                        database.insert("HAMLET_DETAILS", null, hamlets);
+                        getDb().insert("HAMLET_DETAILS", null, hamlets);
                     }
                 }
             }
@@ -1518,7 +1586,37 @@ public class DBController extends SQLiteOpenHelper {
                         claimTypes.put("CODE", claimType.getString("code"));
                         claimTypes.put("NAME", claimType.getString("name"));
                         claimTypes.put("NAME_OTHER_LANG", claimType.getString("nameOtherLang"));
-                        database.insert("CLAIM_TYPE", null, claimTypes);
+                        getDb().insert(ClaimType.TABLE_NAME, null, claimTypes);
+                    }
+                }
+            }
+
+            if (projectdata.has("DisputeType")) {
+                ContentValues types = new ContentValues();
+                JSONArray typesArray = projectdata.getJSONArray("DisputeType");
+                if (typesArray.length() > 0) {
+                    for (int i = 0; i < typesArray.length(); i++) {
+                        JSONObject type = new JSONObject(typesArray.get(i).toString());
+                        types.put(RefData.COL_CODE, type.getInt("code"));
+                        types.put(RefData.COL_NAME, type.getString("name"));
+                        types.put(RefData.COL_NAME_OTHER_LANG, type.getString("nameOtherLang"));
+                        types.put(RefData.COL_ACTIVE, type.getBoolean("active") ? 1 : 0);
+                        getDb().insert(DisputeType.TABLE_NAME, null, types);
+                    }
+                }
+            }
+
+            if (projectdata.has("AcquisitionType")) {
+                ContentValues types = new ContentValues();
+                JSONArray typesArray = projectdata.getJSONArray("AcquisitionType");
+                if (typesArray.length() > 0) {
+                    for (int i = 0; i < typesArray.length(); i++) {
+                        JSONObject type = new JSONObject(typesArray.get(i).toString());
+                        types.put(RefData.COL_CODE, type.getInt("code"));
+                        types.put(RefData.COL_NAME, type.getString("name"));
+                        types.put(RefData.COL_NAME_OTHER_LANG, type.getString("nameOtherLang"));
+                        types.put(RefData.COL_ACTIVE, type.getBoolean("active") ? 1 : 0);
+                        getDb().insert(AcquisitionType.TABLE_NAME, null, types);
                     }
                 }
             }
@@ -1529,11 +1627,55 @@ public class DBController extends SQLiteOpenHelper {
                 if (relTypesArray.length() > 0) {
                     for (int i = 0; i < relTypesArray.length(); i++) {
                         JSONObject relType = new JSONObject(relTypesArray.get(i).toString());
-                        relTypes.put("CODE", relType.getString("code"));
+                        relTypes.put("CODE", relType.getInt("code"));
                         relTypes.put("NAME", relType.getString("name"));
                         relTypes.put("NAME_OTHER_LANG", relType.getString("nameOtherLang"));
                         relTypes.put("ACTIVE", relType.getBoolean("active") ? 1 : 0);
-                        database.insert("RELATIONSHIP_TYPE", null, relTypes);
+                        getDb().insert(RelationshipType.TABLE_NAME, null, relTypes);
+                    }
+                }
+            }
+
+            if (projectdata.has("ShareType")) {
+                ContentValues shareTypes = new ContentValues();
+                JSONArray shareTypesArray = projectdata.getJSONArray("ShareType");
+                if (shareTypesArray.length() > 0) {
+                    for (int i = 0; i < shareTypesArray.length(); i++) {
+                        JSONObject shareType = new JSONObject(shareTypesArray.get(i).toString());
+                        shareTypes.put("CODE", shareType.getInt("gid"));
+                        shareTypes.put("NAME", shareType.getString("shareType"));
+                        shareTypes.put("NAME_OTHER_LANG", shareType.getString("shareType_sw"));
+                        getDb().insert(ShareType.TABLE_NAME, null, shareTypes);
+                    }
+                }
+            }
+
+            if (projectdata.has("RightType")) {
+                ContentValues rightTypes = new ContentValues();
+                JSONArray rightTypesArray = projectdata.getJSONArray("RightType");
+                if (rightTypesArray.length() > 0) {
+                    for (int i = 0; i < rightTypesArray.length(); i++) {
+                        JSONObject rightType = new JSONObject(rightTypesArray.get(i).toString());
+                        rightTypes.put("CODE", rightType.getInt("tenureId"));
+                        rightTypes.put("NAME", rightType.getString("tenureClass"));
+                        rightTypes.put("NAME_OTHER_LANG", rightType.getString("tenureClass"));
+                        rightTypes.put("ACTIVE", rightType.getBoolean("active") ? 1 : 0);
+                        rightTypes.put("FOR_ADJUDICATION", rightType.getBoolean("forAdjudication") ? 1 : 0);
+                        getDb().insert(RightType.TABLE_NAME, null, rightTypes);
+                    }
+                }
+            }
+
+            if (projectdata.has("Genders")) {
+                ContentValues genders = new ContentValues();
+                JSONArray gendersArray = projectdata.getJSONArray("Genders");
+                if (gendersArray.length() > 0) {
+                    for (int i = 0; i < gendersArray.length(); i++) {
+                        JSONObject gender = new JSONObject(gendersArray.get(i).toString());
+                        genders.put("CODE", gender.getInt("genderId"));
+                        genders.put("NAME", gender.getString("gender"));
+                        genders.put("NAME_OTHER_LANG", gender.getString("gender_sw"));
+                        getDb().insert(Gender.TABLE_NAME, null, genders);
                     }
                 }
             }
@@ -1546,8 +1688,7 @@ public class DBController extends SQLiteOpenHelper {
                         JSONObject project_detail = new JSONObject(project_info.get(i).toString());
                         projectValues.put("ID", project_detail.getInt("id"));
                         projectValues.put("ADJUDICATOR_NAME", project_detail.getString("adjudicatorName"));
-
-                        database.insert("ADJUDICATOR_DETAILS", null, projectValues);
+                        getDb().insert("ADJUDICATOR_DETAILS", null, projectValues);
                     }
                 }
             }
@@ -1578,7 +1719,7 @@ public class DBController extends SQLiteOpenHelper {
                                             option_value.put("ATTRIB_ID", optionValues.getInt("attributeId"));
                                             option_value.put("OPTION_NAME", optionValues.getString("optiontext"));
                                             option_value.put("OPTION_NAME_OTHER", optionValues.getString("optiontext_second_language"));
-                                            database.insert("OPTIONS", null, option_value);
+                                            getDb().insert("OPTIONS", null, option_value);
                                             option_value.clear();
                                         }
                                     }
@@ -1587,7 +1728,7 @@ public class DBController extends SQLiteOpenHelper {
                         }
                         attributeValues.put("ATTRIBUTE_NAME", attribute_detail.getString("alias"));
                         if (attribute_detail.has("listing") && !TextUtils.isEmpty(attribute_detail.getString("listing")) && !attribute_detail.getString("listing").equalsIgnoreCase("null")) {
-                            attributeValues.put("LISTING", attribute_detail.getString("listing"));
+                            attributeValues.put("LISTING", attribute_detail.getInt("listing"));
                         }
                         if (attribute_detail.has("mandatory") && !TextUtils.isEmpty(attribute_detail.getString("mandatory")) && !attribute_detail.getString("mandatory").equalsIgnoreCase("null")) {
                             attributeValues.put("VALIDATION", attribute_detail.getString("mandatory"));
@@ -1595,7 +1736,7 @@ public class DBController extends SQLiteOpenHelper {
                         if (attribute_detail.has("alias_second_language") && !TextUtils.isEmpty(attribute_detail.getString("alias_second_language")) && !attribute_detail.getString("alias_second_language").equalsIgnoreCase("null")) {
                             attributeValues.put("ATTRIBUTE_NAME_OTHER", attribute_detail.getString("alias_second_language"));
                         }
-                        database.insert("ATTRIBUTE_MASTER", null, attributeValues);
+                        getDb().insert("ATTRIBUTE_MASTER", null, attributeValues);
                         attributeValues.clear();
                     }
                 }
@@ -1610,10 +1751,9 @@ public class DBController extends SQLiteOpenHelper {
     }
 
     public List<ProjectSpatialDataDto> getProjectSpatialData() {
-        SQLiteDatabase database = getReadableDatabase();
         List<ProjectSpatialDataDto> projectSpatialList = new ArrayList<ProjectSpatialDataDto>();
         String selectQueryQues = "SELECT * from PROJECT_SPATIAL_DATA order by SERVER_PK";
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
+        Cursor cursor = getDb().rawQuery(selectQueryQues, null);
         if (cursor.moveToFirst()) {
             try {
                 do {
@@ -1631,142 +1771,152 @@ public class DBController extends SQLiteOpenHelper {
             }
         }
         cursor.close();
-        close();
         return projectSpatialList;
     }
 
-
-    public List<Option> getPersonForTenure(Long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Option> optionList = new ArrayList<Option>();
+    /**
+     * Saves ownership right
+     */
+    public boolean saveRight(Right right) {
         try {
-            String selectQueryQues = "select ID,ATTRIB_1 from PERSON AS P WHERE P.ID not in (SELECT PERSON_ID FROM SOCIAL_TENURE) and FEATURE_ID =" + featureId;
-
-            Cursor cursor = database.rawQuery(selectQueryQues, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    Option option = new Option();
-
-                    option.setOptionId(cursor.getLong(0));
-                    option.setOptionName(cursor.getString(1));
-
-
-                    optionList.add(option);
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return optionList;
-
-    }
-
-    public boolean saveSocialTenureFormData(List<Attribute> attribList, int groupid, long featureId, String keyword, long personId) {
-        ContentValues values = new ContentValues();
-        List<ContentValues> valueList = new ArrayList<ContentValues>();
-        SQLiteDatabase db = getWritableDatabase();
-        //"CREATE TABLE FORM_VALUES(ATTRIB_ID INTEGER,ATTRIB_VALUE TEXT,OPTION_ID TEXT,OPTION_VALUE TEXT,FEATURE_ID)";
-        if (groupid != 0) {
-            try {
-                String deleteWhereSql = "GROUP_ID=" + groupid;
-                db.delete("FORM_VALUES", deleteWhereSql, null);
-
-
-                String deleteDataWhereID = "ID=" + groupid;
-
-                db.delete("SOCIAL_TENURE", deleteDataWhereID, null);
-
-                //for adding values in person table
-                ContentValues tableValues = new ContentValues();
-                tableValues.put("ID", groupid);
-                tableValues.put("FEATURE_ID", featureId);
-
-
-                for (Attribute attribute : attribList) {
-                    values = new ContentValues();
-                    values.put("GROUP_ID", groupid);
-                    values.put("ATTRIB_ID", attribute.getAttributeid());
-                    values.put("ATTRIB_VALUE", attribute.getFieldValue());
-                    values.put("FEATURE_ID", featureId);
-                    valueList.add(values);
-                    if (attribute.getListing() == 1)
-                        tableValues.put("ATTRIB_1", attribute.getFieldValue());
-                    if (attribute.getListing() == 2)
-                        tableValues.put("ATTRIB_2", attribute.getFieldValue());
-
-                }
-
-                for (ContentValues contentValues : valueList) {
-                    db.insert("FORM_VALUES", null, contentValues);
-                }
-
-                if (keyword.equalsIgnoreCase("PERSON")) {
-                    db.insert("PERSON", null, tableValues);
-                } else if (keyword.equalsIgnoreCase("SOCIAL_TENURE")) {
-
-                    tableValues.put("PERSON_ID", personId);
-                    db.insert("SOCIAL_TENURE", null, tableValues);
-
-                } else if (keyword.equalsIgnoreCase("MEDIA")) {
-                    tableValues.remove("ID");
-                    db.update("MEDIA", tableValues, "MEDIA_ID = " + groupid, null);
-
-                } else if (keyword.equalsIgnoreCase("Natural") || keyword.equalsIgnoreCase("Non-Natural")) {
-                    ContentValues valuesForpersonType = new ContentValues();
-                    valuesForpersonType.put("PERSON_TYPE", keyword);
-                    valueList.add(values);
-                    db.update("SPATIAL_FEATURES", valuesForpersonType, "FEATURE_ID = " + featureId, null);
-
-                }
-
+            if (right == null) {
                 return true;
-
-            } catch (Exception e) {
-                cf.appLog("", e);
-                e.printStackTrace();
-                return false;
             }
+
+            if (right.getId() == null || right.getId() < 1) {
+                right.setId(getNewGroupId());
+            } else {
+                // Delete from right
+                getDb().delete(Right.TABLE_NAME, Right.COL_ID + "=" + right.getId(), null);
+            }
+
+            // Insert right
+            ContentValues row = new ContentValues();
+            row.put(Right.COL_ID, right.getId());
+            row.put(Right.COL_FEATURE_ID, right.getFeatureId());
+            row.put(Right.COL_SERVER_ID, right.getServerId());
+            row.put(Right.COL_RELATIONSHIP_ID, right.getRelationshipId());
+            row.put(Right.COL_CERT_DATE, right.getCertDate());
+            row.put(Right.COL_CERT_NUMBER, right.getCertNumber());
+            row.put(Right.COL_JURIDICAL_AREA, right.getJuridicalArea());
+            row.put(Right.COL_RIGHT_TYPE_ID, right.getRightTypeId());
+            row.put(Right.COL_SHARE_TYPE_ID, right.getShareTypeId());
+
+            getDb().insert(Right.TABLE_NAME, null, row);
+
+            // Save attributes
+            if (right.getAttributes() != null && right.getAttributes().size() > 0) {
+                for (Attribute attribute : right.getAttributes()) {
+                    attribute.setGroupId(right.getId());
+                    attribute.setFeatureId(right.getFeatureId());
+                }
+                saveAttributesList(right.getAttributes());
+            }
+
+            return true;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
-    public List<Attribute> getAssociatedPersonWithtenure(int groupId) {
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryQues = "SELECT * from SOCIAL_TENURE where PERSON_ID =" + groupId;
+    /**
+     * Saves person
+     */
+    public boolean savePerson(Person person) {
+        try {
+            if (person == null) {
+                return true;
+            }
 
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-                attrib.setGroupId(cursor.getInt(0));
-                String value1, value2;
-                if (TextUtils.isEmpty(cursor.getString(2)))
-                    value2 = "";
-                else
-                    value2 = cursor.getString(2);
+            if (person.getId() == null || person.getId() < 1) {
+                person.setId(getNewGroupId());
+            } else {
+                // Delete from person
+                getDb().delete(Person.TABLE_NAME, Person.COL_ID + "=" + person.getId(), null);
+            }
 
-                if (TextUtils.isEmpty(cursor.getString(1)))
-                    value1 = "";
-                else
-                    value1 = cursor.getString(1);
-                String fieldValue = value1 + " " + value2;
-                attrib.setFieldValue(fieldValue);
-                attrib.setPeronId(cursor.getInt(3));
+            // Insert person
+            ContentValues row = new ContentValues();
+            row.put(Person.COL_ID, person.getId());
+            row.put(Person.COL_RIGHT_ID, person.getRightId());
+            row.put(Person.COL_FEATURE_ID, person.getFeatureId());
+            row.put(Person.COL_SERVER_ID, person.getServerId());
+            row.put(Person.COL_IS_NATURAL, person.getIsNatural());
+            row.put(Person.COL_RESIDENT, person.getResident());
+            row.put(Person.COL_SUBTYPE, person.getSubTypeId());
+            row.put(Person.COL_SHARE, person.getShare());
+            row.put(Person.COL_DISPUTE_ID, person.getDisputeId());
+            row.put(Person.COL_ACQUISITION_TYPE_ID, person.getAcquisitionTypeId());
 
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
+            getDb().insert(Person.TABLE_NAME, null, row);
+
+            // Save attributes
+            if (person.getAttributes() != null && person.getAttributes().size() > 0) {
+                for (Attribute attribute : person.getAttributes()) {
+                    attribute.setGroupId(person.getId());
+                    attribute.setFeatureId(person.getFeatureId());
+                }
+                saveAttributesList(person.getAttributes());
+            }
+
+            return true;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
         }
-        cursor.close();
-        return attribList;
+    }
+
+    /**
+     * Saves media
+     */
+    public boolean saveMedia(Media media) {
+        try {
+            if (media == null) {
+                return true;
+            }
+
+            if (media.getId() == null || media.getId() < 1) {
+                media.setId(getNewGroupId());
+            } else {
+                // Delete from media
+                getDb().delete(Media.TABLE_NAME, Media.COL_ID + "=" + media.getId(), null);
+            }
+
+            // Insert media
+            ContentValues row = new ContentValues();
+            row.put(Media.COL_ID, media.getId());
+            row.put(Media.COL_FEATURE_ID, media.getFeatureId());
+            row.put(Media.COL_PATH, media.getPath());
+            row.put(Media.COL_TYPE, media.getType());
+            row.put(Media.COL_PERSON_ID, media.getPersonId());
+            row.put(Media.COL_DISPUTE_ID, media.getDisputeId());
+
+            getDb().insert(Media.TABLE_NAME, null, row);
+
+            // Save attributes
+            if (media.getAttributes() != null && media.getAttributes().size() > 0) {
+                for (Attribute attribute : media.getAttributes()) {
+                    attribute.setGroupId(media.getId());
+                    attribute.setFeatureId(media.getFeatureId());
+                }
+                saveAttributesList(media.getAttributes());
+            }
+
+            return true;
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public String getProjectname() {
         String projectName = "";
-        myDataBase = getReadableDatabase();
         String q = "select project_name from PROJECT_SPATIAL_DATA LIMIT 1";
-        Cursor cursor = myDataBase.rawQuery(q, null);
+        Cursor cursor = getDb().rawQuery(q, null);
 
         if (cursor.moveToFirst()) {
             projectName = cursor.getString(0);
@@ -1775,45 +1925,9 @@ public class DBController extends SQLiteOpenHelper {
         return projectName;
     }
 
-	/*public JSONArray getpersonSubTypeData(long featureId)
-	{
-		String query="SELECT * FROM FORM_VALUES WHERE ATTRIB_ID=54 AND FEATURE_ID=" +featureId;
-		SQLiteDatabase db=getReadableDatabase();
-		Cursor cursor=db.rawQuery(query,null);
-
-		JSONArray personSubTypeJsonList=new JSONArray();
-
-		if(cursor.moveToFirst())
-		{
-
-			try {
-				do{
-					JSONArray personSubTypeJsonArr=new JSONArray();
-					personSubTypeJsonArr.put(0, featureId);//featureid
-					personSubTypeJsonArr.put(1, cursor.getString(0));//groupid
-					personSubTypeJsonArr.put(2, cursor.getString(1));//attribID
-
-					personSubTypeJsonArr.put(3,cursor.getString(2));//attribvalue
-
-					personSubTypeJsonList.put(personSubTypeJsonArr);
-				}
-				while (cursor.moveToNext());
-				cursor.close();
-			} catch (Exception e) {
-
-			}
-
-		}
-
-		return personSubTypeJsonList;
-	}*/
-
-    //TODO this method(getpersonSubTypeValue) is not used
-
     public JSONArray getpersonSubTypeValue(long featureId, int groupId) {
         String query = "SELECT * FROM FORM_VALUES WHERE ATTRIB_ID=54 AND GROUP_ID=" + groupId + " AND FEATURE_ID=" + featureId;
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
+        Cursor cursor = getDb().rawQuery(query, null);
 
         JSONArray personSubTypeJsonList = new JSONArray();
 
@@ -1825,9 +1939,7 @@ public class DBController extends SQLiteOpenHelper {
                     personSubTypeJsonArr.put(0, featureId);//featureid
                     personSubTypeJsonArr.put(1, cursor.getString(0));//groupid
                     personSubTypeJsonArr.put(2, cursor.getString(1));//attribID
-
                     personSubTypeJsonArr.put(3, cursor.getString(2));//attribvalue
-
                     personSubTypeJsonList.put(personSubTypeJsonArr);
                 }
                 while (cursor.moveToNext());
@@ -1835,240 +1947,28 @@ public class DBController extends SQLiteOpenHelper {
             } catch (Exception e) {
                 // TODO: handle exception
             }
-
         }
-
         return personSubTypeJsonList;
     }
 
     public String getProjectDataForUpload() {
-        String syncData = null;
-        try {
-            int featureId = 0;
-            myDataBase = getReadableDatabase();
-            String attributeFeatchSql = "SELECT  AM.attrib_id,FM.GROUP_ID,FM.ATTRIB_VALUE FROM ATTRIBUTE_MASTER AS AM "
-                    + " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID = <feat_id>"
-                    + " where AM.ATTRIBUTE_TYPE IN (<category>) and FM.ATTRIB_VALUE is not null order by group_id";
+        try{
+            List<Property> properties = createPropertyList("SELECT * FROM " + Property.TABLE_NAME +
+                    " WHERE " + Property.COL_STATUS + " = '" + STATUS_COMPLETE + "' AND (" +
+                    Property.COL_SERVER_ID + " IS NULL OR " + Property.COL_SERVER_ID + " = '')");
 
-            // fetching Spatial feature DATA
-            //FEATURE_ID,SERVER_FEATURE_ID,COORDINATES,GEOMTYPE,CREATEDTIME,STATUS,COMPLETEDTIME,SERVER_PK,IMEI,PERSON_TYPE
-            //0				1					2			3		4			5		6			7		8		9
-            JSONArray spatialFeatures, attribsArr, atribsArrList, nextOfKinArr = null, nextOfKinArrList = null, deceasedPersonArr = null, deceasedPersonArrList = null;
-            JSONArray attribValuesArr = new JSONArray();
-            JSONObject featureAttribsObj = new JSONObject();
-            JSONArray featureAttribsArr = new JSONArray();
-            String projName = getProjectname();
-            User user = getLoggedUser();
-            String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID IS NULL OR SERVER_FEATURE_ID = '')";
-            Cursor cursor = myDataBase.rawQuery(spatialFeatureSql, null);
-            if (cursor.moveToFirst()) {
-                do {
-                    spatialFeatures = new JSONArray();
-                    attribValuesArr = new JSONArray();
-                    featureId = cursor.getInt(0);
-                    spatialFeatures.put(0, cursor.getInt(0));//featureid
-                    spatialFeatures.put(1, cursor.getString(3));//Geomtype
-                    spatialFeatures.put(2, cursor.getString(2));//Coordinates
-                    spatialFeatures.put(3, cursor.getString(4));//createdTime
-                    spatialFeatures.put(4, cursor.getString(6));//completedtime
-                    spatialFeatures.put(5, cursor.getString(8));//imei
-                    spatialFeatures.put(6, cursor.getString(9));//PersonType
-                    spatialFeatures.put(7, projName);//ProjectName
-                    spatialFeatures.put(8, user.getUserId());// user Name
-                    spatialFeatures.put(9, cursor.getInt(10));// Hamlet id
-                    spatialFeatures.put(10, cursor.getString(11));//Witness 1
-                    spatialFeatures.put(11, cursor.getString(12));// witness 2
+            if(properties == null || properties.size() < 1)
+                return "";
 
-
-                    // Fetching GENERAL FEATURES
-                    atribsArrList = new JSONArray();
-                    String final_sql = attributeFeatchSql.replace("<feat_id>", featureId + "").replace("<category>", CAT_General + "," + CAT_General_Property);
-                    Cursor cursor_attrib = myDataBase.rawQuery(final_sql, null);
-                    if (cursor_attrib.moveToFirst()) {
-                        do {
-                            attribsArr = new JSONArray();
-                            attribsArr.put(0, featureId);//featureid
-                            attribsArr.put(1, cursor_attrib.getString(1));//groupid
-                            attribsArr.put(2, cursor_attrib.getString(0));//attribID
-                            attribsArr.put(3, cursor_attrib.getString(2));//attribvalue
-
-                            atribsArrList.put(attribsArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-                    attribValuesArr.put(0, atribsArrList); // putting general and property attrib at 0
-
-                    // Fetching NATURAL FEATURES
-                    atribsArrList = new JSONArray();
-                    final_sql = attributeFeatchSql.replace("<feat_id>", featureId + "").replace("<category>", CAT_NaturalPerson);
-
-                    cursor_attrib = myDataBase.rawQuery(final_sql, null);
-                    if (cursor_attrib.moveToFirst()) {
-                        String prevGroupId = "";
-                        do {
-
-                            if (prevGroupId.equals("") || !prevGroupId.equalsIgnoreCase(cursor_attrib.getString(1))) {
-                                prevGroupId = cursor_attrib.getString(1);
-                                JSONArray personSubTypeValueArr = getpersonSubTypeValue(featureId, cursor_attrib.getInt(1));
-                                if (personSubTypeValueArr != null) {
-                                    atribsArrList.put(personSubTypeValueArr.get(0));
-                                }
-                            }
-
-                            attribsArr = new JSONArray();
-                            attribsArr.put(0, featureId);//featureid
-                            attribsArr.put(1, cursor_attrib.getString(1));//groupid
-                            attribsArr.put(2, cursor_attrib.getString(0));//attribID
-
-                            //////////// Hardcode for boolean control type ///////////
-                            if (cursor_attrib.getString(2).equalsIgnoreCase("Ndiyo")) {
-                                attribsArr.put(3, "yes");//attribvalue
-                            } else if (cursor_attrib.getString(2).equalsIgnoreCase("Hapana")) {
-                                attribsArr.put(3, "no");//attribvalue
-                            } else {
-                                attribsArr.put(3, cursor_attrib.getString(2));//attribvalue
-                            }
-
-                            atribsArrList.put(attribsArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-
-					/*//getting person sub type data by feature Id & hardcoded attribute Id
-					JSONArray personSubTypeDataArr = getpersonSubTypeData(featureId);
-					for (int i = 0; i < personSubTypeDataArr.length(); i++) {
-						atribsArrList.put(personSubTypeDataArr.get(i));
-					}*/
-                    attribValuesArr.put(1, atribsArrList); // putting natural at 1
-
-                    // Fetching NON NATURAL FEATURES
-                    atribsArrList = new JSONArray();
-                    final_sql = attributeFeatchSql.replace("<feat_id>", featureId + "").replace("<category>", CAT_NonNaturalPerson);
-                    cursor_attrib = myDataBase.rawQuery(final_sql, null);
-                    if (cursor_attrib.moveToFirst()) {
-                        do {
-                            attribsArr = new JSONArray();
-                            attribsArr.put(0, featureId);//featureid
-                            attribsArr.put(1, cursor_attrib.getString(1));//groupid
-                            attribsArr.put(2, cursor_attrib.getString(0));//attribID
-                            attribsArr.put(3, cursor_attrib.getString(2));//attribvalue
-
-                            atribsArrList.put(attribsArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-                    attribValuesArr.put(2, atribsArrList); // putting non-natural at 2
-
-                    // Fetching TENURE FEATURES
-                    atribsArrList = new JSONArray();
-                    final_sql = attributeFeatchSql.replace("<feat_id>", featureId + "").replace("<category>", CAT_Tenure);
-                    cursor_attrib = myDataBase.rawQuery(final_sql, null);
-                    if (cursor_attrib.moveToFirst()) {
-                        do {
-                            attribsArr = new JSONArray();
-                            attribsArr.put(0, featureId);//featureid
-                            attribsArr.put(1, cursor_attrib.getString(1));//groupid
-                            attribsArr.put(2, cursor_attrib.getString(0));//attribID
-                            attribsArr.put(3, cursor_attrib.getString(2));//attribvalue
-
-                            atribsArrList.put(attribsArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-                    attribValuesArr.put(3, atribsArrList); // putting tenure at 3
-
-                    // Fetching CUSTOM FEATURES
-                    atribsArrList = new JSONArray();
-                    final_sql = attributeFeatchSql.replace("<feat_id>", featureId + "").replace("<category>", CAT_Custom);
-                    cursor_attrib = myDataBase.rawQuery(final_sql, null);
-                    if (cursor_attrib.moveToFirst()) {
-                        do {
-                            attribsArr = new JSONArray();
-                            attribsArr.put(0, featureId);//featureid
-                            attribsArr.put(1, cursor_attrib.getString(1));//groupid
-                            attribsArr.put(2, cursor_attrib.getString(0));//attribID
-                            attribsArr.put(3, cursor_attrib.getString(2));//attribvalue
-
-                            atribsArrList.put(attribsArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-                    attribValuesArr.put(4, atribsArrList); // putting custom at 4
-
-                    // fetching nextOfKins
-
-
-                    String fetchNextOfKin_sql = "SELECT * FROM NEXT_KIN_DETAILS where FEATURE_ID =" + featureId;
-                    cursor_attrib = myDataBase.rawQuery(fetchNextOfKin_sql, null);
-
-                    nextOfKinArrList = new JSONArray();
-                    if (cursor_attrib.moveToFirst()) {
-                        do {
-                            nextOfKinArr = new JSONArray();
-                            nextOfKinArr.put(cursor_attrib.getString(1));
-                            nextOfKinArrList.put(nextOfKinArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-
-
-                    String fetchDeceasedPerson_sql = "SELECT * FROM DECEASED_PERSON where FEATURE_ID =" + featureId;
-                    cursor_attrib = myDataBase.rawQuery(fetchDeceasedPerson_sql, null);
-                    deceasedPersonArrList = new JSONArray();
-                    if (cursor_attrib.moveToFirst()) {
-                        do {
-                            deceasedPersonArr = new JSONArray();
-                            deceasedPersonArr.put(0, cursor_attrib.getString(1));    //firstName
-                            deceasedPersonArr.put(1, cursor_attrib.getString(2));    //middle Name
-                            deceasedPersonArr.put(2, cursor_attrib.getString(3));    //Last Name
-
-                            deceasedPersonArrList.put(deceasedPersonArr);
-                        }
-                        while (cursor_attrib.moveToNext());
-                        cursor_attrib.close();
-                    }
-
-
-                    featureAttribsObj = new JSONObject();
-                    featureAttribsObj.put("SpatialFeatures", spatialFeatures);
-                    featureAttribsObj.put("AttributeValue", attribValuesArr);
-                    featureAttribsObj.put("NextOfKin", nextOfKinArrList);
-                    featureAttribsObj.put("DeceasedPerson", deceasedPersonArrList);
-                    featureAttribsArr.put(featureAttribsObj);
-                }
-                while (cursor.moveToNext());
-                cursor.close();
-                close();
-            }
-            if (featureAttribsArr.length() != 0) {
-                syncData = featureAttribsArr.toString();
-            }
-
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<Property>>() {}.getType();
+            return gson.toJson(properties, type);
         } catch (Exception e) {
+            cf.syncLog("", e);
+            cf.showToast(contxt, R.string.FailedToFormJson, Toast.LENGTH_SHORT);
             e.printStackTrace();
+            return "";
         }
-        return syncData;
-    }
-
-    public boolean getFormValues(Long featureId) {
-
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        String selectQueryQues = "SELECT GROUP_ID from fORM_VALUES where FEATURE_ID =" + featureId;
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        }
-        cursor.close();
-        return flag;
     }
 
     public boolean updateServerFeatureId(String data) throws JSONException {
@@ -2086,34 +1986,30 @@ public class DBController extends SQLiteOpenHelper {
                         for (int i = 0; i < size; i++) {
                             arry.getJSONObject(i);
                             String server_featureId = arry.getJSONObject(i).toString();
-                            SQLiteDatabase db = getWritableDatabase();
                             // updating  Features
                             ContentValues value = new ContentValues();
                             value.put("SERVER_FEATURE_ID", server_featureId);
-                            db.update("SPATIAL_FEATURES", value, whereClause, null);
+                            getDb().update("SPATIAL_FEATURES", value, whereClause, null);
                         }
                     } else if (jsonObj.get(key) instanceof JSONObject) {
                         jsonObj.getJSONObject(key);
                         String server_featureId = jsonObj.getJSONObject(key).toString();
-                        SQLiteDatabase db = getWritableDatabase();
                         // updating  Featureso
                         ContentValues value = new ContentValues();
                         value.put("SERVER_FEATURE_ID", server_featureId);
-                        db.update("SPATIAL_FEATURES", value, whereClause, null);
+                        getDb().update("SPATIAL_FEATURES", value, whereClause, null);
 
                     } else {
                         System.out.println("" + key + " : " + jsonObj.optString(key));
                         String server_featureId = jsonObj.optString(key);
-                        SQLiteDatabase db = getWritableDatabase();
                         // updating  Features
                         ContentValues value = new ContentValues();
                         value.put("SERVER_FEATURE_ID", server_featureId);
-                        int row = db.update("SPATIAL_FEATURES", value, whereClause, null);
+                        int row = getDb().update("SPATIAL_FEATURES", value, whereClause, null);
                         if (row < 1) {
                             Toast.makeText(contxt, "0 rows updated", Toast.LENGTH_SHORT).show();
                         }
                     }
-
                 } catch (Exception e) {
                     System.out.println("" + key + " : " + jsonObj.optString(key));
                     e.printStackTrace();
@@ -2131,11 +2027,10 @@ public class DBController extends SQLiteOpenHelper {
         try {
             int mediaId = 0;
             boolean featureMediaAvailable = false;
-            myDataBase = getReadableDatabase();
 
             String fetchMediaAttributeSql = "SELECT  AM.attrib_id,FM.GROUP_ID,FM.ATTRIB_VALUE FROM ATTRIBUTE_MASTER AS AM "
                     + " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID "
-                    + "where AM.ATTRIBUTE_TYPE = '" + CAT_Multimedia + "' and GROUP_ID = <group_id> and (FM.ATTRIB_VALUE != '' OR FM.ATTRIB_VALUE != NULL) order by group_id";
+                    + "where AM.ATTRIBUTE_TYPE = '" + Attribute.TYPE_MULTIMEDIA + "' and GROUP_ID = <group_id> and (FM.ATTRIB_VALUE != '' OR FM.ATTRIB_VALUE != NULL) order by group_id";
 
             String fetchFromMediaSql = "SELECT MV.MEDIA_ID,MV.FEATURE_ID,MV.PATH,SF.SERVER_FEATURE_ID,MV.TYPE FROM MEDIA AS MV "
                     + "LEFT OUTER JOIN SPATIAL_FEATURES AS SF ON MV.FEATURE_ID =  SF.FEATURE_ID "
@@ -2150,7 +2045,7 @@ public class DBController extends SQLiteOpenHelper {
             JSONArray atribsArrList = new JSONArray();
 
             // Fetching media for spatial unit
-            Cursor cursor = myDataBase.rawQuery(fetchFromMediaSql, null);
+            Cursor cursor = getDb().rawQuery(fetchFromMediaSql, null);
             if (cursor.moveToFirst()) {
                 featureMediaAvailable = true;
                 mediaId = cursor.getInt(0);
@@ -2164,7 +2059,7 @@ public class DBController extends SQLiteOpenHelper {
 
             if (!featureMediaAvailable)  // Fetching media for person
             {
-                cursor = myDataBase.rawQuery(fetchFromPersonMediaSql, null);
+                cursor = getDb().rawQuery(fetchFromPersonMediaSql, null);
                 if (cursor.moveToFirst()) {
                     mediaId = cursor.getInt(0);
                     mediaAttribsArr.put(0, cursor.getLong(4)); //usin
@@ -2179,7 +2074,7 @@ public class DBController extends SQLiteOpenHelper {
             if (mediaId != 0) {
                 if (featureMediaAvailable) {
                     String final_sql = fetchMediaAttributeSql.replace("<group_id>", mediaId + "");
-                    Cursor cursor_attrib = myDataBase.rawQuery(final_sql, null);
+                    Cursor cursor_attrib = getDb().rawQuery(final_sql, null);
                     if (cursor_attrib.moveToFirst()) {
                         do {
                             mediaValuesArr = new JSONArray();
@@ -2194,7 +2089,6 @@ public class DBController extends SQLiteOpenHelper {
                 mediaAttribsObj.put(0, mediaAttribsArr);
                 mediaAttribsObj.put(1, atribsArrList);
             }
-            close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2202,18 +2096,15 @@ public class DBController extends SQLiteOpenHelper {
     }
 
     public boolean updateMediaSyncedStatus(String mediaId, int syncStatus) {
-        SQLiteDatabase db = getWritableDatabase();
-        // updating  synced status
 
         String whereClauseForMedia = "MEDIA_ID = " + mediaId;
         String whereClauseForPersonMedia = "ID = " + mediaId;
         ContentValues value = new ContentValues();
         value.put("SYNCED", syncStatus);
 
-        int updatedMediaRow = db.update("MEDIA", value, whereClauseForMedia, null);
-        int updatedPersonRow = db.update("PERSON_MEDIA", value, whereClauseForPersonMedia, null);
+        int updatedMediaRow = getDb().update("MEDIA", value, whereClauseForMedia, null);
+        int updatedPersonRow = getDb().update("PERSON_MEDIA", value, whereClauseForPersonMedia, null);
 
-        close();
         if (updatedMediaRow < 1 && updatedPersonRow < 1) {
             return false;
         } else {
@@ -2221,49 +2112,15 @@ public class DBController extends SQLiteOpenHelper {
         }
     }
 
-    public int getMediaCount(int groupId) {
-        int count = 0;
-        SQLiteDatabase database = getReadableDatabase();
-
-        String selectQueryQues = "SELECT * from PERSON_MEDIA where PERSON_ID =" + groupId;
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                count++;
-            }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
-        close();
-        return count;
-    }
-
     public List<Feature> fetchRejectedFeatures() {
         String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_REJECTED + "'";
         return getFeatures(q);
     }
 
-    //String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where status = '"+STATUS_COMPLETE+"' and SERVER_FEATURE_ID IS NULL OR SERVER_FEATURE_ID = ''";
-
     public boolean checkPendingDraftAndCompletedRecordsToSync() {
         boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
         String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_DRAFT + "' OR status = '" + STATUS_COMPLETE + "' and SERVER_FEATURE_ID IS NULL OR SERVER_FEATURE_ID = ''";
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        }
-        cursor.close();
-        return flag;
-    }
-
-    public boolean IsNonNaturalPerson(long featureId) {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where PERSON_TYPE = '" + NonNaturalPerson + "' and FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
+        Cursor cursor = getDb().rawQuery(spatialFeatureSql, null);
         if (cursor.moveToFirst()) {
             flag = true;
         }
@@ -2274,33 +2131,23 @@ public class DBController extends SQLiteOpenHelper {
     public boolean setRejectedStatus(String json_string) {
         try {
             String sptialids = json_string.substring(1, json_string.length() - 1);
-            SQLiteDatabase db = getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put("STATUS", STATUS_REJECTED);
             String sqlwhere = " SERVER_FEATURE_ID in (" + sptialids + ")";
-            db.update("SPATIAL_FEATURES", values, sqlwhere, null);
+            getDb().update("SPATIAL_FEATURES", values, sqlwhere, null);
         } catch (Exception e) {
             cf.syncLog("", e);
             e.printStackTrace();
             return false;
-        } finally {
-            close();
         }
         return true;
     }
 
     public boolean saveProjectDataForAdjuticator(String data, String status) {
         if (data != null) {
-            SQLiteDatabase db = getWritableDatabase();
-            int groupId = 0;
+            Long groupId = 0L;
             String personType = null;
             JSONObject jsonObj = null;
-			/*db.delete("FORM_VALUES", null, null);
-			db.delete("PERSON", null, null);
-			db.delete("MEDIA", null, null);
-			db.delete("SPATIAL_FEATURES", null, null);
-			db.delete("PERSON_MEDIA", null, null);
-			db.delete("SOCIAL_TENURE", null, null);*/
 
             try {
                 jsonObj = new JSONObject(data);
@@ -2308,8 +2155,6 @@ public class DBController extends SQLiteOpenHelper {
                 Iterator<String> iterator = jsonObj.keys();
                 while (iterator.hasNext()) {
                     try {
-                        db = getWritableDatabase();
-
                         Long featureId = 0L;
                         String key = (String) iterator.next();
                         String server_featureId = key;
@@ -2318,7 +2163,7 @@ public class DBController extends SQLiteOpenHelper {
                             ContentValues value = new ContentValues();
                             String whereClause = "SERVER_FEATURE_ID = " + server_featureId;
                             value.put("STATUS", STATUS_FINAL);
-                            int rows = db.update("SPATIAL_FEATURES", value, whereClause, null);
+                            int rows = getDb().update("SPATIAL_FEATURES", value, whereClause, null);
                             if (rows > 0) {
                                 continue;
                             }
@@ -2326,12 +2171,12 @@ public class DBController extends SQLiteOpenHelper {
                             ContentValues value = new ContentValues();
                             String whereClause = "SERVER_FEATURE_ID = " + server_featureId;
                             value.put("SERVER_FEATURE_ID", server_featureId);
-                            int rows = db.update("SPATIAL_FEATURES", value, whereClause, null);
+                            int rows = getDb().update("SPATIAL_FEATURES", value, whereClause, null);
                             if (rows > 0) {
                                 continue;
                             }
                         }
-                        db.beginTransaction();
+                        getDb().beginTransaction();
                         ContentValues spatialFeatureValues = new ContentValues();
                         ContentValues attribValues = new ContentValues();
                         ContentValues attribListing = new ContentValues();
@@ -2376,31 +2221,9 @@ public class DBController extends SQLiteOpenHelper {
                         spatialFeatureValues.put("STATUS", status);
                         //insert spatial data
 
-                        db.insert("SPATIAL_FEATURES", null, spatialFeatureValues);
+                        getDb().insert("SPATIAL_FEATURES", null, spatialFeatureValues);
 
-                        featureId = getNewFeatureId();
-
-						/*//general attribute related data at index 1
-
-						JSONArray attribDetailsArr = new JSONArray(spatialDetailsArr1.get(1).toString());
-						if(attribDetailsArr!=null)
-						{
-							groupId = getNewGroupId();
-							for(int i=0;i<attribDetailsArr.length();i++)
-							{
-								JSONArray attribValuesArr = new JSONArray(attribDetailsArr.get(i).toString());
-								attribValues.clear();
-								attribValues.put("GROUP_ID",groupId);
-								attribValues.put("ATTRIB_ID",attribValuesArr.getInt(0));
-								attribValues.put("ATTRIB_VALUE",attribValuesArr.getString(1));
-								attribValues.put("FEATURE_ID",featureId);
-
-								db.insert("FORM_VALUES", null, attribValues);
-							}
-						}*/
-
-
-                        //fetching Property attribute related data at index 2
+                        featureId = getGeneratedId(Feature.TABLE_NAME);
 
                         JSONArray attribDetailsArr = new JSONArray(spatialDetailsArr1.get(2).toString());
                         if (attribDetailsArr != null) {
@@ -2413,12 +2236,9 @@ public class DBController extends SQLiteOpenHelper {
                                 attribValues.put("ATTRIB_VALUE", attribValuesArr.getString(1));
                                 attribValues.put("FEATURE_ID", featureId);
 
-                                db.insert("FORM_VALUES", null, attribValues);
+                                getDb().insert("FORM_VALUES", null, attribValues);
                             }
                         }
-
-
-                        //fetching Social tenure data [1]
 
                         JSONArray attribSocialTenureDetailsArr = new JSONArray(arry.get(1).toString());
 
@@ -2434,7 +2254,7 @@ public class DBController extends SQLiteOpenHelper {
                             attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));        //attribute value
                             attribValues.put("FEATURE_ID", featureId);
 
-                            db.insert("FORM_VALUES", null, attribValues);
+                            getDb().insert("FORM_VALUES", null, attribValues);
                             String residentValue = "Yes";
                             String whereClause = "FEATURE_ID = " + featureId;
                             if (attribChildValuesArr.getInt(0) == 23) {
@@ -2448,34 +2268,14 @@ public class DBController extends SQLiteOpenHelper {
                             }
                             ContentValues value = new ContentValues();
                             value.put("SERVER_PK", residentValue);
-                            db.update("SPATIAL_FEATURES", value, whereClause, null);
-						/*attribListing.clear();
-						attribListing.put("ID",groupId);
-						attribValues.put("FEATURE_ID",featureId);
-						if(attribChildValuesArr.getString(2).equalsIgnoreCase("1"))
-						{
-
-							attribListing.put("ATTRIB_1",attribChildValuesArr.getString(1));
-							db.insert("SOCIAL_TENURE", null, attribListing);
-						}
-
-						else if(attribChildValuesArr.getString(2).equalsIgnoreCase("2"))
-						{
-							attribListing.put("ATTRIB_2",attribChildValuesArr.getString(1));
-						db.insert("SOCIAL_TENURE", null, attribListing);
-						}*/
-
-
+                            getDb().update("SPATIAL_FEATURES", value, whereClause, null);
                         }
-
-
-                        //fetching Natural Person data [2] & Social Tenure [1]
 
                         JSONArray attribNaturalPersonDetailsArr = new JSONArray(arry.get(2).toString());
 
                         for (int i = 0; i < attribNaturalPersonDetailsArr.length(); i++) {
 
-                            int personId = 0;
+                            Long personId = 0L;
                             JSONArray attribChildArr = new JSONArray(attribNaturalPersonDetailsArr.get(i).toString());
 
                             groupId = getNewGroupId();
@@ -2495,7 +2295,7 @@ public class DBController extends SQLiteOpenHelper {
                                 attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
                                 attribValues.put("FEATURE_ID", featureId);
 
-                                db.insert("FORM_VALUES", null, attribValues);
+                                getDb().insert("FORM_VALUES", null, attribValues);
 
                                 if (attribChildValuesArr.getString(2).equalsIgnoreCase("1")) // listing
                                 {
@@ -2517,25 +2317,19 @@ public class DBController extends SQLiteOpenHelper {
                             }
 
                             attribListing.put("PERSON_SUBTYPE", personSubType);
-                            db.insert("PERSON", null, attribListing);
-							/*if(personType.equalsIgnoreCase("Natural"))
-							{
-								insertSocialTenure(i, personId, arry, featureId);
-							}*/
+                            getDb().insert("PERSON", null, attribListing);
                         }
-
-                        //fetching Non-Natural Person data [3]
 
                         JSONArray attribNonNaturalPersonDetailsArr = new JSONArray(arry.get(3).toString());
                         String whereClause = "SERVER_FEATURE_ID = " + server_featureId;
 
                         if (attribNonNaturalPersonDetailsArr.length() > 0) {
                             spatialFeatureValues.put("PERSON_TYPE", "Non-Natural");
-                            db.update("SPATIAL_FEATURES", spatialFeatureValues, whereClause, null);
+                            getDb().update("SPATIAL_FEATURES", spatialFeatureValues, whereClause, null);
                             for (int i = 0; i < attribNonNaturalPersonDetailsArr.length(); i++) {
                                 JSONArray attribChildArr = new JSONArray(attribNonNaturalPersonDetailsArr.get(i).toString());
                                 groupId = getNewGroupId();
-                                int personId = 0;
+                                Long personId = 0L;
                                 for (int j = 0; j < attribChildArr.length(); j++) {
                                     JSONArray attribChildValuesArr = new JSONArray(attribChildArr.get(j).toString());
                                     attribValues.clear();
@@ -2545,20 +2339,15 @@ public class DBController extends SQLiteOpenHelper {
                                     attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
                                     attribValues.put("FEATURE_ID", featureId);
 
-                                    db.insert("FORM_VALUES", null, attribValues);
+                                    getDb().insert("FORM_VALUES", null, attribValues);
 
                                     personId = groupId;
                                 }
-
-                                //insertSocialTenure(i, personId, arry, featureId);
                             }
                         } else if (attribNonNaturalPersonDetailsArr.length() == 0) {
                             spatialFeatureValues.put("PERSON_TYPE", "Natural");
-                            db.update("SPATIAL_FEATURES", spatialFeatureValues, whereClause, null);
+                            getDb().update("SPATIAL_FEATURES", spatialFeatureValues, whereClause, null);
                         }
-
-
-                        //fetching Media Data data [4]
 
                         JSONArray attribMediaDetailsArr = new JSONArray(arry.get(4).toString());
                         if (attribMediaDetailsArr.length() > 0) {
@@ -2581,7 +2370,7 @@ public class DBController extends SQLiteOpenHelper {
                                         attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
                                         attribValues.put("FEATURE_ID", featureId);
 
-                                        db.insert("FORM_VALUES", null, attribValues);
+                                        getDb().insert("FORM_VALUES", null, attribValues);
 
                                         if (attribChildValuesArr.getString(2).equalsIgnoreCase("1")) {
                                             attribListing.put("ATTRIB_1", attribChildValuesArr.getString(1));
@@ -2589,12 +2378,10 @@ public class DBController extends SQLiteOpenHelper {
                                             attribListing.put("ATTRIB_2", attribChildValuesArr.getString(1));
                                         }
                                     }
-                                    db.insert("MEDIA", null, attribListing);
+                                    getDb().insert("MEDIA", null, attribListing);
                                 }
                             }
                         }
-
-                        //fetching Person of Interest(s) [5]
 
                         JSONArray attribPOIDetailsArr = new JSONArray(arry.get(5).toString());
                         if (attribPOIDetailsArr.length() > 0) {
@@ -2605,12 +2392,10 @@ public class DBController extends SQLiteOpenHelper {
 
                                     attribValues.put("NEXT_KIN_NAME", POIDetailsJsonObj.getString("personName"));
                                     attribValues.put("FEATURE_ID", featureId);
-                                    db.insert("NEXT_KIN_DETAILS", null, attribValues);
+                                    getDb().insert("NEXT_KIN_DETAILS", null, attribValues);
                                 }
                             }
                         }
-
-                        //fetching Deceased Person [6]
 
                         JSONArray attribDeceasedPersonDetailsArr = new JSONArray(arry.get(6).toString());
                         if (attribDeceasedPersonDetailsArr.length() > 0) {
@@ -2628,18 +2413,16 @@ public class DBController extends SQLiteOpenHelper {
                                 }
 
                                 attribValues.put("FEATURE_ID", featureId);
-                                db.insert("DECEASED_PERSON", null, attribValues);
+                                getDb().insert("DECEASED_PERSON", null, attribValues);
                             }
                         }
-
-
-                        db.setTransactionSuccessful();
+                        getDb().setTransactionSuccessful();
                     } catch (Exception e) {
                         cf.syncLog("", e);
                         e.printStackTrace();
                     } finally {
-                        if (db.inTransaction())
-                            db.endTransaction();
+                        if (getDb().inTransaction())
+                            getDb().endTransaction();
                     }
                 }
             } catch (JSONException e) {
@@ -2647,87 +2430,19 @@ public class DBController extends SQLiteOpenHelper {
                 return false;
             }
             return true;
-
         }
         return false;
-
-    }
-
-    private boolean insertSocialTenure(int i, int personId, JSONArray arry, Long featureId) {
-        try {
-            SQLiteDatabase db = getWritableDatabase();
-            JSONArray attribSocialTenureDetailsArr = new JSONArray(arry.get(1).toString());
-            int groupId = getNewGroupId();
-
-            //For insert into social tenure
-            ContentValues attribListing = new ContentValues();
-            attribListing.put("ID", groupId);
-            attribListing.put("FEATURE_ID", featureId);
-
-            JSONArray attribChildArr = new JSONArray(attribSocialTenureDetailsArr.get(i).toString());
-
-            for (int j = 0; j < attribChildArr.length(); j++) {
-                JSONArray attribChildValuesArr = new JSONArray(attribChildArr.get(j).toString());
-                ContentValues attribValues = new ContentValues();
-                attribValues.put("GROUP_ID", groupId);
-                attribValues.put("ATTRIB_ID", attribChildValuesArr.getInt(0));
-                attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
-                attribValues.put("FEATURE_ID", featureId);
-
-                db.insert("FORM_VALUES", null, attribValues);
-
-                if (attribChildValuesArr.getString(3).equalsIgnoreCase("5")) //checking for control type
-                {
-                    String optionId = attribChildValuesArr.getString(1);
-                    String optionText = getOptionText(optionId);
-                    if (attribChildValuesArr.getString(2).equalsIgnoreCase("1")) {
-                        attribListing.put("ATTRIB_1", optionText);
-                        attribListing.put("PERSON_ID", personId);
-                    }
-                    if (attribChildValuesArr.getString(2).equalsIgnoreCase("2")) {
-                        attribListing.put("ATTRIB_2", optionText);
-                        attribListing.put("PERSON_ID", personId);
-                    }
-                }
-            }
-            db.insert("SOCIAL_TENURE", null, attribListing);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-
-    public String getOptionText(String optionID) {
-        SQLiteDatabase db = getWritableDatabase();
-        StringBuffer multiLnagText = new StringBuffer();
-        String selectQueryOptions = "SELECT  OPTION_NAME,OPTION_NAME_OTHER FROM OPTIONS where OPTION_ID =" + optionID;
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
-        if (cursor.moveToFirst()) {
-            if (!TextUtils.isEmpty(cursor.getString(1))) {
-                multiLnagText.append(cursor.getString(1));
-                multiLnagText.append("&#&" + cursor.getString(0));
-            } else {
-                multiLnagText.append(cursor.getString(0));
-                multiLnagText.append("&#&" + cursor.getString(0));
-            }
-        }
-        return multiLnagText.toString();
     }
 
     public boolean resetMediaStatus() {
-        SQLiteDatabase db = getWritableDatabase();
-        // updating  synced status
-
         String whereClauseForMedia = "SYNCED = " + CommonFunctions.MEDIA_SYNC_ERROR;
         String whereClauseForPersonMedia = "SYNCED = " + CommonFunctions.MEDIA_SYNC_ERROR;
         ContentValues value = new ContentValues();
         value.put("SYNCED", CommonFunctions.MEDIA_SYNC_PENDING);
 
-        int updatedMediaRow = db.update("MEDIA", value, whereClauseForMedia, null);
-        int updatedPersonRow = db.update("PERSON_MEDIA", value, whereClauseForPersonMedia, null);
+        int updatedMediaRow = getDb().update("MEDIA", value, whereClauseForMedia, null);
+        int updatedPersonRow = getDb().update("PERSON_MEDIA", value, whereClauseForPersonMedia, null);
 
-        close();
         if (updatedMediaRow < 1 && updatedPersonRow < 1) {
             return false;
         } else {
@@ -2740,9 +2455,8 @@ public class DBController extends SQLiteOpenHelper {
         JSONObject json_obj = new JSONObject();
         JSONArray usins = new JSONArray();
         try {
-            myDataBase = getReadableDatabase();
             Long userid = getLoggedUser().getUserId();
-            Cursor cursor = myDataBase.rawQuery(q, null);
+            Cursor cursor = getDb().rawQuery(q, null);
             if (cursor.moveToFirst()) {
                 do {
                     usins.put(cursor.getString(0));
@@ -2761,105 +2475,23 @@ public class DBController extends SQLiteOpenHelper {
         return json_obj.toString();
     }
 
-    public boolean IsCustomAttributeValue(long featureId) {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String spatialFeatureSql = "SELECT * FROM FORM_VALUES WHERE ATTRIB_ID = (SELECT ATTRIB_ID from ATTRIBUTE_MASTER WHERE ATTRIBUTE_TYPE='" + CAT_Custom + "') and FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        }
-        cursor.close();
-        return flag;
-    }
-
-    public boolean IsCustomAttribute() {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String spatialFeatureSql = "SELECT * from ATTRIBUTE_MASTER WHERE ATTRIBUTE_TYPE='" + CAT_Custom + "'";
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        }
-        cursor.close();
-        return flag;
-    }
-
-    public boolean IsPropertyAttribute() {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String spatialFeatureSql = "SELECT * from ATTRIBUTE_MASTER WHERE ATTRIBUTE_TYPE='" + CAT_General_Property + "'";
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        }
-        cursor.close();
-        return flag;
-    }
-
-    public boolean IsPropertyAttribValue(long featureId) {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String spatialFeatureSql = "SELECT * FROM FORM_VALUES WHERE ATTRIB_ID = (SELECT ATTRIB_ID from ATTRIBUTE_MASTER WHERE ATTRIBUTE_TYPE='" + CAT_General_Property + "') and FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        }
-        cursor.close();
-        return flag;
-    }
-
     public boolean updateSyncedVerifiedStatus(String data) {
         try {
             String sptialids = data.substring(1, data.length() - 1);
-            SQLiteDatabase db = getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put("STATUS", STATUS_VERIFIED_SYNCED);
             String sqlwhere = " SERVER_FEATURE_ID in (" + sptialids + ")";
-            db.update("SPATIAL_FEATURES", values, sqlwhere, null);
+            getDb().update("SPATIAL_FEATURES", values, sqlwhere, null);
         } catch (Exception e) {
             cf.syncLog("", e);
             e.printStackTrace();
             return false;
-        } finally {
-            close();
         }
         return true;
     }
 
-    private void cleandb(SQLiteDatabase db) {
-        db.delete("FORM_VALUES", null, null);
-        db.delete("PERSON", null, null);
-        db.delete("MEDIA", null, null);
-        db.delete("SPATIAL_FEATURES", null, null);
-        db.delete("PERSON_MEDIA", null, null);
-        db.delete("SOCIAL_TENURE", null, null);
-        db.delete("PROJECT_SPATIAL_DATA", null, null);
-        db.delete("OPTIONS", null, null);
-        db.delete("ATTRIBUTE_MASTER", null, null);
-    }
-
-    public boolean deletePersonPhoto(int groupId) {
-        SQLiteDatabase db = getWritableDatabase();
-        //"CREATE TABLE FORM_VALUES(ATTRIB_ID INTEGER,ATTRIB_VALUE TEXT,OPTION_ID TEXT,OPTION_VALUE TEXT,FEATURE_ID)";
-        try {
-            String delteWherePersonId = "PERSON_ID=" + groupId;
-            int rows = db.delete("PERSON_MEDIA", delteWherePersonId, null);
-            if (rows == 0) {
-                return false;
-            } else {
-                return true;
-            }
-        } catch (Exception e) {
-            cf.appLog("", e);
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public int getCount(String status) {
         int count = 0;
-        SQLiteDatabase database = getReadableDatabase();
         String selectQueryQues = null;
 
         if (status.equalsIgnoreCase(STATUS_DRAFT)) {
@@ -2873,7 +2505,7 @@ public class DBController extends SQLiteOpenHelper {
             selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_REJECTED + "'";
         }
 
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
+        Cursor cursor = getDb().rawQuery(selectQueryQues, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -2882,821 +2514,412 @@ public class DBController extends SQLiteOpenHelper {
             while (cursor.moveToNext());
         }
         cursor.close();
-        close();
-        return count;
-    }
-
-    public int getPersonMediaCount(long featureId)  //count for owner and guardian
-    {
-        int count = 0;
-        SQLiteDatabase database = getReadableDatabase();
-
-        //String selectQueryQues ="SELECT PER_MEDIA.* FROM PERSON_MEDIA AS PER_MEDIA LEFT OUTER JOIN PERSON AS PER ON PER_MEDIA.PERSON_ID=PER.ID where PER.FEATURE_ID= "+featureId+" AND (PER.PERSON_SUBTYPE= 'Owner' OR PER.PERSON_SUBTYPE= 'Guardian')";
-        String selectQueryQues = "SELECT * FROM PERSON_MEDIA where FEATURE_ID= " + featureId;
-
-        Cursor cursor = database.rawQuery(selectQueryQues, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                count++;
-            }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
-        close();
         return count;
     }
 
     public List<Option> getHamletOptions() {
-
-        SQLiteDatabase db = getWritableDatabase();
-
         List<Option> optionList = new ArrayList<Option>();
         Option option = null;
 
         option = new Option();
-        option.setOptionId(0L);
-        option.setOptionName(contxt.getResources().getString(R.string.select));
+        option.setId(0L);
+        option.setName(contxt.getResources().getString(R.string.select));
         optionList.add(option);
 
         String selectQueryOptions = "SELECT * from HAMLET_DETAILS";
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
+        Cursor cursor = getDb().rawQuery(selectQueryOptions, null);
 
         if (cursor.moveToFirst()) {
             do {
                 option = new Option();
-                option.setOptionId(cursor.getLong(0));
-                if(!StringUtility.isEmpty(cursor.getString(2))){
-                    option.setOptionName(cursor.getString(1) + " (" + cursor.getString(2) + ")");
+                option.setId(cursor.getLong(0));
+                if (!StringUtility.isEmpty(cursor.getString(2))) {
+                    option.setName(cursor.getString(1) + " (" + cursor.getString(2) + ")");
                 } else {
-                    option.setOptionName(cursor.getString(1));
+                    option.setName(cursor.getString(1));
                 }
                 optionList.add(option);
 
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return optionList;
     }
 
     public List<Option> getAdjudicators() {
-
-        SQLiteDatabase db = getWritableDatabase();
-
         List<Option> optionList = new ArrayList<Option>();
         Option option = null;
 
         option = new Option();
-        option.setOptionId(0L);
-        option.setOptionName(contxt.getResources().getString(R.string.select));
+        option.setId(0L);
+        option.setName(contxt.getResources().getString(R.string.select));
         optionList.add(option);
 
         String selectQueryOptions = "SELECT * from ADJUDICATOR_DETAILS";
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
+        Cursor cursor = getDb().rawQuery(selectQueryOptions, null);
         if (cursor.moveToFirst()) {
             do {
                 option = new Option();
-                option.setOptionId(cursor.getLong(0));
-                option.setOptionName(cursor.getString(1));
+                option.setId(cursor.getLong(0));
+                option.setName(cursor.getString(1));
                 optionList.add(option);
 
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return optionList;
     }
 
-    public boolean addPersontype_Hemlet_witness(long featureId, String personType, String hemletId, String witness_1, String witness_2) {
+    /**
+     * Updates property static fields, shown on the home screen of the claim.
+     */
+    public boolean updatePropertyBasicInfo(Property prop) {
         try {
-            SQLiteDatabase db = getWritableDatabase();
             ContentValues values = new ContentValues();
-            values.put("PERSON_TYPE", personType);
-            values.put("HAMLET_ID", hemletId);
-            values.put("WITNESS_1", witness_1);
-            values.put("WITNESS_2", witness_2);
-            db.update("SPATIAL_FEATURES", values, "FEATURE_ID = " + featureId, null);
-            return true;
-        } catch (Exception e) {
-
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    public boolean saveNextOfKin(String kinName, Long featureId) {
-
-        try {
-            SQLiteDatabase db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("NEXT_KIN_NAME", kinName);
-            values.put("FEATURE_ID", featureId);
-            db.insert("NEXT_KIN_DETAILS", null, values);
+            values.put(Property.COL_CLAIM_TYPE_CODE, prop.getClaimTypeCode());
+            values.put(Property.COL_POLYGON_NUMBER, prop.getPolygonNumber());
+            values.put(Property.COL_SURVEY_DATE, prop.getSurveyDate());
+            values.put(Property.COL_HAMLET_ID, prop.getHamletId());
+            values.put(Property.COL_ADJUDICATOR1, prop.getAdjudicator1());
+            values.put(Property.COL_ADJUDICATOR2, prop.getAdjudicator2());
+            getDb().update(Feature.TABLE_NAME, values, Property.COL_ID + " = " + prop.getId(), null);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-
     }
 
-    public List<Attribute> getNextOfKinList(Long featureId) {
+    /**
+     * Returns list of generic reference data types.
+     */
+    private <T extends RefData> List<T> getRefDataTypes(Class<T> classType, boolean addDummy) {
+        Cursor cursor = null;
+        List<T> types = new ArrayList<T>();
 
-        List<Attribute> attributeList = new ArrayList<Attribute>();
-        SQLiteDatabase db = getWritableDatabase();
-        String selectQueryOptions = "SELECT * from NEXT_KIN_DETAILS where FEATURE_ID=" + featureId;
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-                attrib.setNextOfKinId(cursor.getInt(0));
-                attrib.setNextOfKinName(cursor.getString(1));
-                attributeList.add(attrib);
-                //nextOfKinList.add(cursor.getString(1));
+        try {
+            T type = (T) classType.newInstance();
+            cursor = getDb().rawQuery("SELECT * FROM " + type.getTableName() + " ORDER BY " + RefData.COL_NAME, null);
+            if (cursor.moveToFirst()) {
+                int indxCode = cursor.getColumnIndex(RefData.COL_CODE);
+                int indxName = cursor.getColumnIndex(RefData.COL_NAME);
+                int indxNameOtherLang = cursor.getColumnIndex(RefData.COL_NAME_OTHER_LANG);
+                int indxActive = cursor.getColumnIndex(RefData.COL_ACTIVE);
 
-            } while (cursor.moveToNext());
+                do {
+                    type = (T) classType.newInstance();
+                    type.setCode(cursor.getInt(indxCode));
+                    type.setName(cursor.getString(indxName));
+                    type.setNameOtherLang(cursor.getString(indxNameOtherLang));
+                    type.setActive(cursor.getInt(indxActive));
+                    types.add(type);
+                } while (cursor.moveToNext());
+
+                if (addDummy) {
+                    type = (T) classType.newInstance();
+                    type.setCode(0);
+                    type.setName(contxt.getResources().getString(R.string.SelectOption));
+                    type.setActive(1);
+                    types.add(0, type);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return types;
+        } finally {
+            try {
+                if (cursor != null)
+                    cursor.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        cursor.close();
-        db.close();
-        return attributeList;
-
+        return types;
     }
 
-
-    public boolean deleteNextOfKin(int Id) {
-        String whereClause = "ID=" + Id;
-        SQLiteDatabase db = getWritableDatabase();
-        db.delete("NEXT_KIN_DETAILS", whereClause, null);
-        db.close();
-        return true;
-
-
-    }
-
-    public boolean IsTenureValue(long featureId) {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String spatialFeatureSql = "SELECT * FROM FORM_VALUES WHERE ATTRIB_ID = (SELECT ATTRIB_ID from ATTRIBUTE_MASTER WHERE ATTRIBUTE_TYPE='" + CAT_Tenure + "') and FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(spatialFeatureSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
+    /**
+     * Returns reference data type by code.
+     */
+    private <T extends RefData> T getRefDataType(Class<T> classType, int code) {
+        try {
+            T typeTmp = (T) classType.newInstance();
+            return getRefDataType(classType, "SELECT * FROM " + typeTmp.getTableName() + " WHERE CODE=" + code);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        cursor.close();
-        return flag;
+    }
+
+    /**
+     * Returns reference data type by code.
+     */
+    private <T extends RefData> T getRefDataType(Class<T> classType, String sql) {
+        Cursor cursor = null;
+        T type = null;
+
+        try {
+            T typeTmp = (T) classType.newInstance();
+            cursor = getDb().rawQuery(sql, null);
+            if (cursor.moveToFirst()) {
+                int indxCode = cursor.getColumnIndex(RefData.COL_CODE);
+                int indxName = cursor.getColumnIndex(RefData.COL_NAME);
+                int indxNameOtherLang = cursor.getColumnIndex(RefData.COL_NAME_OTHER_LANG);
+                int indxActive = cursor.getColumnIndex(RefData.COL_ACTIVE);
+
+                type = (T) classType.newInstance();
+                type.setCode(cursor.getInt(indxCode));
+                type.setName(cursor.getString(indxName));
+                type.setNameOtherLang(cursor.getString(indxNameOtherLang));
+                type.setActive(cursor.getInt(indxActive));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return type;
+        } finally {
+            try {
+                if (cursor != null)
+                    cursor.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return type;
+    }
+
+    private List<ClaimType> createClaimTypesList(String sql, boolean addDummy) {
+        Cursor cursor = null;
+        List<ClaimType> claimTypes = new ArrayList<ClaimType>();
+
+        try {
+            cursor = getDb().rawQuery(sql, null);
+            if (cursor.moveToFirst()) {
+                int indxCode = cursor.getColumnIndex(RefData.COL_CODE);
+                int indxName = cursor.getColumnIndex(RefData.COL_NAME);
+                int indxNameOtherLang = cursor.getColumnIndex(RefData.COL_NAME_OTHER_LANG);
+
+                do {
+                    ClaimType claimType = new ClaimType();
+                    claimType.setCode(cursor.getString(indxCode));
+                    claimType.setName(cursor.getString(indxName));
+                    claimType.setNameOtherLang(cursor.getString(indxNameOtherLang));
+                    claimTypes.add(claimType);
+                } while (cursor.moveToNext());
+
+                if (addDummy) {
+                    ClaimType claimType = new ClaimType();
+                    claimType.setCode("");
+                    claimType.setName(contxt.getResources().getString(R.string.SelectOption));
+                    claimTypes.add(0, claimType);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return claimTypes;
+        } finally {
+            try {
+                cursor.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return claimTypes;
+    }
+
+    /**
+     * Returns list of claim types.
+     */
+    public List<ClaimType> getClaimTypes(boolean addDummy) {
+        return createClaimTypesList("SELECT * FROM " + ClaimType.TABLE_NAME, addDummy);
+    }
+
+    /**
+     * Returns claim type by code.
+     */
+    public ClaimType getClaimType(String code) {
+        List<ClaimType> claimTypes = createClaimTypesList("SELECT * FROM " + ClaimType.TABLE_NAME +
+                " WHERE CODE='" + code + "'", false);
+        if (claimTypes != null && claimTypes.size() > 0)
+            return claimTypes.get(0);
+        else
+            return null;
+    }
+
+    /**
+     * Returns claim type of the property.
+     */
+    public ClaimType getPropClaimType(Long propId) {
+        List<ClaimType> claimTypes = createClaimTypesList("SELECT ct.* FROM " + ClaimType.TABLE_NAME +
+                " ct INNER JOIN " + Feature.TABLE_NAME +
+                " f ON ct." + RefData.COL_CODE + " = f." + Property.COL_CLAIM_TYPE_CODE +
+                " WHERE f." + Property.COL_ID + "=" + propId, false);
+        if (claimTypes != null && claimTypes.size() > 0)
+            return claimTypes.get(0);
+        else
+            return null;
+    }
+
+    private List<RightType> createRightTypesList(String sql, boolean addDummy) {
+        Cursor cursor = null;
+        List<RightType> rightTypes = new ArrayList<RightType>();
+
+        try {
+            cursor = getDb().rawQuery(sql, null);
+            if (cursor.moveToFirst()) {
+                int indxCode = cursor.getColumnIndex(RefData.COL_CODE);
+                int indxName = cursor.getColumnIndex(RefData.COL_NAME);
+                int indxNameOtherLang = cursor.getColumnIndex(RefData.COL_NAME_OTHER_LANG);
+                int indxActive = cursor.getColumnIndex(RefData.COL_ACTIVE);
+                int indxForAdjudication = cursor.getColumnIndex(RightType.COL_FOR_ADJUDICATION);
+
+                do {
+                    RightType rightType = new RightType();
+                    rightType.setCode(cursor.getInt(indxCode));
+                    rightType.setName(cursor.getString(indxName));
+                    rightType.setNameOtherLang(cursor.getString(indxNameOtherLang));
+                    rightType.setActive(cursor.getInt(indxActive));
+                    rightType.setForAdjudication(cursor.getInt(indxForAdjudication));
+                    rightTypes.add(rightType);
+                } while (cursor.moveToNext());
+
+                if (addDummy) {
+                    RightType rightType = new RightType();
+                    rightType.setCode(0);
+                    rightType.setName(contxt.getResources().getString(R.string.SelectOption));
+                    rightType.setActive(1);
+                    rightType.setForAdjudication(1);
+                    rightTypes.add(0, rightType);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return rightTypes;
+        } finally {
+            try {
+                if (cursor != null)
+                    cursor.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return rightTypes;
+    }
+
+    /**
+     * Returns list of right types.
+     */
+    public List<RightType> getRightTypes(boolean addDummy) {
+        return createRightTypesList("SELECT * FROM " + RightType.TABLE_NAME + " WHERE " +
+                RightType.COL_ACTIVE + " = 1 ORDER BY " + RightType.COL_NAME, addDummy);
+    }
+
+    /**
+     * Returns list of right types relevant for claim type.
+     */
+    public List<RightType> getRightTypesByClaimType(String claimTypeCode, boolean addDummy) {
+        if (!StringUtility.isEmpty(claimTypeCode) && claimTypeCode.equalsIgnoreCase(ClaimType.TYPE_EXISTING_CLAIM))
+            return createRightTypesList("SELECT * FROM " + RightType.TABLE_NAME + " WHERE " +
+                    RightType.COL_ACTIVE + " = 1 ORDER BY " + RightType.COL_NAME, addDummy);
+        else
+            return createRightTypesList("SELECT * FROM " + RightType.TABLE_NAME +
+                    " WHERE " + RightType.COL_FOR_ADJUDICATION + " = 1 AND " +
+                    RightType.COL_ACTIVE + " = 1 ORDER BY " + RightType.COL_NAME, addDummy);
+    }
+
+    /**
+     * Returns right type by code.
+     */
+    public RightType getRightType(int code) {
+        List<RightType> rightTypes = createRightTypesList("SELECT * FROM CLAIM_TYPE WHERE CODE='" + code + "'", false);
+        if (rightTypes != null && rightTypes.size() > 0) {
+            return rightTypes.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns list of share types
+     */
+    public List<ShareType> getShareTypes(boolean addDummy) {
+        return getRefDataTypes(ShareType.class, addDummy);
+    }
+
+    /**
+     * Returns share type by code
+     */
+    public ShareType getShareType(int code) {
+        return getRefDataType(ShareType.class, code);
+    }
+
+    /** Returns share type by right id */
+    public ShareType getShareTypeByRight(Long rightId){
+        return getRefDataType(ShareType.class,
+                "SELECT st.* FROM " + ShareType.TABLE_NAME +
+                " st INNER JOIN " + Right.TABLE_NAME +
+                " r ON st." + RefData.COL_CODE + " = r." + Right.COL_SHARE_TYPE_ID +
+                " WHERE r." + Right.COL_ID + "=" + rightId
+        );
+    }
+
+    /**
+     * Returns list of relationship types
+     */
+    public List<RelationshipType> getRelationshipTypes(boolean addDummy) {
+        return getRefDataTypes(RelationshipType.class, addDummy);
+    }
+
+    /**
+     * Returns relationship type by code
+     */
+    public RelationshipType getRelationshipType(int code) {
+        return getRefDataType(RelationshipType.class, code);
+    }
+
+    /**
+     * Returns list of genders
+     */
+    public List<Gender> getGenders(boolean addDummy) {
+        return getRefDataTypes(Gender.class, addDummy);
+    }
+
+    /**
+     * Returns list of dispute types
+     */
+    public List<DisputeType> getDisputeTypes(boolean addDummy) {
+        return getRefDataTypes(DisputeType.class, addDummy);
+    }
+
+    /**
+     * Returns dispute type by code
+     */
+    public DisputeType getDisputeType(int code) {
+        return getRefDataType(DisputeType.class, code);
+    }
+
+    /**
+     * Returns list of acquisition types
+     */
+    public List<AcquisitionType> getAcquisitionTypes(boolean addDummy) {
+        return getRefDataTypes(AcquisitionType.class, addDummy);
+    }
+
+    /**
+     * Returns gender type by code
+     */
+    public Gender getGender(int code) {
+        return getRefDataType(Gender.class, code);
     }
 
     public String villageName() {
         String villageName = "";
 
-        SQLiteDatabase database = getReadableDatabase();
-
         String selectSQL = "SELECT VILLAGE_NAME FROM PROJECT_SPATIAL_DATA ";
-        Cursor cursor = database.rawQuery(selectSQL, null);
+        Cursor cursor = getDb().rawQuery(selectSQL, null);
 
         if (cursor.moveToFirst()) {
             villageName = cursor.getString(0);
         }
         cursor.close();
-
-        database.close();
-
         return villageName;
     }
-
-    public boolean isGuardianExist(long featureId) {
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String selectSQL = "SELECT PERSON_SUBTYPE FROM PERSON WHERE PERSON_SUBTYPE='Guardian' AND FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                flag = true;
-            }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
-        database.close();
-        return flag;
-
-    }
-
-    public boolean isOwnerMinor(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        boolean flag = false;
-
-        //****Note*****
-        //This query returns Person's Group ID,Person first name,Last name,feature id,Server_pk(personSubType),Person's age
-        //select per.*,fv.ATTRIB_VALUE from person as per left join foRM_VALUES as FV on FV.GROUP_ID=PER.ID and per.FEATURE_ID=1 where PER.SERVER_PK='Owner' and fv.ATTRIB_ID=21
-
-        //HERE ATTRIB_ID=21 (FOR AGE)
-
-
-        String selectSQL = "SELECT PER.*,FV.ATTRIB_VALUE FROM PERSON AS PER LEFT JOIN FORM_VALUES AS FV ON FV.GROUP_ID=PER.ID AND PER.FEATURE_ID = " + featureId + " WHERE PER.PERSON_SUBTYPE='Owner' AND FV.ATTRIB_ID=21";
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-
-            String ageStr = cursor.getString(6);
-            int age = Integer.parseInt(ageStr);
-            if (age <= 18)
-                flag = true;
-            else
-                flag = false;
-        } else {
-            flag = false;
-        }
-        cursor.close();
-        database.close();
-
-        return flag;
-    }
-
-    public boolean isAdminExist(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        boolean flag = false;
-
-        String selectSql = "SELECT * FROM PERSON WHERE PERSON_SUBTYPE='Administrator' AND FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(selectSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        } else {
-            flag = false;
-        }
-        return flag;
-
-    }
-
-    public boolean isOwnerExist(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        boolean flag = false;
-
-        String selectSql = "SELECT * FROM PERSON WHERE PERSON_SUBTYPE='Owner' AND FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(selectSql, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-        } else {
-            flag = false;
-        }
-        cursor.close();
-        database.close();
-        return flag;
-
-    }
-
-    public String getPersonSubType(int groupId) {
-
-        String personSubType = null;
-        SQLiteDatabase database = getReadableDatabase();
-        String selectSQL = "SELECT PERSON_SUBTYPE FROM PERSON WHERE ID =" + groupId;
-        Cursor cursor = database.rawQuery(selectSQL, null);
-        if (cursor.moveToFirst()) {
-            personSubType = cursor.getString(0);
-
-        }
-        cursor.close();
-        database.close();
-        return personSubType;
-    }
-
-    public boolean isPersonOfInterestExist(long featureId) {
-
-        boolean flag = false;
-        SQLiteDatabase database = getReadableDatabase();
-        String selectSQL = "SELECT * FROM NEXT_KIN_DETAILS WHERE FEATURE_ID =" + featureId;
-        Cursor cursor = database.rawQuery(selectSQL, null);
-        if (cursor.moveToFirst()) {
-            flag = true;
-
-        } else {
-            flag = false;
-        }
-        cursor.close();
-        database.close();
-        return flag;
-    }
-
-    public boolean isGuradianMinor(long featureId)   //same method will be used to check whether owner exist or not
-    {
-        SQLiteDatabase database = getReadableDatabase();
-        boolean flag = false;
-
-        //****Note*****
-        //This query returns Person's Group ID,Person first name,Last name,feature id,Server_pk(personSubType),Person's age
-        //select per.*,fv.ATTRIB_VALUE from person as per left join foRM_VALUES as FV on FV.GROUP_ID=PER.ID and per.FEATURE_ID=1 where PER.SERVER_PK='Owner' and fv.ATTRIB_ID=21
-
-        //HERE ATTRIB_ID=21 (FOR AGE)
-
-
-        String selectSQL = "SELECT PER.*,FV.ATTRIB_VALUE FROM PERSON AS PER LEFT JOIN FORM_VALUES AS FV ON FV.GROUP_ID=PER.ID AND PER.FEATURE_ID = " + featureId + " WHERE PER.PERSON_SUBTYPE='Guardian' AND FV.ATTRIB_ID=21";
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-
-            String ageStr = cursor.getString(6);
-            int age = Integer.parseInt(ageStr);
-            if (age <= 18)
-                flag = true;
-            else
-                flag = false;
-        } else {
-            flag = false;
-        }
-        cursor.close();
-        database.close();
-
-        return flag;
-    }
-
-    public List<String> getPersonSubtypeOptions() {
-
-        List<String> optionList = new ArrayList<String>();
-        SQLiteDatabase db = getReadableDatabase();
-
-        String selectQueryOptions = "SELECT * FROM OPTIONS where ATTRIB_ID=54";
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
-        if (cursor.moveToFirst()) {
-            do {
-                optionList.add(cursor.getString(2));
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        db.close();
-        return optionList;
-
-    }
-
-    public String getPOIforEditing(int groupID_POI) {
-
-        SQLiteDatabase db = getReadableDatabase();
-        String selectQuery = "SELECT NEXT_KIN_NAME FROM NEXT_KIN_DETAILS WHERE ID = " + groupID_POI;
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        String POI_name = "";
-        if (cursor.moveToFirst()) {
-
-            POI_name = cursor.getString(0);
-
-        }
-        cursor.close();
-        db.close();
-        return POI_name;
-
-    }
-
-    public String getDPforEditing(int groupID_POI) {     //deceased person
-
-        SQLiteDatabase db = getReadableDatabase();
-        String selectQuery = "SELECT * FROM DECEASED_PERSON WHERE ID = " + groupID_POI;
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        String dp_name = "";
-        if (cursor.moveToFirst()) {
-
-            dp_name = cursor.getString(1) + " " + cursor.getString(2) + " " + cursor.getString(3);
-
-        }
-        cursor.close();
-        db.close();
-        return dp_name;
-
-    }
-
-    public boolean editPOI(String POIName, int groupID_POI) {
-
-        try {
-            SQLiteDatabase db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("NEXT_KIN_NAME", POIName);
-            String whereClause = "ID =" + groupID_POI;
-            db.update("NEXT_KIN_DETAILS", values, whereClause, null);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    public boolean editDeceasedPerson(String firstName, String middleName, String lastName, int groupID_POI) {
-
-        try {
-            SQLiteDatabase db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("FIRST_NAME", firstName);
-            values.put("MIDDLE_NAME", middleName);
-            values.put("LAST_NAME", lastName);
-            String whereClause = "ID =" + groupID_POI;
-            db.update("DECEASED_PERSON", values, whereClause, null);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-
-    public boolean savePersonSubType(int GroupId, String personSubType, String OptionValue, long featureID) {
-
-        try {
-            SQLiteDatabase db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("PERSON_SUBTYPE", personSubType);
-            String whereClause = "ID =" + GroupId;
-            db.update("PERSON", values, whereClause, null);
-            ContentValues values2 = new ContentValues();
-            values2.put("GROUP_ID", GroupId);
-            values2.put("ATTRIB_ID", 54);
-            values2.put("ATTRIB_VALUE", OptionValue);
-            values2.put("FEATURE_ID", featureID);
-
-            db.insert("FORM_VALUES", null, values2);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    public Option getTenureTypeOptionsValue(long featureID) {
-
-        String tenureType = "";
-        SQLiteDatabase db = getReadableDatabase();
-        //ATTRIB_ID=31(Type of tenure)
-        //ATTRIB_ID=23(right of occupancy)
-        Option option = new Option();
-        String selectQueryOptions = "SELECT OPT.OPTION_NAME,OPT.OPTION_NAME_OTHER,FM.ATTRIB_VALUE FROM OPTIONS AS OPT LEFT JOIN FORM_VALUES AS FM ON OPT.OPTION_ID=FM.ATTRIB_VALUE WHERE FM.ATTRIB_ID=31 AND FM.FEATURE_ID =" + featureID;             //attribute id 13=Right of accupancy type
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
-        if (cursor.moveToFirst()) {
-
-            tenureType = cursor.getString(0);
-            String lang = cf.getLocale();
-            if (lang.equalsIgnoreCase("sw"))
-                option.setOptionName(cursor.getString(1));           //option name in swahili
-            else
-                option.setOptionName(cursor.getString(0));
-            //option.setOptionMultiLang(cursor.getString(1));
-            option.setOptionId(cursor.getLong(2));
-
-        }
-        cursor.close();
-        db.close();
-        return option;
-
-    }
-
-    public boolean saveDeceasedPerson(String firstName, String middleName, String lastName, Long featureId) {
-
-        try {
-            //FIRST_NAME TEXT,MIDDLE_NAME TEXT,LAST_NAME TEXT,FEATURE_ID
-            SQLiteDatabase db = getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("FIRST_NAME", firstName);
-            values.put("MIDDLE_NAME", middleName);
-            values.put("LAST_NAME", lastName);
-            values.put("FEATURE_ID", featureId);
-            db.insert("DECEASED_PERSON", null, values);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    public List<Attribute> getDeceasedPersonList(Long featureId) {
-
-        List<Attribute> attributeList = new ArrayList<Attribute>();
-
-        SQLiteDatabase db = getWritableDatabase();
-
-        String selectQueryOptions = "SELECT * from DECEASED_PERSON where FEATURE_ID=" + featureId;
-        Cursor cursor = db.rawQuery(selectQueryOptions, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-                String deceasedPerson = cursor.getString(1) + " " + cursor.getString(2) + " " + cursor.getString(3);
-                attrib.setNextOfKinId(cursor.getInt(0));
-                attrib.setNextOfKinName(deceasedPerson);
-                attributeList.add(attrib);
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        db.close();
-        return attributeList;
-
-    }
-
-/*
-public List<Attribute> getGenaralAttributeInfo(Long featureId,String keyword,String lang)
-{
-	 String attributeType = null;
-
-	String sql="SELECT  AM.*,FM.GROUP_ID,FM.ATTRIB_VALUE,SF.PERSON_TYPE,SF.HAMLET_ID,SF.WITNESS_1,SF.WITNESS_2 FROM ATTRIBUTE_MASTER AS AM"
-			+ " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID = "+featureId
-			+ " LEFT JOIN SPATIAL_FEATURES AS SF ON FM.FEATURE_ID = SF.FEATURE_ID"
-			+ " where AM.ATTRIBUTE_TYPE = '"+attributeType+"'";
-
-
-
-	List<Attribute> attribList = new ArrayList<Attribute>();
-	Cursor cursor = database.rawQuery(sql, null);
-
-	if (cursor.moveToFirst())
-	{
-		do {
-			Attribute attrib = new Attribute();
-			attrib.setAttributeid(cursor.getInt(1));
-			attrib.setControlType(cursor.getInt(3));
-			if(lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor.getString(6)))
-			{
-			attrib.setAttributeName(cursor.getString(6));
-			}
-			else
-			{
-				attrib.setAttributeName(cursor.getString(4));
-			}
-
-
-			attrib.setValidation(cursor.getString(7));
-			attrib.setGroupId(cursor.getInt(8));
-			attrib.setFieldValue(cursor.getString(9));
-			attrib.setPersonType(cursor.getString(10));
-			attrib.setHamletId(cursor.getInt(11));
-			attrib.setWitness1(cursor.getString(12));
-			attrib.setWitness2(cursor.getString(13));
-
-			if (attrib.getControlType()==5)
-			{
-
-				Option option =null;
-				List<Option> optionList = new ArrayList<Option>();
-			    option=new Option();
-				option.setOptionId(0L);
-				option.setOptionName(contxt.getResources().getString(R.string.select));
-				optionList.add(option);
-
-				String selectQueryOptions = "SELECT  * FROM OPTIONS where ATTRIB_ID ="+ attrib.getAttributeid();
-				Cursor cursor2 = database.rawQuery(selectQueryOptions, null);
-
-				if (cursor2.moveToFirst()) {
-					do {
-						option = new Option();
-						option.setOptionId(cursor2.getLong(0));
-						StringBuffer multiLnagText = new StringBuffer();
-						if(lang.equalsIgnoreCase("sw") && !TextUtils.isEmpty(cursor2.getString(3))){
-							option.setOptionName(cursor2.getString(3));
-						}else{
-							option.setOptionName(cursor2.getString(2));
-						}
-						if(!TextUtils.isEmpty(cursor2.getString(3))){
-							multiLnagText.append(cursor2.getString(3));
-							multiLnagText.append("&#&"+cursor2.getString(2));
-							option.setOptionMultiLang(multiLnagText.toString());
-						}else{
-							multiLnagText.append(cursor2.getString(2));
-							multiLnagText.append("&#&"+cursor2.getString(2));
-							option.setOptionMultiLang(multiLnagText.toString());
-						}
-						optionList.add(option);
-					} while (cursor2.moveToNext());
-				}cursor2.close();
-				attrib.setOptionsList(optionList);
-			}
-			attribList.add(attrib);
-		} while (cursor.moveToNext());
-	}cursor.close();
-	return attribList;
 }
-*/
-
-    public boolean isGeneralAttributeSaved(long featureId) {
-
-        SQLiteDatabase database = getReadableDatabase();
-        boolean flag = false;
-
-
-        String selectSQL = "SELECT HAMLET_ID FROM SPATIAL_FEATURES WHERE FEATURE_ID = " + featureId;
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-
-            int hamletId = cursor.getInt(0);
-            if (hamletId > 0)
-                flag = true;
-            else
-                flag = false;
-        } else {
-            flag = false;
-        }
-        cursor.close();
-        database.close();
-
-        return flag;
-
-    }
-
-
-    public List<Attribute> getGneralAttributeData(Long featureId, String keyword, String lang)            //for hardcoded controls
-    {
-        String sql = "SELECT * FROM SPATIAL_FEATURES WHERE FEATURE_ID=" + featureId;
-        SQLiteDatabase db = getReadableDatabase();
-
-        List<Attribute> attribList = new ArrayList<Attribute>();
-        Cursor cursor = db.rawQuery(sql, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                Attribute attrib = new Attribute();
-
-                attrib.setPersonType(cursor.getString(9));
-                attrib.setHamletId(cursor.getInt(10));
-                attrib.setWitness1(cursor.getString(11));
-                attrib.setWitness2(cursor.getString(12));
-                attribList.add(attrib);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return attribList;
-    }
-
-    public int getAdminCount(Long featureId)            //for hardcoded controls
-    {
-
-        String sql = "SELECT * FROM PERSON WHERE PERSON_SUBTYPE='Administrator' and FEATURE_ID=" + featureId;
-
-        SQLiteDatabase db = getReadableDatabase();
-
-
-        Cursor cursor = db.rawQuery(sql, null);
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            do {
-                count++;
-            }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
-        return count;
-    }
-
-    public int getOwnerCount(Long featureId) {
-
-        String sql = "SELECT * FROM PERSON WHERE PERSON_SUBTYPE='Owner' and FEATURE_ID=" + featureId;
-
-        SQLiteDatabase db = getReadableDatabase();
-
-
-        Cursor cursor = db.rawQuery(sql, null);
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            do {
-                count++;
-            }
-            while (cursor.moveToNext());
-        }
-        cursor.close();
-        return count;
-    }
-
-
-    public int getMinorCount(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        int minorCount = 0;
-
-        //HERE ATTRIB_ID=21 (FOR AGE)
-
-        String selectSQL = "SELECT * FROM FORM_VALUES WHERE FEATURE_ID = " + featureId + " AND ATTRIB_ID=21";
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                String ageStr = cursor.getString(2);
-                int age = Integer.parseInt(ageStr);
-                if (age < 18) {
-                    minorCount++;
-                }
-            }
-            while (cursor.moveToNext());
-
-        }
-
-        cursor.close();
-        database.close();
-
-        return minorCount;
-    }
-
-    public int getGuardianCount(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        int guardianCount = 0;
-
-        //HERE ATTRIB_ID=21 (FOR AGE)
-
-        String selectSQL = "SELECT PERSON_SUBTYPE FROM PERSON WHERE PERSON_SUBTYPE ='Guardian' AND FEATURE_ID = " + featureId;
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-
-            do {
-                guardianCount++;
-            }
-            while (cursor.moveToNext());
-
-        }
-        cursor.close();
-        database.close();
-
-        return guardianCount;
-    }
-
-    public boolean setResidentValue(String residentValue, long featureId) {
-        String whereClause = "FEATURE_ID = " + featureId;
-        try {
-            SQLiteDatabase db = getWritableDatabase();
-            // updating  Features
-            ContentValues value = new ContentValues();
-            value.put("SERVER_PK", residentValue);             //TODO New coloumn is to be added to save resident value instead of saving it in server pk coloumn
-            db.update("SPATIAL_FEATURES", value, whereClause, null);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            cf.appLog("", e);
-            return false;
-        }
-        return true;
-    }
-
-    public String getResidentValue(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        String residentValue = "Select an option";
-
-
-        String selectSQL = "SELECT SERVER_PK FROM SPATIAL_FEATURES WHERE FEATURE_ID = " + featureId;      // currently SERVER_PK is used as Resident coloumn
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-
-            residentValue = cursor.getString(0);
-            if (residentValue == null) {
-                residentValue = "Select an option";
-            }
-        }
-
-        cursor.close();
-        database.close();
-
-        return residentValue;
-    }
-
-    public boolean isOwnerOrGuardianImageExist(long featureId, int groupId, String personSubtype) {
-        SQLiteDatabase database = getReadableDatabase();
-        boolean flag = false;
-
-
-        String selectSQL = "SELECT PER_MEDIA.* FROM PERSON_MEDIA AS PER_MEDIA LEFT OUTER JOIN PERSON AS PER ON PER_MEDIA.PERSON_ID=PER.ID where PER.ID = " + groupId + " AND PER.PERSON_SUBTYPE= '" + personSubtype + "' AND PER.FEATURE_ID= " + featureId;
-
-        Cursor cursor = database.rawQuery(selectSQL, null);
-
-        if (cursor.moveToFirst()) {
-
-            flag = true;
-        } else {
-            flag = false;
-        }
-        cursor.close();
-        database.close();
-
-        return flag;
-    }
-
-    public long getOwnerAndGuardianCount(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        SQLiteStatement s = database.compileStatement("select count(*) from PERSON where FEATURE_ID='" + featureId + "'; ");
-        long count = s.simpleQueryForLong();
-
-        close();
-        return count;
-    }
-
-    public long getPersonCount(long featureId) {
-        SQLiteDatabase database = getReadableDatabase();
-        SQLiteStatement s = database.compileStatement("select count(*) from PERSON where FEATURE_ID='" + featureId + "'; ");
-        long count = s.simpleQueryForLong();
-
-        close();
-        return count;
-    }
-
-}
-

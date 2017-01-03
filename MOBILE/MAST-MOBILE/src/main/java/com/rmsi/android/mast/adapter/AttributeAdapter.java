@@ -39,6 +39,6 @@ public class AttributeAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return GuiUtility.createViewFromAttribute((Attribute) getItem(position), inflater);
+        return GuiUtility.createViewFromAttribute((Attribute) getItem(position), inflater, false);
     }
 }

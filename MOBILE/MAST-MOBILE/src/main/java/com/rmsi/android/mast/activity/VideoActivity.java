@@ -22,8 +22,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.rmsi.android.mast.activity.R;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Media;
 import com.rmsi.android.mast.util.CommonFunctions;
 
@@ -38,7 +37,7 @@ public class VideoActivity extends Activity implements Callback
 	CommonFunctions cf = CommonFunctions.getInstance();
 	boolean recording = false;
 	Long featureId = 0L;
-	int groupId=0;
+	Long groupId=0L;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
@@ -82,10 +81,10 @@ public class VideoActivity extends Activity implements Callback
 					try {
 						groupId = cf.getGroupId();
 						media_video.setFeatureId(featureId);
-						media_video.setMediaPath(file.getAbsolutePath());
-						media_video.setMediaId(groupId);
-						media_video.setMediaType("video");
-						new DBController(context).insertMedia(media_video);
+						media_video.setPath(file.getAbsolutePath());
+						media_video.setId(groupId);
+						media_video.setType("video");
+						DbController.getInstance(context).saveMedia(media_video);
 						Log.i("Database Insertion", "Video Inserted Succefully");
 					} catch (Exception e) {
 						e.printStackTrace();

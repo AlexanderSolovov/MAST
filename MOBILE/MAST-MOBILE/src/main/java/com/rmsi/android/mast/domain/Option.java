@@ -4,35 +4,43 @@ import android.view.View;
 
 import com.rmsi.android.mast.util.StringUtility;
 
-public class Option 
-{
-	private Long optionId; 
-	private int ATTRIB_ID;
-	private String OPTION_NAME;
-	private String optionMultiLang;
-	private View view;
+import java.io.Serializable;
 
-	public Long getOptionId() {
-		return optionId;
+public class Option  implements Serializable
+{
+	private Long id;
+	private Long attributeId;
+	private String name;
+	private String nameOtherLang;
+	transient private View view;
+
+	public static String TABLE_NAME = "OPTIONS";
+	public static String COL_ID = "OPTION_ID";
+	public static String COL_ATTRIBUTE_ID = "ATTRIB_ID";
+	public static String COL_NAME = "OPTION_NAME";
+	public static String COL_NAME_OTHER_LANG = "OPTION_NAME_OTHER";
+
+	public Long getId() {
+		return id;
 	}
-	public void setOptionId(Long optionId) {
-		this.optionId = optionId;
+	public void setId(Long id) {
+		this.id = id;
 	}
-	public int getAttributeid() 
+	public Long getAttributeId()
 	{
-		return ATTRIB_ID;
+		return attributeId;
 	}
-	public void setAttributeid(int ATTRIB_ID) 
+	public void setAttributeId(Long attributeId)
 	{
-		this.ATTRIB_ID = ATTRIB_ID;
+		this.attributeId = attributeId;
 	}
-	public String getOptionName() 
+	public String getName()
 	{
-		return OPTION_NAME;
+		return name;
 	}
-	public void setOptionName(String OPTION_NAME) 
+	public void setName(String name)
 	{
-		this.OPTION_NAME = OPTION_NAME;
+		this.name = name;
 	}
 	public View getView() {
 		return view;
@@ -40,15 +48,15 @@ public class Option
 	public void setView(View view) {
 		this.view = view;
 	}
-	public String getOptionMultiLang() {
-		return optionMultiLang;
+	public String getNameOtherLang() {
+		return nameOtherLang;
 	}
-	public void setOptionMultiLang(String optionMultiLang) {
-		this.optionMultiLang = optionMultiLang;
+	public void setNameOtherLang(String nameOtherLang) {
+		this.nameOtherLang = nameOtherLang;
 	}
 
     @Override
 	public String toString(){
-		return StringUtility.empty(getOptionName());
+		return StringUtility.empty(getName());
 	}
 }

@@ -20,30 +20,32 @@ public class SpatialUnitPersonWithInterest implements Serializable {
     private long usin;
     private String person_name;
     private static final long serialVersionUID = 1L;
-    @ManyToOne
-    @JoinColumn(name = "id_type")
-    private IdType idType;
-
-    @Column(name = "id_number")
-    private String idNumber;
 
     @Column(name = "dob")
     private Date dob;
+    
+    @ManyToOne
+    @JoinColumn(name = "relationship_type")
+    private RelationshipType relationshipType;
 
-    public IdType getIdType() {
-        return idType;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "gender_id", nullable = false)
+    private Gender gender;
+
+    public Gender getGender() {
+        return gender;
     }
 
-    public void setIdType(IdType idType) {
-        this.idType = idType;
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+    
+    public RelationshipType getRelationshipType() {
+        return relationshipType;
     }
 
-    public String getIdNumber() {
-        return idNumber;
-    }
-
-    public void setIdNumber(String idNumber) {
-        this.idNumber = idNumber;
+    public void setRelationshipType(RelationshipType relationshipType) {
+        this.relationshipType = relationshipType;
     }
 
     public Date getDob() {

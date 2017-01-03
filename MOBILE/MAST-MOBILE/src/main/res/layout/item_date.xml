@@ -23,6 +23,7 @@
         android:textColor="@color/black"
         android:textSize="@dimen/textSize" />
     <View
+        android:id="@+id/separator"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#CCCCCC" />

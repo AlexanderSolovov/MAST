@@ -10,6 +10,7 @@ import com.rmsi.mast.studio.domain.AttributeMaster;
 import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.ProjectAdjudicator;
 import com.rmsi.mast.studio.domain.ProjectHamlet;
+import com.rmsi.mast.studio.domain.Surveyprojectattribute;
 
 /**
  * @author shruti.thakur
@@ -46,6 +47,9 @@ public interface SurveyProjectAttributeService {
 	 */
 	Long getSurveyProjectAttributeId(long attributeId, String projectId);
 
+        /** Returns list of survey project attributes by project ID (name)*/
+        List<Surveyprojectattribute> getSurveyProjectAttributes(String projectId);
+        
 	/**
 	 * This will fetch list of adjudicators by project id
 	 * 

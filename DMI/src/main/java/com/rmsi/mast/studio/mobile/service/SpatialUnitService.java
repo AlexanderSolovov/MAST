@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.rmsi.mast.studio.domain.Citizenship;
 import com.rmsi.mast.studio.domain.ClaimType;
+import com.rmsi.mast.studio.domain.DisputeType;
 import com.rmsi.mast.studio.domain.DocumentType;
 import com.rmsi.mast.studio.domain.Gender;
 import com.rmsi.mast.studio.domain.GroupType;
@@ -68,7 +69,28 @@ public interface SpatialUnitService {
      * @return
      */
     ShareType getShareTypeById(int tenureRelationId);
+    
+    /**
+     * This will get Social TenureRelation Types
+     *
+     * @return
+     */
+    List<ShareType> getShareTypes();
+    
+    /**
+     * This will get Tenure Classes
+     *
+     * @return
+     */
+    List<TenureClass> getTenureClasses();
 
+    /**
+     * This will get Genders
+     *
+     * @return
+     */
+    List<Gender> getGenders();
+    
     /**
      * This will get Land Use Type by id
      */
@@ -140,6 +162,28 @@ public interface SpatialUnitService {
      */
     ClaimType getClaimTypeById(String code);
 
+    /**
+     * Returns list of dispute types
+     *
+     * @return
+     */
+    List<DisputeType> getDisputeTypes();
+    
+    /**
+     * Returns dispute type by code
+     *
+     * @param code Claim type code
+     * @return
+     */
+    DisputeType getDisputeTypeById(int code);
+
+    /**
+     * Returns Acquisition types list
+     *
+     * @return
+     */
+    List<AcquisitionType> getAcquisitionTypes();
+    
     /**
      * Returns Acquisition type by option id
      *

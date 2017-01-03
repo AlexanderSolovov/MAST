@@ -45,6 +45,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -57,10 +58,11 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.rmsi.android.mast.activity.R.string;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Bookmark;
 import com.rmsi.android.mast.domain.Feature;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GisUtility;
 import com.rmsi.android.mast.util.OfflineTileProvider;
@@ -72,10 +74,7 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.io.WKTReader;
 
-/**
- * @author Amreen.s
- */
-public class MapViewerActivity extends ActionBarActivity {
+public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCallback {
     // Google Map
     private GoogleMap googleMap;
     List<Marker> currMarkers = new ArrayList<Marker>();
@@ -151,7 +150,7 @@ public class MapViewerActivity extends ActionBarActivity {
             setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //##########  NAVIGATION DRAWER #####################################################################
-        offlineSpatialData = new DBController(context).getProjectSpatialData();
+        offlineSpatialData = DbController.getInstance(context).getProjectSpatialData();
 
         mLayerTitles.add(satelliteMapStr);
         mLayerTitles.add(capturFeatureStr);
@@ -165,7 +164,7 @@ public class MapViewerActivity extends ActionBarActivity {
         drawerlayout = (LinearLayout) findViewById(R.id.left_drawer);
 
 
-        // Set the adapter for the list view
+        // Set the dpAdapter for the list view
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
                 R.layout.item_list_multiple_choice, mLayerTitles));
         // Set the list's click listener
@@ -207,8 +206,7 @@ public class MapViewerActivity extends ActionBarActivity {
 
         try {
             // Loading map
-            initilizeMap();
-
+            ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -218,9 +216,9 @@ public class MapViewerActivity extends ActionBarActivity {
         btn_captureNewData.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (role == CommonFunctions.ROLE_TRUSTED_INTERMEDIARY) {
-                    DBController sqllite = new DBController(context);
-                    if (sqllite.getGeneralAttribute(cf.getLocale()).size() > 0) {
+                if (role == User.ROLE_TRUSTED_INTERMEDIARY) {
+                    DbController sqllite = DbController.getInstance(context);
+                    if (sqllite.getClaimTypes(false).size() > 0) {
                         Intent intent = new Intent(MapViewerActivity.this, CaptureDataMapActivity.class);
                         startActivity(intent);
                     } else {
@@ -258,15 +256,15 @@ public class MapViewerActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        initilizeMap();
     }
 
     /**
      * function to load map If map is not created it will create it for you
      */
-    private void initilizeMap() {
+    @Override
+    public void onMapReady(GoogleMap map) {
         if (googleMap == null) {
-            googleMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+            googleMap = map;
 
             // check if map is created successfully or not
             if (googleMap == null) {
@@ -683,7 +681,7 @@ public class MapViewerActivity extends ActionBarActivity {
 
     private void loadFeaturesFromDB() {
         try {
-            DBController dbObj = new DBController(context);
+            DbController dbObj = DbController.getInstance(context);
             List<Feature> features = dbObj.fetchFeatures();
             dbObj.close();
 
@@ -695,7 +693,7 @@ public class MapViewerActivity extends ActionBarActivity {
                 Toast.makeText(context, R.string.noFeaturesToLoad, Toast.LENGTH_SHORT).show();
             }
             for (Feature feature : features) {
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] wktpoints = coordinates.replaceAll(", ", ",").split(",");
@@ -723,7 +721,7 @@ public class MapViewerActivity extends ActionBarActivity {
                         rectOptions.fillColor(polygoncolor).strokeWidth(5).strokeColor(Color.BLUE);
                     rectOptions.zIndex(4);
                     googleMap.addPolygon(rectOptions);
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] wktpoints = coordinates.replaceAll(", ", ",").split(",");
@@ -745,7 +743,7 @@ public class MapViewerActivity extends ActionBarActivity {
                     }
                     rectOptions.zIndex(4);
                     googleMap.addPolyline(rectOptions);
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POINT)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
                     String coordinates = feature.getCoordinates();
 
                     String[] tmpPoint = coordinates.split(" ");
@@ -770,14 +768,14 @@ public class MapViewerActivity extends ActionBarActivity {
     private void processFeaturesInfo(LatLng pointFromMap) {
         try {
             boolean result = false;
-            Long featureid = 0L;
+            long featureid = 0L;
             String featurestatus = "";
-            DBController dbObj = new DBController(context);
+            DbController dbObj = DbController.getInstance(context);
             List<Feature> features = dbObj.fetchFeatures();
             dbObj.close();
 
             for (Feature feature : features) {
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
                     Geometry geom = new WKTReader().read("POLYGON ((" + feature.getCoordinates() + "))");
 
@@ -786,11 +784,11 @@ public class MapViewerActivity extends ActionBarActivity {
                     result = GisUtility.IsPointInPolygon(ptClicked, poly);
 
                     if (result) {
-                        featureid = feature.getFeatureid();
+                        featureid = feature.getId();
                         featurestatus = feature.getStatus();
-                        //Toast.makeText(context, "Poly Result "+feature.getFeatureid()+": "+result, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(context, "Poly Result "+feature.getId()+": "+result, Toast.LENGTH_SHORT).show();
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
                     Geometry geom = new WKTReader().read("LINESTRING (" + feature.getCoordinates() + ")");
@@ -800,11 +798,11 @@ public class MapViewerActivity extends ActionBarActivity {
                     result = GisUtility.IsPointIntersectsLine(ptClicked, line);
 
                     if (result) {
-                        featureid = feature.getFeatureid();
+                        featureid = feature.getId();
                         featurestatus = feature.getStatus();
-                        //Toast.makeText(context, "Line Result "+feature.getFeatureid()+": "+result, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(context, "Line Result "+feature.getId()+": "+result, Toast.LENGTH_SHORT).show();
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POINT)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
                     com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
                     Geometry geom = new WKTReader().read("POINT (" + feature.getCoordinates() + ")");
@@ -814,9 +812,9 @@ public class MapViewerActivity extends ActionBarActivity {
                     result = GisUtility.IsPointIntersectsPoint(ptClicked, point);
 
                     if (result) {
-                        featureid = feature.getFeatureid();
+                        featureid = feature.getId();
                         featurestatus = feature.getStatus();
-                        //Toast.makeText(context, "Point Result "+feature.getFeatureid()+": "+result, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(context, "Point Result "+feature.getId()+": "+result, Toast.LENGTH_SHORT).show();
                     }
                 }
                 if (result)
@@ -926,18 +924,18 @@ public class MapViewerActivity extends ActionBarActivity {
             String geomtype = "";
 
             if (MAP_MODE == MEASURE_FEATURE_AREA_MODE) {
-                geomtype = CommonFunctions.GEOM_POLYGON;
+                geomtype = Feature.GEOM_POLYGON;
             } else if (MAP_MODE == MEASURE_FEATURE_LENGTH_MODE) {
-                geomtype = CommonFunctions.GEOM_LINE;
+                geomtype = Feature.GEOM_LINE;
             }
 
-            DBController dbObj = new DBController(context);
+            DbController dbObj = DbController.getInstance(context);
             List<Feature> features = dbObj.fetchFeaturesByGeomtype(geomtype);
             dbObj.close();
             String coordinates = null;
 
             for (Feature feature : features) {
-                if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_POLYGON)) {
+                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                     com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
                     Geometry geom = new WKTReader().read("POLYGON ((" + feature.getCoordinates() + "))");
 
@@ -948,7 +946,7 @@ public class MapViewerActivity extends ActionBarActivity {
                     if (result) {
                         coordinates = feature.getCoordinates();
                     }
-                } else if (feature.getGeomtype().equalsIgnoreCase(CommonFunctions.GEOM_LINE)) {
+                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
                     com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
                     Geometry geom = new WKTReader().read("LINESTRING (" + feature.getCoordinates() + ")");
@@ -1011,7 +1009,7 @@ public class MapViewerActivity extends ActionBarActivity {
     @SuppressWarnings("unchecked")
     private void showBookmarks() {
         try {
-            DBController db = new DBController(context);
+            DbController db = DbController.getInstance(context);
             Object[] obj = db.fetchAllBookmarks();
 
             final List<Bookmark> bookmarks = (List<Bookmark>) obj[0];
@@ -1068,7 +1066,7 @@ public class MapViewerActivity extends ActionBarActivity {
                             bookmark.setZoomlevel(googleMap.getCameraPosition().zoom);
                             bookmark.setLatitude(googleMap.getCameraPosition().target.latitude);
                             bookmark.setLongitude(googleMap.getCameraPosition().target.longitude);
-                            DBController db = new DBController(context);
+                            DbController db = DbController.getInstance(context);
                             boolean result = db.saveBookmark(bookmark);
                             db.close();
                             if (result) {

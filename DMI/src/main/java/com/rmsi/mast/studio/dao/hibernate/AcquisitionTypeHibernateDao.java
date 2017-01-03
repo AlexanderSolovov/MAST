@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class AcquisitionTypeHibernateDao extends GenericHibernateDAO<AcquisitionType, String> implements AcquisitionTypeDao {
+public class AcquisitionTypeHibernateDao extends GenericHibernateDAO<AcquisitionType, Integer> implements AcquisitionTypeDao {
     private static final Logger logger = Logger.getLogger(AcquisitionTypeHibernateDao.class);
 
     @Override

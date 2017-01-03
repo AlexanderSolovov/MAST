@@ -1,58 +1,60 @@
 package com.rmsi.android.mast.activity;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rmsi.android.mast.activity.R.string;
 import com.rmsi.android.mast.adapter.SpinnerAdapter;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
+import com.rmsi.android.mast.domain.ClaimType;
 import com.rmsi.android.mast.domain.Option;
+import com.rmsi.android.mast.domain.Property;
+import com.rmsi.android.mast.domain.ShareType;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
+import com.rmsi.android.mast.util.DateUtility;
 import com.rmsi.android.mast.util.GuiUtility;
+import com.rmsi.android.mast.util.StringUtility;
 
 public class CaptureAttributesActivity extends ActionBarActivity {
-    private ImageView personInfo, tenureInfo, multimedia, custom, propertyInfo;
-    private List<Attribute> attrList;
+    private ImageView personInfo, tenureInfo, multimedia, custom, propertyInfo, disputeImg;
     private final Context context = this;
     private CommonFunctions cf = CommonFunctions.getInstance();
-    private int groupId = 0;
-    private Long featureId = 0L, witnessId_1 = 0L, witnessId_2;
-    private static String serverFeatureId = null;
-    private String personType = "Select an option", hamletName_Id, witness_1, witness_2;
-    private boolean flag = false;
-    private DBController db = new DBController(context);
-    private Spinner spinnerPersonType, spinnerHamlet, spinnerWitness1, spinnerWitness2;
-    private Option selecteditem;
-    private String msg = "";
-    private String infoSingleOccupantStr, infoMultipleJointStr, infoMultipleTeneancyStr, infoTenancyInProbateStr, infoGuardianMinorStr, infoStr;
-    private String You_have_selected, yesStr, noStr;
+    private Long featureId = 0L;
+    private DbController db = DbController.getInstance(context);
     private int roleId = 0;
+    private Property property = null;
+    private LinearLayout bottomToolbar;
+    private Spinner spinnerClaimType;
+    private TextView txtPersonCount;
+    private TextView txtMediaCount;
+    private RelativeLayout layoutCustom;
+    private RelativeLayout layoutGeneral;
+    private RelativeLayout layoutRight;
+    private RelativeLayout layoutPersons;
+    private RelativeLayout layoutDispute;
+    private RelativeLayout layoutMedia;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,16 +65,49 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         setContentView(R.layout.activity_capture_attributes);
         roleId = CommonFunctions.getRoleID();
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+        }
+
+        if (featureId > 0) {
+            property = DbController.getInstance(context).getProperty(featureId);
+        }
+
+        if (property == null) {
+            property = new Property();
+        }
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.title_activity_capture_attributes);
+
+        if (toolbar != null)
+            setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        List<Option> hamletList = db.getHamletOptions();
+        List<Option> witnessList = db.getAdjudicators();
+        List<ClaimType> claimTypes = db.getClaimTypes(true);
+
         TextView spatialunitValue = (TextView) findViewById(R.id.spatialunit_lbl);
         TextView VillageName = (TextView) findViewById(R.id.villageName_lbl);
-        spinnerPersonType = (Spinner) findViewById(R.id.spinner_person_type);
-        List<Option> hamletList = new ArrayList<Option>();
-        hamletList = db.getHamletOptions();
-        List<Option> witnessList = new ArrayList<Option>();
-        witnessList = db.getAdjudicators();
-        spinnerHamlet = (Spinner) findViewById(R.id.spinner_hemlet);
-        spinnerWitness1 = (Spinner) findViewById(R.id.spinner_witness1);
-        spinnerWitness2 = (Spinner) findViewById(R.id.spinner_witness2);
+        Spinner spinnerHamlet = (Spinner) findViewById(R.id.spinner_hemlet);
+        Spinner spinnerWitness1 = (Spinner) findViewById(R.id.spinner_witness1);
+        Spinner spinnerWitness2 = (Spinner) findViewById(R.id.spinner_witness2);
+        final TextView txtClaimDate = (TextView) findViewById(R.id.txtClaimDate);
+        final EditText txtClaimNumber = (EditText) findViewById(R.id.txtPolygonNumber);
+        txtPersonCount = (TextView) findViewById(R.id.personCount);
+        txtMediaCount = (TextView) findViewById(R.id.multimediaCount);
+        spinnerClaimType = (Spinner) findViewById(R.id.spinnerClaimType);
+        bottomToolbar = (LinearLayout) findViewById(R.id.buttonBarAttributes);
+        layoutGeneral = (RelativeLayout) findViewById(R.id.layoutGeneral);
+        layoutRight = (RelativeLayout) findViewById(R.id.layoutRight);
+        layoutDispute = (RelativeLayout) findViewById(R.id.layoutDispute);
+        layoutPersons = (RelativeLayout) findViewById(R.id.layoutPersons);
+        layoutMedia = (RelativeLayout) findViewById(R.id.layoutMedia);
+        layoutCustom = (RelativeLayout) findViewById(R.id.layoutCustom);
+
         SpinnerAdapter spinnerAdapter = new SpinnerAdapter(this.context, android.R.layout.simple_spinner_item, hamletList);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerHamlet.setAdapter(spinnerAdapter);
@@ -85,47 +120,25 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         spinnerAdapterWitness2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerWitness2.setAdapter(spinnerAdapterWitness2);
 
-        TextView claimDate = (TextView) findViewById(R.id.txtClaimDate);
-        EditText claimNumber = (EditText) findViewById(R.id.txtPolygonNumber);
+        spinnerClaimType.setAdapter(new ArrayAdapter(context, android.R.layout.simple_spinner_item, claimTypes));
+        ((ArrayAdapter) spinnerClaimType.getAdapter()).setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        infoStr = getResources().getString(R.string.info);
-        infoSingleOccupantStr = getResources().getString(R.string.infoSingleOccupantStr);
-        infoMultipleJointStr = getResources().getString(R.string.infoMultipleJointStr);
-        infoMultipleTeneancyStr = getResources().getString(R.string.infoMultipleTeneancyStr);
-        infoTenancyInProbateStr = getResources().getString(R.string.infoTenancyInProbateStr);
-        infoGuardianMinorStr = getResources().getString(R.string.infoGuardianMinorStr);
-        You_have_selected = getResources().getString(R.string.You_have_selected);
-        yesStr = getResources().getString(R.string.yes);
-        noStr = getResources().getString(R.string.no);
-
-        if (roleId == 2)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-        {
-            spinnerPersonType.setEnabled(false);
-            spinnerHamlet.setEnabled(false);
-            spinnerWitness1.setEnabled(false);
-            spinnerWitness2.setEnabled(false);
-        }
-
-        spinnerPersonType.setOnItemSelectedListener(new OnItemSelectedListener() {
+        spinnerClaimType.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-                if (pos == 1)
-                    personType = "Natural";
-                else if (pos == 2)
-                    personType = "Non-Natural";
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                property.setClaimTypeCode(((ClaimType) parent.getItemAtPosition(position)).getCode());
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                personType = "Select an option";
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
 
         spinnerHamlet.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-                selecteditem = (Option) spinnerHamlet.getSelectedItem();
-                hamletName_Id = selecteditem.getOptionId().toString();
+            public void onItemSelected(AdapterView<?> parent, View arg1, int pos, long arg3) {
+                property.setHamletId(((Option) parent.getItemAtPosition(pos)).getId());
             }
 
             @Override
@@ -135,10 +148,12 @@ public class CaptureAttributesActivity extends ActionBarActivity {
 
         spinnerWitness1.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                selecteditem = (Option) spinnerWitness1.getSelectedItem();
-                witness_1 = selecteditem.getOptionName();
-                witnessId_1 = selecteditem.getOptionId();
+            public void onItemSelected(AdapterView<?> parent, View arg1, int pos, long arg3) {
+                Option selecteOption = (Option) parent.getItemAtPosition(pos);
+                if (selecteOption.getId() == 0L)
+                    property.setAdjudicator1("");
+                else
+                    property.setAdjudicator1(selecteOption.getName());
             }
 
             @Override
@@ -148,11 +163,12 @@ public class CaptureAttributesActivity extends ActionBarActivity {
 
         spinnerWitness2.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                                       int arg2, long arg3) {
-                selecteditem = (Option) spinnerWitness2.getSelectedItem();
-                witnessId_2 = selecteditem.getOptionId();
-                witness_2 = selecteditem.getOptionName();
+            public void onItemSelected(AdapterView<?> parent, View arg1, int pos, long arg3) {
+                Option selecteOption = (Option) parent.getItemAtPosition(pos);
+                if (selecteOption.getId() == 0L)
+                    property.setAdjudicator2("");
+                else
+                    property.setAdjudicator2(selecteOption.getName());
             }
 
             @Override
@@ -160,78 +176,92 @@ public class CaptureAttributesActivity extends ActionBarActivity {
             }
         });
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            featureId = extras.getLong("featureid");
-            serverFeatureId = extras.getString("Server_featureid");
-        }
+        GuiUtility.bindActionOnFieldChange(txtClaimNumber, new Runnable() {
+            @Override
+            public void run() {
+                property.setPolygonNumber(txtClaimNumber.getText().toString());
+            }
+        });
 
-        flag = db.isGeneralAttributeSaved(featureId);
-        if (flag) {
-            spinnerPersonType.setEnabled(false);
-        }
+        GuiUtility.bindActionOnLabelChange(txtClaimDate, new Runnable() {
+            @Override
+            public void run() {
+                property.setSurveyDate(txtClaimDate.getText().toString());
+            }
+        });
 
-        VillageName.setText(VillageName.getText() + " : " + db.villageName());
+        txtClaimDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GuiUtility.showDatePicker(txtClaimDate, property.getSurveyDate());
+            }
+        });
 
-        if (!TextUtils.isEmpty(serverFeatureId) && serverFeatureId != null) {
-            spatialunitValue.setText("USIN" + " : " + serverFeatureId.toString());
+        VillageName.setText(VillageName.getText() + ": " + db.villageName());
+        String claimStr = context.getResources().getString(R.string.Claim);
+
+        if (!StringUtility.isEmpty(property.getPolygonNumber())) {
+            if (property.getServerId() != null && property.getServerId() > 0) {
+                spatialunitValue.setText(claimStr + ": " + property.getPolygonNumber() + ", USIN: " + property.getServerId().toString());
+            } else {
+                spatialunitValue.setText(claimStr + ": " + property.getPolygonNumber());
+            }
         } else {
-            spatialunitValue.setText(spatialunitValue.getText() + "   :  " + featureId.toString());
+            spatialunitValue.setText(claimStr + ": " + featureId.toString());
         }
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.title_activity_capture_attributes);
-        if (toolbar != null)
-            setSupportActionBar(toolbar);
+        // Populate fields
+        if (property.getId() > 0) {
+            if (!StringUtility.isEmpty(property.getSurveyDate())) {
+                txtClaimDate.setText(DateUtility.formatDateString(property.getSurveyDate()));
+            } else {
+                txtClaimDate.setText(DateUtility.getCurrentStringDate());
+            }
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            txtClaimDate.setText(DateUtility.formatDateString(property.getSurveyDate()));
+            txtClaimNumber.setText(StringUtility.empty(property.getPolygonNumber()));
 
-        if (featureId == 0) {
-            attrList = db.getGeneralAttribute(cf.getLocale());
-        } else {
-            String keyword = "general";
-            attrList = db.getFeatureGenaralInfo(featureId, keyword, cf.getLocale());
-            //attrList = db.getGneralAttributeData(featureId, keyword, cf.getLocale());
-            String personType = attrList.get(0).getPersonType();
-            String witness1 = attrList.get(0).getWitness1();
-            String witness2 = attrList.get(0).getWitness2();
-            int hamletId = attrList.get(0).getHamletId();
+            for (int i = 0; i < claimTypes.size(); i++) {
+                if (!StringUtility.isEmpty(claimTypes.get(i).getCode()) &&
+                        claimTypes.get(i).getCode().equalsIgnoreCase(StringUtility.empty(property.getClaimTypeCode()))) {
+                    spinnerClaimType.setSelection(i);
+                    break;
+                }
+            }
+
             for (int i = 0; i < hamletList.size(); i++) {
-                if (hamletList.get(i).getOptionId() == hamletId) {
+                if (hamletList.get(i).getId() == property.getHamletId()) {
                     spinnerHamlet.setSelection(i);
                 }
             }
 
             for (int i = 0; i < witnessList.size(); i++) {
-                if (witnessList.get(i).getOptionName().equalsIgnoreCase(witness1)) {
+                if (witnessList.get(i).getName().equalsIgnoreCase(property.getAdjudicator1())) {
                     spinnerWitness1.setSelection(i);
                 }
-                if (witnessList.get(i).getOptionName().equalsIgnoreCase(witness2)) {
+                if (witnessList.get(i).getName().equalsIgnoreCase(property.getAdjudicator2())) {
                     spinnerWitness2.setSelection(i);
                 }
             }
-
-            if (!TextUtils.isEmpty(personType) && personType.equalsIgnoreCase("Natural")) {
-                spinnerPersonType.setSelection(1);
-            } else if (!TextUtils.isEmpty(personType) && personType.equalsIgnoreCase("Non-Natural")) {
-                spinnerPersonType.setSelection(2);
-            }
-
-            if (attrList.size() > 0) {
-                groupId = attrList.get(0).getGroupId();
-            }
+        } else {
+            txtClaimDate.setText(DateUtility.getCurrentStringDate());
         }
 
-        db.close();
-
-        LinearLayout layoutAttributes = (LinearLayout) findViewById(R.id.layoutAttributes);
-        GuiUtility.appendLayoutWithAttributes(layoutAttributes, attrList);
+        if (roleId == User.ROLE_ADJUDICATOR) {
+            spinnerHamlet.setEnabled(false);
+            spinnerWitness1.setEnabled(false);
+            spinnerWitness2.setEnabled(false);
+            spinnerClaimType.setEnabled(false);
+            txtClaimDate.setEnabled(false);
+            txtClaimNumber.setEnabled(false);
+        }
 
         personInfo = (ImageView) findViewById(R.id.btn_personlist);
         propertyInfo = (ImageView) findViewById(R.id.btn_propertyInfo);
         tenureInfo = (ImageView) findViewById(R.id.btn_tenureInfo);
         multimedia = (ImageView) findViewById(R.id.btn_addMultimedia);
         custom = (ImageView) findViewById(R.id.btn_addcustom);
+        disputeImg = (ImageView) findViewById(R.id.btnDisputeInfo);
 
         //For tooltip text
         View viewForTenureToolTip = tenureInfo;
@@ -239,171 +269,87 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         View viewForMediaToolTip = multimedia;
         View viewForCustomToolTip = custom;
         View viewForPropertyDetailsToolTip = propertyInfo;
+        View viewForDisputeToolTip = disputeImg;
 
         String add_person = getResources().getString(R.string.AddPerson);
         String add_social_tenure = getResources().getString(R.string.AddSocialTenureInfo);
         String add_multimedia = getResources().getString(R.string.AddNewMultimedia);
         String add_custom_attrib = getResources().getString(R.string.add_custom_attributes);
         String add_property_details = getResources().getString(R.string.AddNewPropertyDetails);
+        String add_dispute_details = getResources().getString(string.AddDisputeDetails);
 
         cf.setup(viewForPersonToolTip, add_person);
         cf.setup(viewForTenureToolTip, add_social_tenure);
         cf.setup(viewForMediaToolTip, add_multimedia);
         cf.setup(viewForCustomToolTip, add_custom_attrib);
         cf.setup(viewForPropertyDetailsToolTip, add_property_details);
+        cf.setup(viewForDisputeToolTip, add_dispute_details);
+
+        // Customize custom attributes button
+        if (bottomToolbar != null) {
+            if (!StringUtility.isEmpty(property.getClaimTypeCode())) {
+                // Check if custom fields are defined for the project
+                if (db.getAttributesByType(Attribute.TYPE_CUSTOM).size() < 1)
+                    layoutCustom.setVisibility(View.GONE);
+                else
+                    layoutCustom.setVisibility(View.VISIBLE);
+            }
+        }
+
+        disputeImg.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (property.hasGeneralAttributes() && saveData(false)) {
+                    Intent myIntent = new Intent(context, AddDisputeActivity.class);
+                    myIntent.putExtra("featureid", featureId);
+                    startActivity(myIntent);
+                } else {
+                    String msg = getResources().getString(string.save_genral_attrribute);
+                    String warning = getResources().getString(string.warning);
+                    cf.showMessage(context, warning, msg);
+                }
+            }
+        });
 
         personInfo.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
-
-                if (roleId == 1) {
-
-                    boolean tenureFilled = db.IsTenureValue(featureId);
-                    if (spinnerPersonType.getSelectedItemPosition() == 1) {
-                        //flag=db.getFormValues(featureId);
-                        flag = db.isGeneralAttributeSaved(featureId);
-
-                        if (flag) {
-                            if (tenureFilled) {
-                                Option tenureType = db.getTenureTypeOptionsValue(featureId);
-                                final long tenureTypeId = tenureType.getOptionId();
-                                if (tenureTypeId == 70 || tenureTypeId == 71 || tenureTypeId == 72 || tenureTypeId == 100 || tenureTypeId == 99) {
-
-                                    String infoMsg = "No msg";
-                                    //info message
-                                    switch ((int) tenureTypeId) {
-                                        case 70:
-                                            //cf.showMessage(context,"Info","You can add only one adult owner & multiple person of interests");
-                                            //infoMsg=infoSingleOccupantStr;
-                                            infoMsg = infoMultipleTeneancyStr; //for live
-
-                                            break;
-                                        case 71:
-                                            //cf.showMessage(context,"Info","You can add two adult owners & multiple person of interests");
-                                            //infoMsg=infoMultipleJointStr;
-                                            infoMsg = infoSingleOccupantStr; //for live
-                                            break;
-                                        case 72:
-                                            //cf.showMessage(context,"Info","You can add two or more adult owners & multiple person of interests");
-                                            //infoMsg=infoMultipleTeneancyStr;
-                                            infoMsg = infoMultipleJointStr; //for live
-                                            break;
-
-                                        case 99:
-                                            //cf.showMessage(context,"Info","You can add multiple minor owners & two guardian");
-                                            infoMsg = infoTenancyInProbateStr;
-                                            break;
-
-                                        case 100:
-                                            //cf.showMessage(context,"Info","You can add multiple minor owners & two guardian");
-                                            infoMsg = infoGuardianMinorStr;
-                                            break;
-
-                                        default:
-                                            break;
-                                    }
-
-                                    final Dialog dialog = new Dialog(context, R.style.DialogTheme);
-                                    dialog.setContentView(R.layout.dialog_for_info);
-                                    dialog.setTitle(getResources().getString(R.string.info));
-                                    dialog.getWindow().getAttributes().width = LayoutParams.MATCH_PARENT;
-                                    Button proceed = (Button) dialog.findViewById(R.id.btn_proceed);
-                                    Button cancel = (Button) dialog.findViewById(R.id.btn_cancel);
-                                    final TextView txtTenureType = (TextView) dialog.findViewById(R.id.textView_tenure_type);
-                                    final TextView txtInfoMsg = (TextView) dialog.findViewById(R.id.textView_infoMsg);
-                                    final TextView cnfrmMsg = (TextView) dialog.findViewById(R.id.textView_cnfrm_msg);
-                                    cnfrmMsg.setVisibility(View.VISIBLE);
-                                    txtTenureType.setText(You_have_selected + " " + tenureType.getOptionName());
-                                    txtInfoMsg.setText(infoMsg);
-                                    proceed.setText(yesStr);
-                                    cancel.setText(noStr);
-
-                                    proceed.setOnClickListener(new OnClickListener() {
-                                        //Run when button is clicked
-                                        @Override
-                                        public void onClick(View v) {
-                                            Intent myIntent;
-                                            if (tenureTypeId == 99) {
-                                                myIntent = new Intent(context, PersonListWithDPActivity.class);
-                                            } else {
-                                                myIntent = new Intent(context, PersonListActivity.class);
-                                            }
-
-                                            myIntent.putExtra("featureid", featureId);
-                                            myIntent.putExtra("persontype", "natural");
-                                            myIntent.putExtra("serverFeaterID", serverFeatureId);
-                                            startActivity(myIntent);
-                                            dialog.dismiss();
-
-                                        }
-                                    });
-
-                                    cancel.setOnClickListener(new OnClickListener() {
-                                        //Run when button is clicked
-                                        @Override
-                                        public void onClick(View v) {
-                                            dialog.dismiss();
-                                        }
-                                    });
-                                    dialog.show();
-                                }
-                            } else {
-                                String msg = getResources().getString(string.fill_tenure);
-                                String warning = getResources().getString(string.warning);
-                                cf.showMessage(context, warning, msg);
-                            }
-                        } else {
-                            String msg = getResources().getString(string.save_genral_attrribute);
-                            String warning = getResources().getString(string.warning);
-                            cf.showMessage(context, warning, msg);
-                        }
-
-                    } else if (spinnerPersonType.getSelectedItemPosition() == 2) {
-                        //flag=db.getFormValues(featureId);
-                        flag = db.isGeneralAttributeSaved(featureId);
-                        if (flag) {
-                            Intent myIntent = new Intent(context, AddNonNaturalPersonActivity.class);
-                            myIntent.putExtra("featureid", featureId);
-                            startActivity(myIntent);
-                        } else {
-                            String msg = getResources().getString(string.save_genral_attrribute);
-                            String warning = getResources().getString(string.warning);
-                            cf.showMessage(context, warning, msg);
-                        }
-                    }
-                } else if (roleId == 2) {
-                    if (spinnerPersonType.getSelectedItemPosition() == 1) {
-                        Option tenureType = db.getTenureTypeOptionsValue(featureId);
-                        final long tenureTypeId = tenureType.getOptionId();
-                        Intent myIntent;
-                        if (tenureTypeId == 99) {
-                            myIntent = new Intent(context, PersonListWithDPActivity.class);
-                        } else {
-                            myIntent = new Intent(context, PersonListActivity.class);
-                        }
-                        myIntent.putExtra("featureid", featureId);
-                        myIntent.putExtra("persontype", "natural");
-                        myIntent.putExtra("serverFeaterID", serverFeatureId);
-                        startActivity(myIntent);
-                    } else if (spinnerPersonType.getSelectedItemPosition() == 2) {
-                        Intent myIntent = new Intent(context, AddNonNaturalPersonActivity.class);
-                        myIntent.putExtra("featureid", featureId);
-                        startActivity(myIntent);
-                    }
-
+                if (property.getRight() == null || property.getRight().getShareTypeId() < 1) {
+                    String msg = getResources().getString(string.fill_tenure);
+                    String warning = getResources().getString(string.warning);
+                    cf.showMessage(context, warning, msg);
+                    return;
                 }
+
+                // Validate and save
+                if (!saveData(false)) {
+                    return;
+                }
+
+                Intent nextScreen;
+
+                if (property.getRight().getShareTypeId() == ShareType.TYPE_TENANCY_IN_PROBATE) {
+                    nextScreen = new Intent(context, PersonListWithDPActivity.class);
+                } else if (property.getRight().getShareTypeId() == ShareType.TYPE_NON_NATURAL) {
+                    nextScreen = new Intent(context, AddNonNaturalPersonActivity.class);
+                } else {
+                    nextScreen = new Intent(context, PersonListActivity.class);
+                }
+                nextScreen.putExtra("featureid", featureId);
+                nextScreen.putExtra("rightId", property.getRight().getId());
+                startActivity(nextScreen);
             }
         });
 
         propertyInfo.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //flag=db.getFormValues(featureId);
-                flag = db.isGeneralAttributeSaved(featureId);
-                if (flag) {
+                if (saveData(false)) {
                     Intent myIntent = new Intent(context, AddGeneralPropertyActivity.class);
                     myIntent.putExtra("featureid", featureId);
+                    myIntent.putExtra("isDispute", StringUtility.empty(property.getClaimTypeCode())
+                            .equalsIgnoreCase(ClaimType.TYPE_DISPUTE));
                     startActivity(myIntent);
                 } else {
                     String msg = getResources().getString(string.save_genral_attrribute);
@@ -416,15 +362,12 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         tenureInfo.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //	flag=db.getFormValues(featureId);
-                flag = db.isGeneralAttributeSaved(featureId);
-                if (flag) {
+                if (property.hasGeneralAttributes() && saveData(false)) {
                     Intent myIntent = new Intent(context, AddSocialTenureActivity.class);
                     myIntent.putExtra("featureid", featureId);
-                    myIntent.putExtra("serverFeaterID", serverFeatureId);
+                    myIntent.putExtra("serverFeaterID", property.getServerId());
                     startActivity(myIntent);
                 } else {
-
                     String msg = getResources().getString(string.save_genral_attrribute);
                     String warning = getResources().getString(string.warning);
                     cf.showMessage(context, warning, msg);
@@ -435,11 +378,23 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         multimedia.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                flag = db.isGeneralAttributeSaved(featureId);
-                if (flag) {
+                if (property.hasGeneralAttributes() && saveData(false)) {
+                    Long disputeId = 0L;
+                    if (StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_DISPUTE)) {
+                        if (property.getDispute() == null || property.getDispute().getId() < 1) {
+                            String msg = getResources().getString(R.string.AddDisputeDetails);
+                            String warning = getResources().getString(string.warning);
+                            cf.showMessage(context, warning, msg);
+                            return;
+                        } else {
+                            disputeId = property.getDispute().getId();
+                        }
+                    }
+
                     Intent myIntent = new Intent(context, MediaListActivity.class);
                     myIntent.putExtra("featureid", featureId);
-                    myIntent.putExtra("serverFeaterID", serverFeatureId);
+                    myIntent.putExtra("disputeId", disputeId);
+                    myIntent.putExtra("serverFeaterID", property.getServerId());
                     startActivity(myIntent);
                 } else {
                     String msg = getResources().getString(string.save_genral_attrribute);
@@ -452,10 +407,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         custom.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                flag = db.isGeneralAttributeSaved(featureId);
-
-                if (flag) {
+                if (property.hasGeneralAttributes() && saveData(false)) {
                     Intent myIntent = new Intent(context, AddCustomAttribActivity.class);
                     myIntent.putExtra("featureid", featureId);
                     startActivity(myIntent);
@@ -478,7 +430,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_save) {
-            saveData();
+            saveData(true);
         }
         if (id == android.R.id.home) {
             finish();
@@ -486,88 +438,67 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressLint("SimpleDateFormat")
-    public void saveData() {
-        if (validate()) {
-            long hamletId = Long.parseLong(hamletName_Id);//Chagua chaguo
-
-            if (personType.equalsIgnoreCase("Select an option") || personType.equalsIgnoreCase("Chagua chaguo")) {
-
-                msg = getResources().getString(R.string.select_person_type);
-                showToast(msg, Toast.LENGTH_LONG);
-                //showToast("Please select Person Type",Toast.LENGTH_LONG);
-                //spinnerPersonType.setBackgroundColor(context.getResources().getColor(R.color.lightred));
-            } else if (hamletId == 0l) {
-
-                //Toast.makeText(getApplicationContext(), "Please select Hamlet",Toast.LENGTH_LONG).show();
-                msg = getResources().getString(R.string.Please_select_Hamlet);
-                showToast(msg, Toast.LENGTH_LONG);
-                //spinnerHamlet.setBackgroundColor(context.getResources().getColor(R.color.lightred));
-            } else if (witnessId_1 == 0l) {
-                msg = getResources().getString(R.string.Please_select_Witness_1);
-                showToast(msg, Toast.LENGTH_LONG);
-                //spinnerWitness1.setBackgroundColor(context.getResources().getColor(R.color.lightred));
-            } else if (witnessId_2 == 0l) {
-                msg = getResources().getString(R.string.Please_select_Witness_2);
-                showToast(msg, Toast.LENGTH_LONG);
-                //spinnerWitness2.setBackgroundColor(context.getResources().getColor(R.color.lightred));
-
-            } else if (witnessId_1 == witnessId_2) {
-                msg = getResources().getString(R.string.Witness_1_and_Witness_2_can_not_be_same);
-                showToast(msg, Toast.LENGTH_LONG);
-
-            } else {
-                try {
-                    if (groupId == 0)
-                        groupId = cf.getGroupId();
-
-                    DBController sqllite = new DBController(context);
-                    boolean saveResult = sqllite.addPersontype_Hemlet_witness(featureId, personType, hamletName_Id, witness_1, witness_2);
-
-                    if (saveResult) {
-						/*Toast toast = Toast.makeText(context,R.string.data_saved, Toast.LENGTH_SHORT);
-						toast.setGravity(Gravity.CENTER, 0, 0);
-						toast.show();*/
-
-                        saveResult = sqllite.saveFormDataTemp(attrList, groupId, featureId, personType);
-                        sqllite.close();
-
-                        if (saveResult) {
-                            Toast toast = Toast.makeText(context, R.string.data_saved, Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
-                            Intent myIntent = new Intent(context, AddGeneralPropertyActivity.class);
-                            myIntent.putExtra("featureid", featureId);
-                            startActivity(myIntent);
-                        } else {
-                            Toast.makeText(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Exception e) {
-                    cf.appLog("", e);
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            Toast.makeText(context, R.string.fill_mandatory, Toast.LENGTH_SHORT).show();
+    public boolean saveData(boolean goToNextScreen) {
+        if (roleId == User.ROLE_ADJUDICATOR) {
+            return true;
         }
+
+        if (!property.validateBasicInfo(context, true)) {
+            return false;
+        }
+
+        try {
+            boolean saveResult = DbController.getInstance(context).updatePropertyBasicInfo(property);
+            if (saveResult) {
+                if (goToNextScreen) {
+                    cf.showToast(context, R.string.data_saved, Toast.LENGTH_SHORT);
+
+                    // For unclaimed go to the final page
+                    if (StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_UNCLAIMED)) {
+                        Intent myIntent = new Intent(context, DataSummaryActivity.class);
+                        myIntent.putExtra("featureid", featureId);
+                        startActivity(myIntent);
+                    } else {
+                        Intent myIntent = new Intent(context, AddGeneralPropertyActivity.class);
+                        myIntent.putExtra("featureid", featureId);
+                        myIntent.putExtra("isDispute", StringUtility.empty(property.getClaimTypeCode())
+                                .equalsIgnoreCase(ClaimType.TYPE_DISPUTE));
+                        startActivity(myIntent);
+                    }
+                }
+                return true;
+            } else {
+                cf.showToast(context, R.string.unable_to_save_data, Toast.LENGTH_SHORT);
+                return false;
+            }
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
     private void updateCount() {
         try {
+            if (bottomToolbar.getVisibility() != View.GONE) {
+                int persons = 0;
+                int media = 0;
 
-            DBController sqllite = new DBController(context);
-            List<Attribute> tmpList = sqllite.getTenureList(featureId, null);
-            List<Attribute> tmpList2 = sqllite.getPersonList(featureId);
-            List<Attribute> tmpList3 = sqllite.getMediaList(featureId);
-            sqllite.close();
-            ((TextView) findViewById(R.id.personCount)).setText("" + tmpList2.size());
-            //((TextView) findViewById(R.id.tenureCount)).setText(""+tmpList.size());
-            ((TextView) findViewById(R.id.multimediaCount)).setText("" + tmpList3.size());
+                Property tmpProp = db.getProperty(featureId);
+                if (tmpProp.getRight() != null && tmpProp.getRight().getNaturalPersons() != null)
+                    persons = tmpProp.getRight().getNaturalPersons().size();
 
+                if (StringUtility.empty(tmpProp.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_DISPUTE)) {
+                    if (tmpProp.getDispute() != null)
+                        media = tmpProp.getDispute().getMedia().size();
+                } else {
+                    media = tmpProp.getMedia().size();
+                }
 
+                txtPersonCount.setText(Integer.toString(persons));
+                txtMediaCount.setText(Integer.toString(media));
+            }
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -576,24 +507,26 @@ public class CaptureAttributesActivity extends ActionBarActivity {
 
     @Override
     protected void onResume() {
-        updateCount();
-        //flag=db.getFormValues(featureId);
-        flag = db.isGeneralAttributeSaved(featureId);
-        if (flag) {
-            spinnerPersonType.setEnabled(false);
-        }
         super.onResume();
+        if (property != null && !StringUtility.isEmpty(property.getClaimTypeCode())) {
+            spinnerClaimType.setEnabled(false);
+
+            // Don't show toolbar for unclaimed parcels
+            if (StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_UNCLAIMED))
+                bottomToolbar.setVisibility(View.GONE);
+            else if (StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_DISPUTE)) {
+                // Customize toolbar for dispute
+                bottomToolbar.setVisibility(View.VISIBLE);
+                layoutRight.setVisibility(View.GONE);
+                layoutPersons.setVisibility(View.GONE);
+                layoutCustom.setVisibility(View.GONE);
+            } else {
+                bottomToolbar.setVisibility(View.VISIBLE);
+                layoutDispute.setVisibility(View.GONE);
+            }
+        } else {
+            bottomToolbar.setVisibility(View.GONE);
+        }
+        updateCount();
     }
-
-    public boolean validate() {
-        return GuiUtility.validateAttributes(attrList);
-    }
-
-    private void showToast(String message, int length) {
-        Toast toast = Toast.makeText(context, message, length);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
-    }
-
-
 }

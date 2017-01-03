@@ -1,219 +1,161 @@
 package com.rmsi.android.mast.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-public class Attribute 
-{
-	private int ATTRIB_ID;
-	private String ATTRIBUTE_TYPE;
-	private int ATTRIBUTE_CONTROLTYPE;
-	private String ATTRIBUTE_NAME;
-	private View view;
-	private String field_value;
-	private int GROUP_ID;
-	private int listing;
-	private String PERSON_TYPE;
-	List<Option> OptionsList = new ArrayList<Option>();
-	private int PERSON_ID;
-	private String optionText;	
-	private long DATE,FEATURE_ID;
-	private String VALIDATION;
-	private String nextOfKinName;
-	private int NextOfKinId;
-	private int HamletId;
-	private String witness1,witness2,HamletName,personSubType;
-	private String hamletLeaderName;
-	private Drawable initialBackground;
+import com.rmsi.android.mast.util.StringUtility;
 
-	public String getHamletLeaderName() {
-		return hamletLeaderName;
-	}
+public class Attribute implements Serializable {
+    private Long id;
+    transient private String type;
+    transient private int controlType;
+    transient private String name;
+    transient private View view;
+    private String value;
+    transient private Long groupId;
+    transient private int listing;
+    transient private List<Option> OptionsList = new ArrayList<>();
+    transient private Long featureId;
+    transient private String validate;
+    transient private Drawable initialBackground;
 
-	public void setHamletLeaderName(String hamletLeaderName) {
-		this.hamletLeaderName = hamletLeaderName;
-	}
+    public static String TABLE_NAME = "ATTRIBUTE_MASTER";
+    public static String TABLE_ATTRIBUTE_VALUE_NAME = "FORM_VALUES";
 
-	public String getHamletName() {
-		return HamletName;
-	}
+    public static String COL_ID = "ATTRIB_ID";
+    public static String COL_TYPE = "ATTRIBUTE_TYPE";
+    public static String COL_CONTROL_TYPE = "ATTRIBUTE_CONTROLTYPE";
+    public static String COL_NAME = "ATTRIBUTE_NAME";
+    public static String COL_NAME_OTHER_LANG = "ATTRIBUTE_NAME_OTHER";
+    public static String COL_LISTING = "LISTING";
+    public static String COL_VALIDATE = "VALIDATION";
 
-	public void setHamletName(String hamletName) {
-		HamletName = hamletName;
-	}
+    public static String COL_VALUE_GROUP_ID = "GROUP_ID";
+    public static String COL_VALUE_ATTRIBUTE_ID = "ATTRIB_ID";
+    public static String COL_VALUE_VALUE = "ATTRIB_VALUE";
+    public static String COL_VALUE_FEATURE_ID = "FEATURE_ID";
 
-	public int getHamletId() {
-		return HamletId;
-	}
+    public static int CONTROL_TYPE_STIRNG = 1;
+    public static int CONTROL_TYPE_DATE = 2;
+    public static int CONTROL_TYPE_BOOLEAN = 3;
+    public static int CONTROL_TYPE_NUMBER = 4;
+    public static int CONTROL_TYPE_SPINNER = 5;
 
-	public void setHamletId(int hamletId) {
-		HamletId = hamletId;
-	}
+    public static String TYPE_GENERAL = "1";
+    public static String TYPE_NATURAL_PERSON = "2";
+    public static String TYPE_MULTIMEDIA = "3";
+    public static String TYPE_TENURE = "4";
+    public static String TYPE_NON_NATURAL_PERSON = "5";
+    public static String TYPE_CUSTOM = "6";
+    public static String TYPE_GENERAL_PROPERTY = "7";
 
-	public String getWitness1() {
-		return witness1;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setWitness1(String witness1) {
-		this.witness1 = witness1;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getWitness2() {
-		return witness2;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setWitness2(String witness2) {
-		this.witness2 = witness2;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public int getAttributeid() 
-	{
-		return ATTRIB_ID;
-	}
-	
-	public void setAttributeid(int ATTRIB_ID) 
-	{
-		this.ATTRIB_ID = ATTRIB_ID;
-	}
-	public String getNextOfKinName() {
-		return nextOfKinName;
-	}
+    public int getControlType() {
+        return controlType;
+    }
 
-	public void setNextOfKinName(String nextOfKinName) {
-		this.nextOfKinName = nextOfKinName;
-	}
+    public void setControlType(int controlType) {
+        this.controlType = controlType;
+    }
 
-	public int getNextOfKinId() {
-		return NextOfKinId;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setNextOfKinId(int NextOfKinId) {
-		this.NextOfKinId = NextOfKinId;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getAttributeType() 
-	{
-		return ATTRIBUTE_TYPE;
-	}
-	public void setAttributeType(String ATTRIBUTE_TYPE) 
-	{
-		this.ATTRIBUTE_TYPE = ATTRIBUTE_TYPE;
-	}
-	public int getControlType() 
-	{
-		return ATTRIBUTE_CONTROLTYPE;
-	}
-	public void setControlType(int ATTRIBUTE_CONTROLTYPE) 
-	{
-		this.ATTRIBUTE_CONTROLTYPE = ATTRIBUTE_CONTROLTYPE;
-	}
-	public String getAttributeName() 
-	{
-		return ATTRIBUTE_NAME;
-	}
-	public void setAttributeName(String ATTRIBUTE_NAME) 
-	{
-		this.ATTRIBUTE_NAME = ATTRIBUTE_NAME;
-	}
-	public View getView() {
-		return view;
-	}
-	public void setView(View view) {
-		this.view = view;
-		this.initialBackground = view.getBackground();
-	}
+    public View getView() {
+        return view;
+    }
 
-	public Drawable getInitialBackground() {
-		return initialBackground;
-	}
+    public void setView(View view) {
+        this.view = view;
+        this.initialBackground = view.getBackground();
+    }
 
-	public List<Option> getOptionsList() {
-		return OptionsList;
-	}
-	public void setOptionsList(List<Option> OptionsList) {
-		this.OptionsList = OptionsList;
-	}
-	
-	public String getFieldValue() 
-	{
-		return field_value;
-	}
-	public void setFieldValue(String field_value) 
-	{
-		this.field_value = field_value;
-	}
-	//GROUP_ID
-	
-	public int getGroupId() 
-	{
-		return GROUP_ID;
-	}
-	public void setGroupId(int GROUP_ID) 
-	{
-		this.GROUP_ID = GROUP_ID;
-	}
-	public int getListing() {
-		return listing;
-	}
-	public void setListing(int listing) {
-		this.listing = listing;
-	}
-	
-	public String getPersonType() 
-	{
-		return PERSON_TYPE;
-	}
-	public void setPersonType(String PERSON_TYPE) 
-	{
-		this.PERSON_TYPE = PERSON_TYPE;
-	}
-	public int getPersonId() 
-	{
-		return PERSON_ID;
-	}
-	public void setPeronId(int PERSON_ID) 
-	{
-		this.PERSON_ID = PERSON_ID;
-	}
-	public String getOptionText() {
-		return optionText;
-	}
-	public void setOptionText(String optionText) {
-		this.optionText = optionText;
-	}
-	public long getDATE() {
-		return DATE;
-	}
-	public void setDATE(long DATE) {
-		this.DATE = DATE;
-	}
+    public Drawable getInitialBackground() {
+        return initialBackground;
+    }
 
-	public String getValidation() {
-		return VALIDATION;
-	}
+    public List<Option> getOptionsList() {
+        return OptionsList;
+    }
 
-	public void setValidation(String vALIDATION) {
-		VALIDATION = vALIDATION;
-	}
-	
-	public String getPersonSubType() {
-		return personSubType;
-	}
+    public void setOptionsList(List<Option> OptionsList) {
+        this.OptionsList = OptionsList;
+    }
 
-	public void setPersonSubType(String personSubType) {
-		this.personSubType = personSubType;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public long getFEATURE_ID() {
-		return FEATURE_ID;
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-	public void setFEATURE_ID(long fEATURE_ID) {
-		FEATURE_ID = fEATURE_ID;
-	}
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public int getListing() {
+        return listing;
+    }
+
+    public void setListing(int listing) {
+        this.listing = listing;
+    }
+
+    public String getValidate() {
+        return validate;
+    }
+
+    public void setValidate(String validate) {
+        this.validate = validate;
+    }
+
+    public Long getFeatureId() {
+        return featureId;
+    }
+
+    public void setFeatureId(Long featureId) {
+        this.featureId = featureId;
+    }
+
+    /** Checks list of attributes for required fields. */
+    public static boolean hasRequiredFields(List<Attribute> attributes){
+        if(attributes == null || attributes.size() < 1)
+            return false;
+        for(Attribute attribute : attributes){
+            if(StringUtility.empty(attribute.getValidate()).equalsIgnoreCase("true"))
+                return true;
+        }
+        return false;
+    }
 }
 
 

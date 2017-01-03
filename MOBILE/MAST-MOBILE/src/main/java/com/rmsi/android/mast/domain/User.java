@@ -1,8 +1,12 @@
 package com.rmsi.android.mast.domain;
 
-public class User 
+import java.io.Serializable;
+
+public class User implements Serializable
 {
-//UserId INTEGER PRIMARY KEY AUTOINCREMENT, UserName TEXT, Password TEXT
+	public static int ROLE_TRUSTED_INTERMEDIARY = 1;
+	public static int ROLE_ADJUDICATOR = 2;
+
 	private Long userId; 
 
 	private String userName; 

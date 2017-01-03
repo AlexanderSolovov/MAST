@@ -169,7 +169,7 @@ public class SpatialUnit implements Serializable {
     private Boolean active;
 
     @Column(name = "hamlet_id")
-    private int hamletId;
+    private Long hamletId;
 
     @ManyToOne
     @JoinColumn(name = "claim_type")
@@ -194,11 +194,11 @@ public class SpatialUnit implements Serializable {
         this.polygonNumber = polygonNumber;
     }
     
-    public int getHamletId() {
+    public Long getHamletId() {
         return hamletId;
     }
 
-    public void setHamletId(int hamletId) {
+    public void setHamletId(Long hamletId) {
         this.hamletId = hamletId;
     }
 

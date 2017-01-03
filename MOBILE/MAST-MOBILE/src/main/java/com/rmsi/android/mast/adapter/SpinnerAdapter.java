@@ -3,12 +3,8 @@ package com.rmsi.android.mast.adapter;
 import java.util.List;
 
 import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
-import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.domain.Option;
 
 
@@ -37,14 +33,14 @@ public class SpinnerAdapter extends ArrayAdapter<Option>
 
    public long getItemId(int position)
    {
-      return myObjs.get(position).getOptionId();
+      return myObjs.get(position).getId();
    }
 
 	public int getPosition(int optionId) 
 	{
 		for (int i = 0; i < myObjs.size(); i++) 
 		{
-			if(myObjs.get(i).getOptionId() == optionId)
+			if(myObjs.get(i).getId() == optionId)
 			{
 				return i;
 			}			

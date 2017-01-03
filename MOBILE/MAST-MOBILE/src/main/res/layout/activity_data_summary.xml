@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:padding="10dp" >
+    android:padding="0dp">
 
     <include
         android:id="@+id/toolbar"
@@ -12,35 +12,127 @@
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="9" >
+        android:layout_weight="9">
 
         <TableRow
-            android:id="@+id/tableRow1"
+            android:id="@+id/tableRowClaimNumber"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/TextView01"
+                android:id="@+id/lblClaimNumber"
                 android:layout_weight="1"
                 android:gravity="left"
                 android:padding="5dip"
-                android:text="@string/data_summary_label1_1"
-                android:textColor="#000000" 
-                android:textStyle="bold"/>
+                android:text="@string/Claim"
+                android:textColor="#000000"
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/TextView_tenureRelation"
+                android:id="@+id/txtClaimNumber"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:padding="10dip"
-                android:textColor="#000000" 
-                android:textStyle="bold"/>
+                android:textColor="#000000"
+                android:textStyle="bold" />
         </TableRow>
 
         <TableRow
-            android:id="@+id/tableRow2"
+            android:id="@+id/tableRowClaimType"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lblClaimType"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:padding="5dip"
+                android:text="@string/claimType"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtClaimType"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="10dip"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRowClaimDate"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lblClaimDate"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:padding="5dip"
+                android:text="@string/surveyDate"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtClaimDate"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="10dip"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/rowDisputeType"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lblDisputeType"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:padding="5dip"
+                android:text="@string/DisputeType"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtDisputeType"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="10dip"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/rowDisputingPersons"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lblDisputingPersons"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:padding="5dip"
+                android:text="@string/DisputingParties"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtDisputingPersons"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="10dip"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/rowProperty"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView03"
@@ -48,8 +140,8 @@
                 android:gravity="left"
                 android:padding="5dip"
                 android:text="@string/data_summary_label2"
-                android:textColor="#000000" 
-                android:textStyle="bold"/>
+                android:textColor="#000000"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/TextView_propertyStatus"
@@ -61,9 +153,32 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/tableRow3"
+            android:id="@+id/rowOccupation"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/TextView01"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:padding="5dip"
+                android:text="@string/shareType"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/TextView_tenureRelation"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="10dip"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/rowNaturalPersons"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView05"
@@ -81,23 +196,20 @@
                 android:padding="10dip"
                 android:textStyle="bold" />
         </TableRow>
-        
-               <TableRow
-                   android:id="@+id/tableRow4"
-                   android:layout_width="fill_parent"
-                   android:layout_height="wrap_content"
-                  >
+
+        <TableRow
+            android:id="@+id/rowOwners"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView15"
+                android:layout_marginLeft="15dp"
                 android:layout_weight="1"
-                android:gravity="left"   
-                 android:padding="1dip"             
-                 android:paddingLeft="10dip"
-                 android:layout_marginLeft="15dp"
+                android:gravity="left"
+                android:padding="10dip"
                 android:text="@string/data_summary_label1_owner"
-                android:textColor="#000000"
-                android:textSize="12sp" />
+                android:textColor="#000000" />
 
             <TextView
                 android:id="@+id/TextView_owner_count"
@@ -108,20 +220,17 @@
                 android:textStyle="bold" />
         </TableRow>
 
-       <TableRow
-            android:id="@+id/tableRow5"
+        <TableRow
+            android:id="@+id/rowAdministrators"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" 
-           >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView07"
+                android:layout_marginLeft="15dp"
                 android:layout_weight="1"
-                android:gravity="left" 
-                 android:padding="1dip"     
-                 android:paddingLeft="10dip"
-                  android:layout_marginLeft="15dp"
-                 android:textSize="12sp"
+                android:gravity="left"
+                android:padding="10dip"
                 android:text="@string/data_summary_label4_admin"
                 android:textColor="#000000" />
 
@@ -132,21 +241,18 @@
                 android:padding="10dip"
                 android:textStyle="bold" />
         </TableRow>
-        
+
         <TableRow
-            android:id="@+id/tableRow6"
+            android:id="@+id/rowGuardians"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-           >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView09"
+                android:layout_marginLeft="15dp"
                 android:layout_weight="1"
                 android:gravity="left"
-                android:padding="1dip"     
-                 android:paddingLeft="10dip"
-                 android:textSize="12sp"
-                  android:layout_marginLeft="15dp"
+                android:padding="10dip"
                 android:text="@string/data_summary_label5_Guardian"
                 android:textColor="#000000" />
 
@@ -157,21 +263,21 @@
                 android:padding="10dip"
                 android:textStyle="bold" />
         </TableRow>
-        
+
         <TableRow
-            android:id="@+id/tableRow7"
+            android:id="@+id/rowPoi"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView14"
+                android:layout_width="wrap_content"
                 android:layout_weight="1"
                 android:gravity="left"
                 android:padding="5dip"
-                android:layout_width="wrap_content"
                 android:text="@string/data_summary_label5_POI"
-                android:textColor="#000000" 
-                android:textStyle="bold"/>
+                android:textColor="#000000"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/TextView_countPOI"
@@ -180,12 +286,11 @@
                 android:padding="10dip"
                 android:textStyle="bold" />
         </TableRow>
-        
+
         <TableRow
-            android:id="@+id/tableRow8"
+            android:id="@+id/rowNonNatural"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" 
-            android:visibility="gone">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView17"
@@ -203,12 +308,12 @@
                 android:padding="10dip"
                 android:textStyle="bold" />
         </TableRow>
-       
-   
-         <TableRow
-            android:id="@+id/tableRow10"
+
+
+        <TableRow
+            android:id="@+id/rowMedia"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView11"
@@ -226,11 +331,11 @@
                 android:padding="10dip"
                 android:textStyle="bold" />
         </TableRow>
-        
-          <TableRow
-            android:id="@+id/tableRow11"
+
+        <TableRow
+            android:id="@+id/rowCustom"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/TextView13"
@@ -238,8 +343,8 @@
                 android:gravity="left"
                 android:padding="5dip"
                 android:text="@string/data_summary_label7"
-                android:textColor="#000000" 
-                android:textStyle="bold"/>
+                android:textColor="#000000"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/TextView_custom"
@@ -250,25 +355,42 @@
         </TableRow>
     </TableLayout>
 
+
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/color_primary"
-        android:orientation="horizontal" >
+        android:background="@color/white"
+        android:orientation="horizontal"
+        android:weightSum="2">
 
         <Button
             android:id="@+id/edit_attributes"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:contentDescription="@string/mapOptions"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@color/color_primary"
             android:gravity="center"
             android:padding="10dp"
             android:text="@string/edit_attributes"
             android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnClose"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@color/color_primary"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/Close"
+            android:textColor="@color/white" />
+
     </LinearLayout>
 
 </LinearLayout>

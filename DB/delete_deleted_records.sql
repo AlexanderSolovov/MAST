@@ -10,8 +10,8 @@ delete from social_tenure_relationship where usin in (select usin from spatial_u
 delete from non_natural_person where non_natural_person_gid in (select id from persons_tmp);
 delete from natural_person where gid in (select id from persons_tmp);
 delete from person where person_gid in (select id from persons_tmp);
-delete from attribute where uid in (832,833) and parentuid in (select id from persons_tmp);
+delete from attribute where uid in (832,833) and parentuid in (select id from persons_tmp); -- Has to be improved to clean all attributes of deleted object.
 drop table persons_tmp;
-delete from attribute where uid in (830,831) and parentuid in (select usin from spatial_unit where project_name = 'Kinywangaanga' and active = 'f');
+delete from attribute where uid in (830,831) and parentuid in (select usin from spatial_unit where project_name = 'Kinywangaanga' and active = 'f'); -- Has to be improved to clean all attributes of deleted object.
 delete from spatial_unit_tmp where project_name = 'Kinywangaanga' and active = 'f';
 delete from spatial_unit where project_name = 'Kinywangaanga' and active = 'f';

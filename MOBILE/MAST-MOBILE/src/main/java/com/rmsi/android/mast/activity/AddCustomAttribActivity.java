@@ -1,9 +1,9 @@
 package com.rmsi.android.mast.activity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -18,220 +18,143 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.adapter.AttributeAdapter;
-import com.rmsi.android.mast.db.DBController;
+import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Option;
+import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GuiUtility;
 
 public class AddCustomAttribActivity extends ActionBarActivity {
 
-	Long featureId = 0L;
-	List<Attribute> attribList;
-	ListView listView;
-	final Context context = this;
-	AttributeAdapter adapterList;
-	Button btnSave,btnBack;
-	String FieldValue;	
-	CommonFunctions cf = CommonFunctions.getInstance();
-	int groupId = 0;
-	int roleId=0;
+    Long featureId = 0L;
+    List<Attribute> attributes;
+    final Context context = this;
+    AttributeAdapter adapterList;
+    Button btnSave, btnBack;
+    String FieldValue;
+    CommonFunctions cf = CommonFunctions.getInstance();
+    int roleId = 0;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) 
-	{
-		super.onCreate(savedInstanceState);
-		
-		//Initializing context in common functions in case of a crash
-		try{CommonFunctions.getInstance().Initialize(getApplicationContext());}catch(Exception e){}
-		cf.loadLocale(getApplicationContext());
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_add_property_info);
-		
-		roleId=CommonFunctions.getRoleID(); 
-		ListView listView = (ListView)findViewById(android.R.id.list);
-		TextView emptyText = (TextView)findViewById(android.R.id.empty);
-		listView.setEmptyView(emptyText);	
+        try {
+            CommonFunctions.getInstance().Initialize(getApplicationContext());
+        } catch (Exception e) {
+        }
+        cf.loadLocale(getApplicationContext());
 
-		btnSave=(Button) findViewById(R.id.btn_save);
-		btnBack=(Button) findViewById(R.id.btn_cancel);
+        setContentView(R.layout.activity_add_property_info);
 
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		toolbar.setTitle(R.string.add_custom_attributes);
+        roleId = CommonFunctions.getRoleID();
+        ListView listView = (ListView) findViewById(android.R.id.list);
+        TextView emptyText = (TextView) findViewById(android.R.id.empty);
+        listView.setEmptyView(emptyText);
 
-		if(toolbar!=null)
-			setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);	
-		DBController sqllite = new DBController(context);
-		Bundle extras = getIntent().getExtras();
-		if (extras != null) 
-		{
-			featureId = extras.getLong("featureid");
+        btnSave = (Button) findViewById(R.id.btn_save);
+        btnBack = (Button) findViewById(R.id.btn_cancel);
 
-			String keyword="custom";
-			attribList = sqllite.getFeatureGenaralInfo(featureId,keyword,cf.getLocale());
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.add_custom_attributes);
 
-			if(attribList.size()>0)
-			{
-				groupId = attribList.get(0).getGroupId();
-			}
-			else
-			{
-				findViewById(R.id.btn_container).setVisibility(View.GONE);
-			}
-			sqllite.close();
-		}
+        if (toolbar != null)
+            setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		sqllite.close();
+        DbController db = DbController.getInstance(context);
 
-		try {
-			adapterList = new AttributeAdapter(context, attribList);
-		} 
-		catch (Exception e) {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+            attributes = db.getPropAttributesByType(featureId, Attribute.TYPE_CUSTOM);
+            if (attributes.size() < 1) {
+                // Try to get list of attributes of custom type
+                attributes = db.getAttributesByType(Attribute.TYPE_CUSTOM);
+            }
 
-			e.printStackTrace();
-		}
-		listView.setAdapter(adapterList);
+            if (attributes.size() < 1) {
+                findViewById(R.id.btn_container).setVisibility(View.GONE);
+            }
+        }
 
-		if(roleId==2)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-		{
-			btnSave.setEnabled(false);
+        try {
+            adapterList = new AttributeAdapter(context, attributes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-		}
-		btnSave.setOnClickListener(new OnClickListener() 
-		{
-			@Override
-			public void onClick(View v) 
-			{             
-				if(saveData())
-				{	
-					String savedMsg=getResources().getString(R.string.data_saved);
-					Toast toast = Toast.makeText(context,savedMsg, Toast.LENGTH_SHORT);
-					toast.setGravity(Gravity.CENTER, 0, 0);
-					toast.show();
-					finish();
-				}
-				else 
-				{	String fillMandatory=getResources().getString(R.string.fill_mandatory);				
-					Toast.makeText(context,fillMandatory, Toast.LENGTH_SHORT).show();
-				}
-			}			
-		});
+        listView.setAdapter(adapterList);
 
+        // Change next button caption to finish label since it's a last screen
+        btnSave.setText(getResources().getString(R.string.Finish));
 
-		btnBack.setOnClickListener(new OnClickListener() 
-		{			
-			@Override
-			public void onClick(View v) {
+        if (roleId == User.ROLE_ADJUDICATOR) {
+            btnSave.setEnabled(false);
+        }
 
-				finish();
-			}
-		});
+        btnSave.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (saveData()) {
+                    String savedMsg = getResources().getString(R.string.data_saved);
+                    Toast toast = Toast.makeText(context, savedMsg, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
 
-	}
-	public boolean saveData() {
-		if(validate())
-		{
+                    Intent myIntent = new Intent(context, DataSummaryActivity.class);
+                    myIntent.putExtra("featureid", featureId);
+                    myIntent.putExtra("className", "PersonListActivity");
+                    startActivity(myIntent);
+                } else {
+                    String fillMandatory = getResources().getString(R.string.fill_mandatory);
+                    Toast.makeText(context, fillMandatory, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
-			try {
+        btnBack.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+    }
 
-				for (int i = 0; i < adapterList.getCount(); i++) {
+    public boolean saveData() {
+        if (validate()) {
+            try {
+                if (DbController.getInstance(context).savePropAttributes(attributes, featureId)) {
+                    adapterList.notifyDataSetChanged();
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e) {
+                cf.appLog("", e);
+                e.printStackTrace();
+                return false;
+            }
+        } else {
+            String fillMandatory = getResources().getString(R.string.fill_mandatory);
+            Toast.makeText(context, fillMandatory, Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
-					Attribute item = (Attribute) adapterList.getItem(i);
+    }
 
-					if (item.getView() != null)
-					{
+    public boolean validate() {
+        return GuiUtility.validateAttributes(attributes, true);
+    }
 
-						if(item.getControlType()==1)
-						{
-							EditText editText = (EditText) item.getView();
-							FieldValue=editText.getText().toString();
-							if(!FieldValue.isEmpty())
-							{
-								attribList.get(i).setFieldValue(FieldValue);
-							}
-
-						}
-
-						else if(item.getControlType()==2)   //Date
-						{
-							TextView textviewvalue = (TextView) item.getView();
-							FieldValue=textviewvalue.getText().toString();
-							if(!FieldValue.isEmpty())
-							{
-								attribList.get(i).setFieldValue(FieldValue);
-							}
-						}
-						else if(item.getControlType()==3)   //Boolean
-						{
-							Spinner spinner = (Spinner) item.getView();
-							String selecteditem = (String) spinner.getSelectedItem();
-							attribList.get(i).setFieldValue(selecteditem);
-						}
-						else if(item.getControlType()==5)
-						{
-							Spinner spinner = (Spinner) item.getView();
-							Option selecteditem = (Option) spinner.getSelectedItem();
-							attribList.get(i).setFieldValue(selecteditem.getOptionId().toString());
-						}
-						else if(item.getControlType()==4)
-						{
-							EditText editText = (EditText) item.getView();
-							FieldValue=editText.getText().toString();
-							if(!FieldValue.isEmpty())
-							{
-								attribList.get(i).setFieldValue(FieldValue);
-							}
-						}
-					}
-
-				}
-
-				if(groupId==0)
-				{
-					groupId = cf.getGroupId();
-				}
-				DBController sqllite = new DBController(context);
-				String keyword="custom";
-				boolean saveResult = sqllite.saveFormDataTemp(attribList,groupId,featureId,keyword);
-
-
-				sqllite.close();
-				if(saveResult)
-				{ adapterList.notifyDataSetChanged();
-				return true;
-				}
-				else
-				{return false;}
-			} catch (Exception e) {
-				cf.appLog("", e);e.printStackTrace();
-				return false;
-			}
-		}
-		else{
-	    	 
-			String fillMandatory=getResources().getString(R.string.fill_mandatory);				
-			Toast.makeText(context,fillMandatory, Toast.LENGTH_SHORT).show();
-	    	 return false; 
-	     }
-
-	}
-
-	public boolean validate()
-	{
-		return GuiUtility.validateAttributes(attribList);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
-	{
-		int id = item.getItemId();
-		if(id == android.R.id.home)
-		{
-			finish();
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

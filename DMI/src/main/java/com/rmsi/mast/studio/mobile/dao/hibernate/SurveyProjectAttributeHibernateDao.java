@@ -77,6 +77,12 @@ public class SurveyProjectAttributeHibernateDao extends
 
 		return null;
 	}
+        
+        @Override
+	public List<Surveyprojectattribute> getSurveyProjectAttributes(String projectId) {
+		String query = "select s from Surveyprojectattribute s where s.name = :projectId";
+		return getEntityManager().createQuery(query).setParameter("projectId", projectId).getResultList();
+	}
 
 	// add by RMSI NK for save up and down project attribute start
 
