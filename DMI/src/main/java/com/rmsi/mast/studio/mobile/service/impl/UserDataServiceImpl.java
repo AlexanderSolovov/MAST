@@ -3,9 +3,9 @@ package com.rmsi.mast.studio.mobile.service.impl;
 import com.rmsi.mast.studio.dao.AcquisitionTypeDao;
 import com.rmsi.mast.studio.dao.ClaimTypeDao;
 import com.rmsi.mast.studio.dao.DisputeDao;
+import com.rmsi.mast.studio.dao.DisputeStatusDao;
 import com.rmsi.mast.studio.dao.DisputeTypeDao;
 import com.rmsi.mast.studio.dao.DocumentTypeDao;
-import com.rmsi.mast.studio.dao.GroupTypeDAO;
 import com.rmsi.mast.studio.dao.IdTypeDao;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -28,14 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rmsi.mast.studio.dao.PersonTypeDAO;
 import com.rmsi.mast.studio.dao.RelationshipTypeDao;
 import com.rmsi.mast.studio.dao.UserDAO;
 import com.rmsi.mast.studio.domain.AttributeValues;
 import com.rmsi.mast.studio.domain.Dispute;
 import com.rmsi.mast.studio.domain.NaturalPerson;
 import com.rmsi.mast.studio.domain.NonNaturalPerson;
-import com.rmsi.mast.studio.domain.PersonType;
 import com.rmsi.mast.studio.domain.SocialTenureRelationship;
 import com.rmsi.mast.studio.domain.SourceDocument;
 import com.rmsi.mast.studio.domain.SpatialUnit;
@@ -51,6 +49,7 @@ import com.rmsi.mast.studio.mobile.dao.AttributeValuesDao;
 import com.rmsi.mast.studio.mobile.dao.CitizenshipDao;
 import com.rmsi.mast.studio.mobile.dao.EducationLevelDao;
 import com.rmsi.mast.studio.mobile.dao.GenderDao;
+import com.rmsi.mast.studio.mobile.dao.GroupTypeDao;
 import com.rmsi.mast.studio.mobile.dao.LandTypeDao;
 import com.rmsi.mast.studio.mobile.dao.LandUseTypeDao;
 import com.rmsi.mast.studio.mobile.dao.MaritalStatusDao;
@@ -73,24 +72,14 @@ import com.rmsi.mast.studio.mobile.dao.WorkflowStatusHistoryDao;
 import com.rmsi.mast.studio.mobile.service.SurveyProjectAttributeService;
 import com.rmsi.mast.studio.mobile.service.UserDataService;
 import com.rmsi.mast.studio.mobile.transferobjects.Attribute;
-import com.rmsi.mast.studio.mobile.transferobjects.DeceasedPerson;
 import com.rmsi.mast.studio.mobile.transferobjects.Person;
 import com.rmsi.mast.studio.mobile.transferobjects.PersonOfInterest;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.mobile.transferobjects.Right;
 import com.rmsi.mast.studio.util.GeometryConversion;
 import com.rmsi.mast.viewer.dao.SpatialUnitDeceasedPersonDao;
-import com.rmsi.mast.viewer.service.LandRecordsService;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Set;
-import org.apache.batik.bridge.TextUtilities;
-import org.eclipse.emf.common.util.ArrayDelegatingEList;
 
-/**
- * @author shruti.thakur
- *
- */
 @Service
 public class UserDataServiceImpl implements UserDataService {
 
@@ -167,7 +156,7 @@ public class UserDataServiceImpl implements UserDataService {
     IdTypeDao idTypeDao;
 
     @Autowired
-    GroupTypeDAO groupTypeDao;
+    GroupTypeDao groupTypeDao;
 
     @Autowired
     ShareTypeDao shareTypeDao;
@@ -199,9 +188,12 @@ public class UserDataServiceImpl implements UserDataService {
     @Autowired
     SpatialUnitDeceasedPersonDao spatialUnitDeceasedPersonDao;
 
-    @Autowired 
+    @Autowired
     DisputeDao disputeDao;
-    
+
+    @Autowired
+    DisputeStatusDao disputeStatusDao;
+
     private static final Logger logger = Logger.getLogger(UserDataServiceImpl.class.getName());
 
     @Override
@@ -236,8 +228,8 @@ public class UserDataServiceImpl implements UserDataService {
     }
 
     @Override
-    @Transactional(noRollbackFor = Exception.class)
-    public Map<String, String> saveClaims(List<Property> properties, String projectName, int userId) {
+    @Transactional
+    public Map<String, String> saveClaims(List<Property> properties, String projectName, int userId) throws Exception {
         Long featureId = 0L;
         Long serverPropId;
         Map<String, String> result = new IdentityHashMap<String, String>();
@@ -249,7 +241,6 @@ public class UserDataServiceImpl implements UserDataService {
         try {
             // Get list of all attributes defined for the project
             List<Surveyprojectattribute> projectAttributes = surveyProjectAttribute.getSurveyProjectAttributes(projectName);
-
             for (Property prop : properties) {
 
                 featureId = prop.getId();
@@ -262,7 +253,7 @@ public class UserDataServiceImpl implements UserDataService {
                 }
 
                 spatialUnit = new SpatialUnit();
-                spatialUnit.setClaimType(claimTypeDAO.findById(prop.getClaimTypeCode(), true));
+                spatialUnit.setClaimType(claimTypeDAO.findById(prop.getClaimTypeCode(), false));
                 spatialUnit.setPolygonNumber(prop.getPolygonNumber());
                 spatialUnit.setSurveyDate(new SimpleDateFormat("yyyy-MM-dd").parse(prop.getSurveyDate()));
                 spatialUnit.setStatusUpdateTime(creationDate);
@@ -308,7 +299,7 @@ public class UserDataServiceImpl implements UserDataService {
                 attributeValuesDao.addAttributeValues(attributes, serverPropId);
 
                 // Save Natural persons
-                if (prop.getRight() != null && prop.getRight().getNonNaturalPerson() != null) {
+                if (prop.getRight() != null && prop.getRight().getNonNaturalPerson() == null) {
                     for (Person propPerson : prop.getRight().getNaturalPersons()) {
                         // Save natural person
                         NaturalPerson person = new NaturalPerson();
@@ -371,7 +362,7 @@ public class UserDataServiceImpl implements UserDataService {
                         poi.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(propPoi.getDob()));
                     }
                     if (propPoi.getRelationshipId() > 0) {
-                        poi.setRelationshipType(relationshipTypeDao.findById(propPoi.getRelationshipId(), false));
+                        poi.setRelationshipType(relationshipTypeDao.findById((long) propPoi.getRelationshipId(), false));
                     }
                     if (propPoi.getGenderId() > 0) {
                         poi.setGender(genderDao.getGenderById(propPoi.getGenderId()));
@@ -399,13 +390,15 @@ public class UserDataServiceImpl implements UserDataService {
                 }
 
                 // Save dispute
-                if(prop.getDispute() != null){
+                if (prop.getDispute() != null) {
                     Dispute dispute = new Dispute();
                     dispute.setDescription(prop.getDispute().getDescription());
                     dispute.setDisputeType(disputeTypeDao.findById(prop.getDispute().getDisputeTypeId(), false));
                     dispute.setRegDate(new SimpleDateFormat("yyyy-MM-dd").parse(prop.getDispute().getRegDate()));
+                    dispute.setStatus(disputeStatusDao.findById(1, false));
+                    dispute.setUsin(serverPropId);
                     dispute.setDisputingPersons(new ArrayList());
-                    for(Person propPerson : prop.getDispute().getDisputingPersons()){
+                    for (Person propPerson : prop.getDispute().getDisputingPersons()) {
                         NaturalPerson person = new NaturalPerson();
                         setNaturalPersonAttributes(person, propPerson);
                         person = naturalPersonDao.addNaturalPerson(person);
@@ -415,7 +408,7 @@ public class UserDataServiceImpl implements UserDataService {
                     }
                     disputeDao.save(dispute);
                 }
-                
+
                 // Add workflow record
                 WorkflowStatusHistory workflowStatusHistory = new WorkflowStatusHistory();
 
@@ -436,8 +429,9 @@ public class UserDataServiceImpl implements UserDataService {
             return result;
 
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("Failed to save property: ID " + featureId.toString(), e);
-            return result;
+            throw e;
         }
     }
 
@@ -455,7 +449,7 @@ public class UserDataServiceImpl implements UserDataService {
             right.setTenureclassId(tenureClassDao.getTenureClassById(propRight.getRightTypeId()));
         }
         if (propRight.getRelationshipId() > 0) {
-            right.setRelationshipType(relationshipTypeDao.findById(propRight.getRelationshipId(), false));
+            right.setRelationshipType(relationshipTypeDao.findById((long) propRight.getRelationshipId(), false));
         }
         if (propRight.getShareTypeId() > 0) {
             right.setShare_type(shareTypeDao.findById(propRight.getShareTypeId(), false));
@@ -469,7 +463,7 @@ public class UserDataServiceImpl implements UserDataService {
             if (id == 9) {
                 parcel.setProposedUse(landUseTypeDao.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
             } else if (id == 31) {
-                right.setShare_type(shareTypeDao.findById(Integer.parseInt(value), false));
+                right.setShare_type(shareTypeDao.getTenureRelationshipTypeById(Integer.parseInt(value)));
             } else if (id == 24) {
                 right.setOccupancyTypeId(occupancyTypeDao.getOccupancyTypeById(Integer.parseInt(value)));
             } else if (id == 23) {
@@ -487,7 +481,7 @@ public class UserDataServiceImpl implements UserDataService {
             } else if (id == 13) {
                 right.setTenureDuration(Float.parseFloat(value));
             } else if (id == 300) {
-                right.setAcquisitionType(acquisitionTypeDao.findById(Integer.parseInt(value), false));
+                right.setAcquisitionType(acquisitionTypeDao.getTypeByAttributeOptionId(Integer.parseInt(value)));
             }
         }
     }
@@ -497,6 +491,7 @@ public class UserDataServiceImpl implements UserDataService {
             return;
         }
 
+        person.setPerson_type_gid(personTypeDao.getPersonTypeById(1));
         person.setMobileGroupId(propPerson.getId().toString());
         person.setResident(propPerson.getResident() == 1);
         person.setMobileGroupId(propPerson.getId().toString());
@@ -513,7 +508,7 @@ public class UserDataServiceImpl implements UserDataService {
             } else if (id == 8) {
                 person.setPhoneNumber(value);
             } else if (id == 52) {
-                person.setGroupType(groupTypeDao.findById(Integer.parseInt(value), false));
+                person.setGroupType(groupTypeDao.getGroupTypeById(Integer.parseInt(value)));
             }
         }
     }
@@ -523,6 +518,7 @@ public class UserDataServiceImpl implements UserDataService {
             return;
         }
 
+        naturalPerson.setPerson_type_gid(personTypeDao.getPersonTypeById(1));
         naturalPerson.setMobileGroupId(propPerson.getId().toString());
         naturalPerson.setResident(propPerson.getResident() == 1);
         naturalPerson.setResident_of_village(naturalPerson.getResident());
@@ -531,7 +527,7 @@ public class UserDataServiceImpl implements UserDataService {
             naturalPerson.setPersonSubType(personTypeDao.getPersonTypeById(propPerson.getSubTypeId()));
         }
         if (propPerson.getAcquisitionTypeId() > 0) {
-            naturalPerson.setAcquisitionType(acquisitionTypeDao.findById(propPerson.getAcquisitionTypeId(), true));
+            naturalPerson.setAcquisitionType(acquisitionTypeDao.findById(propPerson.getAcquisitionTypeId(), false));
         }
         naturalPerson.setActive(true);
 
@@ -581,7 +577,7 @@ public class UserDataServiceImpl implements UserDataService {
             } else if (id == 310) {
                 naturalPerson.setIdNumber(value);
             } else if (id == 320) {
-                naturalPerson.setIdType(idTypeDao.findById(Integer.getInteger(value), true));
+                naturalPerson.setIdType(idTypeDao.getTypeByAttributeOptionId(Integer.parseInt(value)));
             } else if (id == 330 && value != null && !value.equals("")) {
                 naturalPerson.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(value));
             }
@@ -658,8 +654,7 @@ public class UserDataServiceImpl implements UserDataService {
 
     @Override
     @Transactional(noRollbackFor = Exception.class)
-    public SourceDocument uploadMultimedia(SourceDocument sourceDocument,
-            MultipartFile mpFile, File documentsDir) {
+    public SourceDocument uploadMultimedia(SourceDocument sourceDocument, MultipartFile mpFile, File documentsDir) {
 
         /**
          * 1) Insert source document
@@ -672,36 +667,38 @@ public class UserDataServiceImpl implements UserDataService {
         AttributeValues attributeValues;
 
         List<AttributeValues> attributeValuesList = new ArrayList<AttributeValues>();
+        String projectName = spatialUnitDao.getSpatialUnitByUsin(sourceDocument.getUsin()).getProject();
 
         if ((sourceDocument.getComments() != null)) {
 
             attributeValues = new AttributeValues();
 
             attributeValues.setUid(surveyProjectAttribute
-                    .getSurveyProjectAttributeId(10, spatialUnitDao
-                            .getSpatialUnitByUsin(sourceDocument.getUsin())
-                            .getProject()));
+                    .getSurveyProjectAttributeId(10, projectName));
 
             attributeValues.setValue(sourceDocument.getComments());
-
             attributeValuesList.add(attributeValues);
         }
+
         if ((sourceDocument.getEntity_name() != null)) {
-
             attributeValues = new AttributeValues();
-
             attributeValues.setUid(surveyProjectAttribute
-                    .getSurveyProjectAttributeId(11, spatialUnitDao
-                            .getSpatialUnitByUsin(sourceDocument.getUsin())
-                            .getProject()));
+                    .getSurveyProjectAttributeId(11, projectName));
 
             attributeValues.setValue(sourceDocument.getEntity_name());
-
             attributeValuesList.add(attributeValues);
         }
 
-        attributeValuesDao.addAttributeValues(attributeValuesList,
-                Long.valueOf(sourceDocument.getGid()));
+        if ((sourceDocument.getDocumentType() != null)) {
+            attributeValues = new AttributeValues();
+            attributeValues.setUid(surveyProjectAttribute
+                    .getSurveyProjectAttributeId(340, projectName));
+
+            attributeValues.setValue(sourceDocument.getDocumentType().getCode().toString());
+            attributeValuesList.add(attributeValues);
+        }
+
+        attributeValuesDao.addAttributeValues(attributeValuesList, Long.valueOf(sourceDocument.getGid()));
 
         /**
          * 3) Save file on server *
@@ -725,26 +722,14 @@ public class UserDataServiceImpl implements UserDataService {
                 File serverFile = new File(documentsDir + File.separator
                         + sourceDocument.getGid() + "." + fileExtension);
 
-                if (serverFile.length() <= 0) {
-                    logger.error("file not exist");
-
-                } else {
-                    BufferedOutputStream outputStream = new BufferedOutputStream(
-                            new FileOutputStream(serverFile));
-
+                try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(serverFile))) {
                     outputStream.write(document);
-
-                    outputStream.close();
                 }
-
             }
         } catch (MultipartException | IOException ex) {
-
             logger.error("Exception", ex);
-
         }
         return sourceDocument;
-
     }
 
     @Override
@@ -755,47 +740,18 @@ public class UserDataServiceImpl implements UserDataService {
     }
 
     @Override
-    public Long findPersonByMobileGroupIdandUsin(String mobileGroupId, Long usin) {
-
+    public Long findPersonByMobileGroupId(String mobileGroupId) {
         try {
-            List<SocialTenureRelationship> tenureList = socialTenureDao
-                    .findSocailTenureByUsin(usin);
-
-            Iterator<SocialTenureRelationship> tenureItr = tenureList
-                    .iterator();
-
-            while (tenureItr.hasNext()) {
-
-                SocialTenureRelationship tenure = tenureItr.next();
-
-                com.rmsi.mast.studio.domain.Person person = personDao.findPersonById(tenure.getPerson_gid()
-                        .getPerson_gid());
-
-                if (person.getPerson_type_gid().getPerson_type_gid() == 2) {
-
-                    /**
-                     * if person is non-natural
-                     */
-                    return nonNaturalPersonDao.findById(person.getPerson_gid())
-                            .get(0).getPoc_gid();
-
-                } else if (person.getPerson_type_gid().getPerson_type_gid() == 1) {
-
-                    /**
-                     * if person is natural
-                     */
-                    if (person.getMobileGroupId().equals(mobileGroupId)) {
-                        return person.getPerson_gid();
-                    }
-                }
+            com.rmsi.mast.studio.domain.Person person = personDao.findPersonByClientId(mobileGroupId);
+            if (person != null) {
+                return person.getPerson_gid();
             }
+            return null;
         } catch (Exception ex) {
-
             logger.error("Exception", ex);
             System.out.println("Exception while finding PERSON:: " + ex);
             throw ex;
         }
-        return null;
     }
 
     /**

@@ -467,9 +467,10 @@ public class DbController extends SQLiteOpenHelper {
             getDb().delete(Feature.TABLE_NAME, whereClause, null);
             getDb().delete(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, whereClause, null);
             getDb().delete(Person.TABLE_NAME, whereClause, null);
+            getDb().delete(DeceasedPerson.TABLE_NAME, whereClause, null);
+            getDb().delete(PersonOfInterest.TABLE_NAME, whereClause, null);
             getDb().delete(Right.TABLE_NAME, whereClause, null);
             getDb().delete(Media.TABLE_NAME, whereClause, null);
-            getDb().delete(Dispute.TABLE_NAME, whereClause, null);
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -2026,68 +2027,65 @@ public class DbController extends SQLiteOpenHelper {
         JSONArray mediaAttribsObj = new JSONArray();
         try {
             int mediaId = 0;
-            boolean featureMediaAvailable = false;
+            long personId = 0;
 
             String fetchMediaAttributeSql = "SELECT  AM.attrib_id,FM.GROUP_ID,FM.ATTRIB_VALUE FROM ATTRIBUTE_MASTER AS AM "
-                    + " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID =  FM.ATTRIB_ID and FM.FEATURE_ID "
-                    + "where AM.ATTRIBUTE_TYPE = '" + Attribute.TYPE_MULTIMEDIA + "' and GROUP_ID = <group_id> and (FM.ATTRIB_VALUE != '' OR FM.ATTRIB_VALUE != NULL) order by group_id";
+                    + " LEFT OUTER JOIN FORM_VALUES AS FM ON AM.ATTRIB_ID = FM.ATTRIB_ID "
+                    + " WHERE AM.ATTRIBUTE_TYPE = '" + Attribute.TYPE_MULTIMEDIA + "' AND GROUP_ID = <group_id> and (FM.ATTRIB_VALUE != '' OR FM.ATTRIB_VALUE != NULL) order by group_id";
 
-            String fetchFromMediaSql = "SELECT MV.MEDIA_ID,MV.FEATURE_ID,MV.PATH,SF.SERVER_FEATURE_ID,MV.TYPE FROM MEDIA AS MV "
-                    + "LEFT OUTER JOIN SPATIAL_FEATURES AS SF ON MV.FEATURE_ID =  SF.FEATURE_ID "
-                    + "where SF.STATUS = '" + STATUS_COMPLETE + "' and SYNCED=0 Limit 1";
+            String fetchFromMediaSql = "SELECT " +
+                    "MV.MEDIA_ID," +
+                    "MV.FEATURE_ID, " +
+                    "MV.PERSON_ID, " +
+                    "MV.DISPUTE_ID, " +
+                    "MV.PATH," +
+                    "SF.SERVER_FEATURE_ID," +
+                    "MV.TYPE "
+                    + "FROM MEDIA AS MV INNER JOIN SPATIAL_FEATURES AS SF ON MV.FEATURE_ID =  SF.FEATURE_ID "
+                    + "WHERE SF.STATUS = '" + STATUS_COMPLETE + "' and MV.SYNCED=0 Limit 1";
 
-            String fetchFromPersonMediaSql = "SELECT PM.ID,PM.PERSON_ID,PM.FEATURE_ID,PM.PATH,SF.SERVER_FEATURE_ID,PM.TYPE FROM PERSON_MEDIA AS PM "
-                    + "LEFT OUTER JOIN SPATIAL_FEATURES AS SF ON PM.FEATURE_ID =  SF.FEATURE_ID "
-                    + "where SF.STATUS = '" + STATUS_COMPLETE + "' and SYNCED = 0 Limit 1";
-
-            JSONArray mediaAttribsArr = new JSONArray();
-            JSONArray mediaValuesArr = new JSONArray();
-            JSONArray atribsArrList = new JSONArray();
+            JSONArray medias = new JSONArray();
+            JSONArray mediasAttributes = new JSONArray();
 
             // Fetching media for spatial unit
             Cursor cursor = getDb().rawQuery(fetchFromMediaSql, null);
             if (cursor.moveToFirst()) {
-                featureMediaAvailable = true;
                 mediaId = cursor.getInt(0);
-                mediaAttribsArr.put(0, cursor.getLong(3)); //usin
-                mediaAttribsArr.put(1, "");//person id -- Empty for feature media
-                mediaAttribsArr.put(2, mediaId);//media id
-                mediaAttribsArr.put(3, cursor.getString(2));// media path
-                mediaAttribsArr.put(4, cursor.getString(4));// media type
+                medias.put(0, cursor.getLong(5)); //usin
+                if(cursor.isNull(2))
+                    medias.put(1, "");//person id
+                else {
+                    personId = cursor.getLong(2);
+                    medias.put(1, personId);//person id
+                }
+                medias.put(2, mediaId);//media id
+                medias.put(3, cursor.getString(4));// media path
+                medias.put(4, cursor.getString(6));// media type
+                if(cursor.isNull(3))
+                    medias.put(5, "");//dispute id
+                else {
+                    medias.put(5, cursor.getLong(3));//dispute id
+                }
             }
             cursor.close();
 
-            if (!featureMediaAvailable)  // Fetching media for person
-            {
-                cursor = getDb().rawQuery(fetchFromPersonMediaSql, null);
-                if (cursor.moveToFirst()) {
-                    mediaId = cursor.getInt(0);
-                    mediaAttribsArr.put(0, cursor.getLong(4)); //usin
-                    mediaAttribsArr.put(1, cursor.getLong(1));
-                    mediaAttribsArr.put(2, mediaId);//media id
-                    mediaAttribsArr.put(3, cursor.getString(3));// media path
-                    mediaAttribsArr.put(4, cursor.getString(5));// media type
-                }
-                cursor.close();
-            }
-
             if (mediaId != 0) {
-                if (featureMediaAvailable) {
+                if (personId == 0) {
                     String final_sql = fetchMediaAttributeSql.replace("<group_id>", mediaId + "");
                     Cursor cursor_attrib = getDb().rawQuery(final_sql, null);
                     if (cursor_attrib.moveToFirst()) {
                         do {
-                            mediaValuesArr = new JSONArray();
+                            JSONArray mediaValuesArr = new JSONArray();
                             mediaValuesArr.put(0, cursor_attrib.getString(0));//attribID
                             mediaValuesArr.put(1, cursor_attrib.getString(2));//attribvalue
 
-                            atribsArrList.put(mediaValuesArr);
+                            mediasAttributes.put(mediaValuesArr);
                         } while (cursor_attrib.moveToNext());
                     }
                     cursor_attrib.close();
                 }
-                mediaAttribsObj.put(0, mediaAttribsArr);
-                mediaAttribsObj.put(1, atribsArrList);
+                mediaAttribsObj.put(0, medias);
+                mediaAttribsObj.put(1, mediasAttributes);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2098,14 +2096,12 @@ public class DbController extends SQLiteOpenHelper {
     public boolean updateMediaSyncedStatus(String mediaId, int syncStatus) {
 
         String whereClauseForMedia = "MEDIA_ID = " + mediaId;
-        String whereClauseForPersonMedia = "ID = " + mediaId;
         ContentValues value = new ContentValues();
         value.put("SYNCED", syncStatus);
 
         int updatedMediaRow = getDb().update("MEDIA", value, whereClauseForMedia, null);
-        int updatedPersonRow = getDb().update("PERSON_MEDIA", value, whereClauseForPersonMedia, null);
 
-        if (updatedMediaRow < 1 && updatedPersonRow < 1) {
+        if (updatedMediaRow < 1) {
             return false;
         } else {
             return true;
@@ -2143,7 +2139,211 @@ public class DbController extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean saveProjectDataForAdjuticator(String data, String status) {
+    public boolean saveDownloadedProperties(String data) {
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Property>>() {}.getType();
+        List<Property> properties = gson.fromJson(data, type);
+
+        if(properties != null && properties.size() > 0){
+            // Get lodged user
+            String userId = "";
+            User user = getLoggedUser();
+            if(user != null)
+                userId = user.getUserId().toString();
+
+            // Get all features from DB
+            List<Feature> features = fetchFeatures();
+            boolean hasFeatures = features != null && features.size() > 0;
+
+            for(Property prop : properties){
+                // Check if property exists in DB
+                Feature feature = null;
+                if(hasFeatures){
+                    for(int i = 0; i<features.size(); i++){
+                        if(features.get(i).getServerId() != null && features.get(i).getServerId().compareTo(prop.getServerId()) == 0){
+                            feature = features.get(i);
+                            break;
+                        }
+                    }
+                }
+
+                String status = "";
+
+                if(feature == null){
+                    // Skip feature if status is rejected
+                    if(StringUtility.empty(prop.getStatus()).equalsIgnoreCase(Feature.SERVER_STATUS_REJECTED)){
+                        continue;
+                    }
+                } else {
+                    status = StringUtility.empty(feature.getStatus());
+                    // Skip fetures with draft, verified and final status
+                    if(status.equalsIgnoreCase(Feature.CLIENT_STATUS_DRAFT)
+                            || status.equalsIgnoreCase(Feature.CLIENT_STATUS_VERIFIED)
+                            || status.equalsIgnoreCase(Feature.CLIENT_STATUS_FINAL)){
+                        continue;
+                    }
+                    // Update property with local feaure id
+                    prop.setId(feature.getId());
+                }
+
+                status = StringUtility.empty(prop.getStatus());
+
+                // If property is rejected, delete underlaying feautre
+                if(status.equalsIgnoreCase(Feature.SERVER_STATUS_REJECTED) && feature != null){
+                    deleteFeature(feature.getId());
+                    continue;
+                }
+
+                // Set appropriate client status to the property
+                if(status.equalsIgnoreCase(Feature.SERVER_STATUS_CCRO_GENERATED)
+                        || status.equalsIgnoreCase(Feature.SERVER_STATUS_FINAL)){
+                    prop.setStatus(Feature.CLIENT_STATUS_FINAL);
+                } else if(status.equalsIgnoreCase(Feature.SERVER_STATUS_APPROVED)){
+                    prop.setStatus(Feature.CLIENT_STATUS_COMPLETE);
+                } else if(status.equalsIgnoreCase(Feature.SERVER_STATUS_ADJUDICATED)){
+                    prop.setStatus(Feature.CLIENT_STATUS_VERIFIED_AND_SYNCHED);
+                } else if (status.equalsIgnoreCase(Feature.SERVER_STATUS_NEW)
+                        || status.equalsIgnoreCase(Feature.SERVER_STATUS_SPATIAL_VALIDATED)){
+                    if(feature != null && StringUtility.empty(feature.getStatus()).equalsIgnoreCase(Feature.CLIENT_STATUS_COMPLETE))
+                        prop.setStatus(Feature.CLIENT_STATUS_COMPLETE);
+                    else
+                        prop.setStatus(Feature.CLIENT_STATUS_DOWNLOADED);
+                } else {
+                    prop.setStatus(Feature.CLIENT_STATUS_DOWNLOADED);
+                }
+
+                // Insert property received from server
+                try{
+                    getDb().beginTransaction();
+                    // Delete feature first
+                    if(feature != null)
+                        deleteFeature(feature.getId());
+
+                    // Save property
+                    insertProperty(prop);
+
+                    getDb().setTransactionSuccessful();
+                } catch (Exception e) {
+                    cf.syncLog("", e);
+                    e.printStackTrace();
+                    return false;
+                } finally {
+                    if (getDb().inTransaction())
+                        getDb().endTransaction();
+                }
+            }
+        }
+        return true;
+    }
+
+    public Property insertProperty(Property prop){
+        // Insert spatial feature
+        ContentValues values = new ContentValues();
+        values.put(Property.COL_CLAIM_TYPE_CODE, prop.getClaimTypeCode());
+        values.put(Property.COL_POLYGON_NUMBER, prop.getPolygonNumber());
+        values.put(Property.COL_SURVEY_DATE, prop.getSurveyDate());
+        values.put(Property.COL_HAMLET_ID, prop.getHamletId());
+        values.put(Property.COL_ADJUDICATOR1, prop.getAdjudicator1());
+        values.put(Property.COL_ADJUDICATOR2, prop.getAdjudicator2());
+        values.put(Property.COL_SERVER_ID, prop.getServerId());
+        values.put(Property.COL_STATUS, prop.getStatus());
+        values.put(Property.COL_GEOM_TYPE, prop.getGeomType());
+        values.put(Property.COL_COORDINATES, prop.getCoordinates());
+        values.put(Property.COL_COMPLETION_DATE, prop.getCompletionDate());
+        values.put(Property.COL_CREATION_DATE, prop.getCreationDate());
+        values.put(Property.COL_IMEI, prop.getImei());
+
+        getDb().insert(Feature.TABLE_NAME, null, values);
+        long featureId = getGeneratedId(Feature.TABLE_NAME);
+        prop.setId(featureId);
+        savePropAttributes(prop.getAttributes(), featureId);
+
+        // Insert tenure
+        if(prop.getRight() != null) {
+            Right right = prop.getRight();
+            // reset right id so that system generates new one
+            right.setId(null);
+            right.setFeatureId(featureId);
+            saveRight(right);
+
+            // Insert non-natural person
+            if(right.getNonNaturalPerson() != null) {
+                Person person = right.getNonNaturalPerson();
+                person.setId(null);
+                person.setRightId(right.getId());
+                person.setFeatureId(featureId);
+                savePerson(person);
+            }
+
+            // Insert natural persons
+            if(right.getNaturalPersons() != null && right.getNaturalPersons().size() > 0) {
+                for (Person person : right.getNaturalPersons()) {
+                    person.setId(null);
+                    person.setRightId(right.getId());
+                    person.setFeatureId(featureId);
+                    savePerson(person);
+                }
+            }
+        }
+
+        // Insert POI
+        if(prop.getPersonOfInterests() != null && prop.getPersonOfInterests().size() > 0){
+            for(PersonOfInterest poi : prop.getPersonOfInterests()){
+                poi.setId(null);
+                poi.setFeatureId(featureId);
+                savePersonOfInterest(poi);
+            }
+        }
+
+        // Insert Deceased
+        if(prop.getDeceasedPerson() != null){
+            prop.getDeceasedPerson().setId(null);
+            prop.getDeceasedPerson().setFeatureId(featureId);
+            saveDeceasedPerson(prop.getDeceasedPerson());
+        }
+
+        // Insert Media
+        if(prop.getMedia() != null && prop.getMedia().size() > 0){
+            for(Media media : prop.getMedia()){
+                media.setId(null);
+                media.setFeatureId(featureId);
+                saveMedia(media);
+            }
+        }
+
+        // Insert dispute
+        if(prop.getDispute() != null){
+            Dispute dispute = prop.getDispute();
+            dispute.setId(null);
+            dispute.setFeatureId(featureId);
+            saveDispute(dispute);
+
+            // Insert disputing parties
+            if(dispute.getDisputingPersons() != null){
+                for(Person person : dispute.getDisputingPersons()){
+                    person.setId(null);
+                    person.setDisputeId(dispute.getId());
+                    person.setFeatureId(featureId);
+                    savePerson(person);
+                }
+            }
+
+            // Insert dispute documents
+            if(dispute.getMedia() != null && dispute.getMedia().size() > 0){
+                for(Media media : dispute.getMedia()){
+                    media.setId(null);
+                    media.setFeatureId(featureId);
+                    media.setDisputeId(dispute.getId());
+                    saveMedia(media);
+                }
+            }
+        }
+
+        return prop;
+    }
+
+
+    public boolean saveDownloadedProperties(String data, String status) {
         if (data != null) {
             Long groupId = 0L;
             String personType = null;
@@ -2436,14 +2636,12 @@ public class DbController extends SQLiteOpenHelper {
 
     public boolean resetMediaStatus() {
         String whereClauseForMedia = "SYNCED = " + CommonFunctions.MEDIA_SYNC_ERROR;
-        String whereClauseForPersonMedia = "SYNCED = " + CommonFunctions.MEDIA_SYNC_ERROR;
         ContentValues value = new ContentValues();
         value.put("SYNCED", CommonFunctions.MEDIA_SYNC_PENDING);
 
         int updatedMediaRow = getDb().update("MEDIA", value, whereClauseForMedia, null);
-        int updatedPersonRow = getDb().update("PERSON_MEDIA", value, whereClauseForPersonMedia, null);
 
-        if (updatedMediaRow < 1 && updatedPersonRow < 1) {
+        if (updatedMediaRow < 1) {
             return false;
         } else {
             return true;

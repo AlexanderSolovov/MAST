@@ -20,6 +20,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import org.hibernate.annotations.Type;
 
 /**
  * Entity implementation class for Entity: SpatialUnit
@@ -87,15 +88,15 @@ public class SpatialUnit implements Serializable {
     private String comments;
 
     //@Type(type = "org.hibernate.spatial.GeometryType")
-    @Column(columnDefinition = "Geometry")
+    @Column(columnDefinition = "geometry(LineString,4326)")
     private LineString line;
 
     //@Type(type = "org.hibernate.spatial.GeometryType")
-    @Column(columnDefinition = "Geometry")
+    @Column(columnDefinition = "geometry(Point,4326)")
     private Point point;
 
     //@Type(type = "org.hibernate.spatial.GeometryType")	
-    @Column(columnDefinition = "Geometry")
+    @Column(columnDefinition = "geometry(Polygon,4326)")
     private Polygon polygon;
 
     @Column(nullable = false)

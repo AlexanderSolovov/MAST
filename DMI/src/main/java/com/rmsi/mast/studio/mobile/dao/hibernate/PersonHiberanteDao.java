@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.rmsi.mast.studio.mobile.dao.hibernate;
 
@@ -19,56 +19,78 @@ import com.rmsi.mast.studio.mobile.dao.PersonDao;
  */
 @Repository
 public class PersonHiberanteDao extends GenericHibernateDAO<Person, Long>
-		implements PersonDao {
-	private static final Logger logger = Logger.getLogger(PersonHiberanteDao.class);
-	@Override
-	public Person addPerson(List<Person> personList) {
+        implements PersonDao {
 
-		try {
-			Iterator<Person> personIter = personList.iterator();
+    private static final Logger logger = Logger.getLogger(PersonHiberanteDao.class);
 
-			Person person = null;
+    @Override
+    public Person addPerson(List<Person> personList) {
 
-			while (personIter.hasNext()) {
+        try {
+            Iterator<Person> personIter = personList.iterator();
 
-				person = personIter.next();
+            Person person = null;
 
-				makePersistent(person);
+            while (personIter.hasNext()) {
 
-			}
-		} catch (Exception ex) {
-			logger.error(ex);
-			throw ex;
-		}
-		return null;
-	}
+                person = personIter.next();
 
-	@Override
-	public Person findPersonById(Long gid) {
+                makePersistent(person);
 
-		String query = "select p from Person p where p.person_gid =:gid";
+            }
+        } catch (Exception ex) {
+            logger.error(ex);
+            throw ex;
+        }
+        return null;
+    }
 
-		try {
+    @Override
+    public Person findPersonById(Long gid) {
 
-			@SuppressWarnings("unchecked")
-			List<Person> personList = getEntityManager().createQuery(query)
-					.setParameter("gid", gid).getResultList();
+        String query = "select p from Person p where p.person_gid =:gid";
 
-			if (personList.size() > 0) {
+        try {
 
-				return personList.get(0);
+            @SuppressWarnings("unchecked")
+            List<Person> personList = getEntityManager().createQuery(query)
+                    .setParameter("gid", gid).getResultList();
 
-			}
+            if (personList.size() > 0) {
 
-		} catch (Exception ex) {
-			
-			logger.error(ex);
+                return personList.get(0);
 
-			System.out.println("Exception in fetching PERSON:::: " + ex);
-			throw ex;
+            }
 
-		}
-		return null;
-	}
+        } catch (Exception ex) {
 
+            logger.error(ex);
+
+            System.out.println("Exception in fetching PERSON:::: " + ex);
+            throw ex;
+
+        }
+        return null;
+    }
+    
+    @Override
+    public Person findPersonByClientId(String clientId){
+        String query = "select p from Person p where p.mobileGroupId =:clientId";
+
+        try {
+            @SuppressWarnings("unchecked")
+            List<Person> personList = getEntityManager().createQuery(query)
+                    .setParameter("clientId", clientId).getResultList();
+
+            if (personList.size() > 0) {
+                return personList.get(0);
+            }
+
+        } catch (Exception ex) {
+            logger.error(ex);
+            System.out.println("Exception in fetching PERSON:::: " + ex);
+            throw ex;
+        }
+        return null;
+    }
 }

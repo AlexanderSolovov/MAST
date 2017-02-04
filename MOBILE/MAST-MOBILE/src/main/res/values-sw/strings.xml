@@ -263,7 +263,7 @@
 
     <string name="select">Chagua</string>
     <string name="info">Taarifa</string>
-    <string name="download_data_first">Tafadhali Shusha taarifa za mradi kwanza</string>
+    <string name="download_data_first">Tafadhali kushusha configuration kwanza</string>
     <string name="verify_data">Thibitisha taarifa</string>
 
     <string-array name="verifyDataStatus">
@@ -535,5 +535,13 @@
     <string name="AcquisitionType">Upatikanaji aina</string>
     <string name="SelectAcquisitionType">Chagua aina ya manunuzi</string>
     <string name="DisputeDetails">Maelezo mzozo</string>
+    <string name="DownloadConfig">Download config</string>
+    <string name="UploadData">Upload data</string>
+    <string name="ConfigDonwloadFailed">Failed to download configuration</string>
+    <string name="ConfigDownloadSuccessful">Configuration has been successfully downloaded</string>
+    <string name="DataDownloadFailed">Failed to download data</string>
+    <string name="DataDownloadSuccessful">Data has been downloaded successfully</string>
+    <string name="DownloadingConfig">Downloading configuration data</string>
+    <string name="DownloadingData">Downloading data. It may take few minutes.</string>
 
 </resources>

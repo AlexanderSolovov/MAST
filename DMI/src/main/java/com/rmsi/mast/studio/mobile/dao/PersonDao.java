@@ -29,5 +29,12 @@ public interface PersonDao extends GenericDAO<Person, Long> {
 	 * @return
 	 */
 	Person findPersonById(Long usin);
+        /**
+	 * This will fetch person based on person gid
+	 * 
+	 * @param usin
+	 * @return
+	 */
+	Person findPersonByClientId(String clientId);
 
 }

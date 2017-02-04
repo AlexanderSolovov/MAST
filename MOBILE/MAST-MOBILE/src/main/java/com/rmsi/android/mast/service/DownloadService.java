@@ -25,14 +25,11 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.activity.LandingPageActivity;
 import com.rmsi.android.mast.db.DbController;
-import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
-import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 
 public class DownloadService extends IntentService {
@@ -46,8 +43,6 @@ public class DownloadService extends IntentService {
     CommonFunctions cf = CommonFunctions.getInstance();
     private String SERVER_ADDRESS = cf.getServerAddress();
     int roleId = 0;
-    static String STATUS_COMPLETE = "complete";
-    static String STATUS_FINAL = "final";
     static int timeout = 10000; // 10 seconds
 
     public DownloadService() {
@@ -63,17 +58,9 @@ public class DownloadService extends IntentService {
         }
 
         roleId = CommonFunctions.getRoleID();
-        boolean result = false;
         final ResultReceiver receiver = intent.getParcelableExtra("receiver");
         String userid = intent.getStringExtra("userid");
-        String dataToDownload = intent.getStringExtra("datadownload");
-        String downloadSuccessMsg = getResources().getString(R.string.ProjectDataDownloadedSuccessfully);
-        String offlineDataSuccessMsg = getResources().getString(R.string.OfflineDataDownloadedSuccessfully);
-        String downladFailureMsg = getResources().getString(R.string.ErrorDownloadingProjectdata);
-        String offlineDownloadFailureMsg = getResources().getResourceEntryName(R.string.ErrorDownloadingOfflineData);
-        String successMsgDisplay[] = {downloadSuccessMsg, offlineDataSuccessMsg};
-        String failureMsgDisplay[] = {downladFailureMsg, offlineDownloadFailureMsg};
-        StringBuffer notificationMsg = new StringBuffer();
+        String downloadType = intent.getStringExtra("downloadType");
 
         if (!TextUtils.isEmpty(userid)) {
             String downloading = getResources().getString(R.string.Downloading);
@@ -81,55 +68,14 @@ public class DownloadService extends IntentService {
             displayNotification("MAST", downloading, connectingToWevServer);
 
             try {
-                DbController db = DbController.getInstance(getApplicationContext());
-
-                if (roleId == User.ROLE_TRUSTED_INTERMEDIARY)
-                {
-                    if (!dataToDownload.equalsIgnoreCase("final"))
-                        result = downloadProjectData(userid);
-
-                    if (result) {
-                        notificationMsg.append(successMsgDisplay[0]);
-                    } else {
-                        notificationMsg.append(failureMsgDisplay[0]);
-                    }
-                } else if (roleId == User.ROLE_ADJUDICATOR) {
-
-                    if (db.getClaimTypes(false).size() > 0) {
-                        if (dataToDownload.equalsIgnoreCase("final"))
-                            result = downloadFinalData(userid);
-                        else
-                            result = downloadProjectDataForAdjudicator(userid);
-                    } else {
-                        result = downloadProjectData(userid);
-                        if (result) {
-                            if (dataToDownload.equalsIgnoreCase("final"))
-                                result = downloadFinalData(userid);
-                            else
-                                result = downloadProjectDataForAdjudicator(userid);
-                        } else {
-                            String unableToDownload = getResources().getString(R.string.unableToDownloadAttributeData);
-                            Toast.makeText(getApplicationContext(), unableToDownload, Toast.LENGTH_LONG).show();
-                        }
-                    }
-
-                }
-                if (result)
-                    result = downloadMBtiles();
-
-                notificationMsg.append("\n");
-
-                if (result) {
-                    notificationMsg.append(successMsgDisplay[1]);
-                    String downloadFinished = getResources().getString(R.string.DownloadFinished);
-                    updateNotification("MAST", notificationMsg.toString(), downloadFinished);
-                    receiver.send(STATUS_FINISHED, Bundle.EMPTY);
+                if(downloadType.equalsIgnoreCase("config")){
+                    // Download configuration
+                    startConfigDownloading(receiver, userid);
                 } else {
-                    notificationMsg.append(failureMsgDisplay[1]);
-                    String downloadError = getResources().getString(R.string.DownloadError);
-                    updateNotification("MAST", notificationMsg.toString(), downloadError);
-                    receiver.send(STATUS_ERROR, Bundle.EMPTY);
+                    // Download data
+                    startDataDownloading(receiver, userid);
                 }
+
             } catch (IOException e) {
                 String unableToConnect = getResources().getString(R.string.UnableToConnectToTheServer);
                 String timeout = getResources().getString(R.string.ConnectionTimeout);
@@ -141,12 +87,46 @@ public class DownloadService extends IntentService {
         Log.d(TAG, "Service Stopping!");
     }
 
+    private void startDataDownloading(ResultReceiver receiver, String userid) throws IOException {
+        // First check for config being downloaded
+        DbController db = DbController.getInstance(getApplicationContext());
+        if (db.getClaimTypes(false).size() < 1) {
+            startConfigDownloading(receiver, userid);
+        }
+
+        updateNotification("MAST", getResources().getString(R.string.DownloadingData),
+                getResources().getString(R.string.Downloading));
+        if(downloadProperties(userid)){
+            updateNotification("MAST", getResources().getString(R.string.DataDownloadSuccessful),
+                    getResources().getString(R.string.DownloadFinished));
+            receiver.send(STATUS_FINISHED, Bundle.EMPTY);
+        } else {
+            updateNotification("MAST", getResources().getString(R.string.DataDownloadFailed),
+                    getResources().getString(R.string.DownloadError));
+            receiver.send(STATUS_ERROR, Bundle.EMPTY);
+        }
+    }
+
+    private void startConfigDownloading(ResultReceiver receiver, String userid) throws IOException {
+        updateNotification("MAST", getResources().getString(R.string.DownloadingConfig),
+                getResources().getString(R.string.Downloading));
+        if(downloadConfiguration(userid) && downloadMBtiles()){
+            updateNotification("MAST", getResources().getString(R.string.ConfigDownloadSuccessful),
+                    getResources().getString(R.string.DownloadFinished));
+            receiver.send(STATUS_FINISHED, Bundle.EMPTY);
+        } else {
+            updateNotification("MAST", getResources().getString(R.string.ConfigDonwloadFailed),
+                    getResources().getString(R.string.DownloadError));
+            receiver.send(STATUS_ERROR, Bundle.EMPTY);
+        }
+    }
+
     /**
      * @param userid
      * @return
      * @throws IOException
      */
-    private boolean downloadProjectData(String userid) throws IOException {
+    private boolean downloadConfiguration(String userid) throws IOException {
         String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/user/download/configuration/" + userid;
         DbController database = DbController.getInstance(getApplicationContext());
         boolean result = false;
@@ -176,7 +156,6 @@ public class DownloadService extends IntentService {
             cf.syncLog("DownloadService", e);
             e.printStackTrace();
         } finally {
-            database.close();
             if (is != null) {
                 try {
                     is.close();
@@ -233,53 +212,6 @@ public class DownloadService extends IntentService {
             cf.syncLog("", e);
             return false;
         }
-    }
-
-    /**
-     * @param userid
-     * @return
-     * @throws IOException
-     */
-    private boolean downloadFinalData(String userid) throws IOException {
-        String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/download/FinalDataSet/" + userid;
-        DbController database = DbController.getInstance(getApplicationContext());
-        boolean result = false;
-
-        InputStream is = null;
-
-        URL url = new URL(requestUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(100000 /* milliseconds */);
-        conn.setConnectTimeout(timeout /* milliseconds */);
-        conn.setRequestMethod("POST");
-        conn.setDoInput(true);
-        // Starts the query
-        conn.connect();
-
-        try {
-            int response = conn.getResponseCode();
-            if (response > 1) {
-                is = conn.getInputStream();
-                // Convert the InputStream into a string
-                String json_string = CommonFunctions.getStringFromInputStream(is);
-
-                if (!TextUtils.isEmpty(json_string) && !json_string.contains("Exception")) {
-                    result = database.saveProjectDataForAdjuticator(json_string, STATUS_FINAL);
-                }
-            }
-        } catch (Exception e) {
-            cf.syncLog("DownloadService", e);
-            e.printStackTrace();
-        } finally {
-            database.close();
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception e) {
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -367,24 +299,20 @@ public class DownloadService extends IntentService {
         mNotificationManager.notify(notificationID, mBuilder.build());
     }
 
-    //http://localhost:8080/mast/studio/mobile/project/attributeValues/{userId}
-
     /**
      * @param userid
      * @return result
      * @throws IOException
      */
-    private boolean downloadProjectDataForAdjudicator(String userid) throws IOException {
-        String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/project/attributeValues/" + userid;
+    private boolean downloadProperties(String userid) throws IOException {
+        String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/project/getProperties/" + userid;
         boolean result = false;
-        DbController database = DbController.getInstance(getApplicationContext());
-
         InputStream is = null;
 
         URL url = new URL(requestUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(100000 /* milliseconds */);
-        conn.setConnectTimeout(timeout /* milliseconds */);
+        conn.setReadTimeout(100000);
+        conn.setConnectTimeout(timeout);
         conn.setRequestMethod("POST");
         conn.setDoInput(true);
         // Starts the query
@@ -399,7 +327,7 @@ public class DownloadService extends IntentService {
                 String json_string = CommonFunctions.getStringFromInputStream(is);
 
                 if (!TextUtils.isEmpty(json_string) && !json_string.contains("Exception")) {
-                    result = database.saveProjectDataForAdjuticator(json_string, STATUS_COMPLETE);
+                    result = DbController.getInstance(getApplicationContext()).saveDownloadedProperties(json_string);
                 }
             }
         } catch (SocketTimeoutException e) {
@@ -408,7 +336,6 @@ public class DownloadService extends IntentService {
             cf.syncLog("DownloadService", e);
             e.printStackTrace();
         } finally {
-            database.close();
             if (is != null) {
                 try {
                     is.close();

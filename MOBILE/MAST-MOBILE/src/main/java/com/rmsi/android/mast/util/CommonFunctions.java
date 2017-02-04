@@ -61,22 +61,27 @@ public class CommonFunctions {
     private final String KEY_SNAP_TOLERANCE = "snap_tolerance";
     private final String KEY_MAP_EXTENT = "map_extent";
 
-    //public static String SERVER_IP = "54.93.173.87";
-
     private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
-
-
-    // Your Latlong
-    public static double latitude = -7.8595;
-    public static double longitude = 35.77981;
 
     public static int MEDIA_SYNC_PENDING = 0;
     public static int MEDIA_SYNC_COMPLETED = 1;
     public static int MEDIA_SYNC_ERROR = 2;
 
+    public static int polygonFillColor = Color.argb(0, 0, 0, 0);
+    public static int polygonLineColor = Color.argb(255, 255, 200, 0);
+    public static int lineColor = Color.argb(255, 102, 102, 255);
+    public static int pointColor = Color.argb(255, 255, 255, 0);
+
     private static String roleStr;
     public static int roleId = -1;
 
+    // Point in Tanzania
+    public static double latitude = -7.8595;
+    public static double longitude = 35.77981;
+
+    // Default zooms
+    public static float labelZoom = 16.5F;
+    public static float vertexZoom = 17.5F;
 
     public static CommonFunctions getInstance() {
         if (mInstance == null)
@@ -87,6 +92,8 @@ public class CommonFunctions {
     public void Initialize(Context ctxt) {
         mContext = ctxt;
         mMyPreferences = mContext.getSharedPreferences("MASTMobilePref", Activity.MODE_PRIVATE);
+        lineColor = getFeatureColor(getLineColor(), "line");
+        pointColor = getFeatureColor(getPointColor(), "point");
     }
 
     public static Context getApplicationContext() {

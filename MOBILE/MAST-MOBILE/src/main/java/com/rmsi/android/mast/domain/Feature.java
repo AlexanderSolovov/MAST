@@ -10,6 +10,7 @@ public class Feature implements Serializable {
     private Long serverId;
     private String polygonNumber;
     private String surveyDate;
+    private int userId;
 
     public static String TABLE_NAME = "SPATIAL_FEATURES";
     public static String COL_ID = "FEATURE_ID";
@@ -24,12 +25,36 @@ public class Feature implements Serializable {
     public static String GEOM_LINE = "Line";
     public static String GEOM_POLYGON = "Polygon";
 
+    public static String SERVER_STATUS_NEW = "1";
+    public static String SERVER_STATUS_ADJUDICATED = "2";
+    public static String SERVER_STATUS_SPATIAL_VALIDATED = "3";
+    public static String SERVER_STATUS_APPROVED = "4";
+    public static String SERVER_STATUS_REJECTED = "5";
+    public static String SERVER_STATUS_CCRO_GENERATED = "6";
+    public static String SERVER_STATUS_FINAL = "7";
+
+    public static String CLIENT_STATUS_DRAFT = "draft";
+    public static String CLIENT_STATUS_COMPLETE = "complete";
+    public static String CLIENT_STATUS_FINAL = "final";
+    public static String CLIENT_STATUS_VERIFIED = "verified";
+    public static String CLIENT_STATUS_VERIFIED_AND_SYNCHED = "verified&synced";
+    public static String CLIENT_STATUS_REJECTED = "rejected";
+    public static String CLIENT_STATUS_DOWNLOADED = "downloaded";
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getCoordinates() {

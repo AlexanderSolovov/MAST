@@ -31,19 +31,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import com.ibm.icu.text.SimpleDateFormat;
+import com.rmsi.mast.studio.dao.DisputeDao;
+import com.rmsi.mast.studio.dao.DocumentTypeDao;
 import com.rmsi.mast.studio.domain.AttributeMaster;
 import com.rmsi.mast.studio.domain.AttributeValues;
-import com.rmsi.mast.studio.domain.NaturalPerson;
-import com.rmsi.mast.studio.domain.NonNaturalPerson;
+import com.rmsi.mast.studio.domain.Dispute;
 import com.rmsi.mast.studio.domain.Project;
 import com.rmsi.mast.studio.domain.ProjectSpatialData;
-import com.rmsi.mast.studio.domain.SocialTenureRelationship;
 import com.rmsi.mast.studio.domain.SourceDocument;
 import com.rmsi.mast.studio.domain.SpatialUnit;
-import com.rmsi.mast.studio.domain.SpatialUnitPersonWithInterest;
-import com.rmsi.mast.studio.domain.Surveyprojectattribute;
 import com.rmsi.mast.studio.domain.User;
-import com.rmsi.mast.studio.domain.fetch.SpatialunitDeceasedPerson;
 import com.rmsi.mast.studio.mobile.service.PersonService;
 import com.rmsi.mast.studio.mobile.service.ProjectService;
 import com.rmsi.mast.studio.mobile.service.SpatialDataService;
@@ -53,15 +50,9 @@ import com.rmsi.mast.studio.mobile.service.UserDataService;
 import com.rmsi.mast.studio.mobile.transferobjects.Attribute;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.service.UserService;
-import com.rmsi.mast.studio.util.GeometryConversion;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import org.apache.commons.lang.StringUtils;
 
-/**
- * @author Prashant.Nigam
- */
 @RestController
 public class MobileDataController {
 
@@ -89,6 +80,12 @@ public class MobileDataController {
     @Autowired
     com.rmsi.mast.studio.service.ProjectService studioProjectService;
 
+    @Autowired
+    DocumentTypeDao documentTypeDao;
+    
+    @Autowired
+    DisputeDao disputeDao;
+    
     private List<AttributeValues> attributeValuesList = new ArrayList<AttributeValues>();
 
     private List<AttributeValues> tenureList = new ArrayList<AttributeValues>();
@@ -275,28 +272,24 @@ public class MobileDataController {
     }
 
     /**
-     * It will enable the user to download data based on userId
+     * It will enable the user to download project properties based on userId
      *
      * @param userId
      * @param request
      * @param response
      * @return
      */
-    @RequestMapping(value = "/sync/mobile/project/attributeValues/{userId}", method = RequestMethod.POST)
-    public Map<Long, List<List<Object>>> getProjectAttributeValues(
-            @PathVariable int userId, HttpServletRequest request,
-            HttpServletResponse response) {
+    @RequestMapping(value = "/sync/mobile/project/getProperties/{userId}", method = RequestMethod.POST)
+    public List<Property> getProjectProperties(
+            @PathVariable int userId, HttpServletRequest request, HttpServletResponse response) {
 
         // Get default project by userId
         String projectId = mobileUserService.getDefaultProjectByUserId(userId);
 
         try {
-
-            return surveyProjectAttribute.getSurveyAttributeValuesByProjectId(
-                    projectId, 4);
-
+            return surveyProjectAttribute.getProperties(projectId, 0);
         } catch (Exception ex) {
-            logger.error("Exception while DOWNLOADING Attribute Values", ex);
+            logger.error("Exception while DOWNLOADING project properties", ex);
             return null;
         }
     }
@@ -325,68 +318,44 @@ public class MobileDataController {
      */
     @RequestMapping(value = "/sync/mobile/document/upload/", method = RequestMethod.POST)
     @ResponseBody
-    synchronized public String upload(MultipartHttpServletRequest request,
-            HttpServletResponse response) {
+    synchronized public String upload(MultipartHttpServletRequest request, HttpServletResponse response) {
         try {
-
             SourceDocument sourceDocument = new SourceDocument();
-
-            Iterator<String> file = request.getFileNames();
-
+            Iterator<String> files = request.getFileNames();
             String filename = request.getParameter("fileattribs");
-
             String mediaId = null;
 
-            while (file.hasNext()) {
-                String fileName = file.next();
-
+            while (files.hasNext()) {
+                String fileName = files.next();
                 System.out.println("FILE NAME:::: " + fileName);
-
                 MultipartFile mpFile = request.getFile(fileName);
-
                 String originalFileName = mpFile.getOriginalFilename();
-
                 sourceDocument.setActive(true);
+                mediaId = setDocumentAttributes(sourceDocument, filename);
 
-                mediaId = saveSourceDocumentAttributes(sourceDocument, filename);
+                if (!"".equals(originalFileName) && mobileUserService.findMultimedia(originalFileName, sourceDocument.getUsin()) == null) {
 
-                if (originalFileName != ""
-                        && mobileUserService.findMultimedia(originalFileName,
-                                sourceDocument.getUsin()) == null) {
-
-                    /**
-                     * Setting File Name
-                     */
+                    // Setting File Name
                     sourceDocument.setLocScannedSourceDoc("resources"
                             + "/"
                             + "documents"
                             + "/"
-                            + spatialUnitService.getSpatialUnitByUsin(
-                                    sourceDocument.getUsin()).getProject()
+                            + spatialUnitService.getSpatialUnitByUsin(sourceDocument.getUsin()).getProject()
                             + "/" + "multimedia");
 
-                    /**
-                     * Creating documents directory to store file
-                     */
+                    // Creating documents directory to store file
                     File documentsDir = new File(request.getServletContext()
-                            .getRealPath(
-                                    sourceDocument.getLocScannedSourceDoc()).replace("mast", ""));
+                            .getRealPath(sourceDocument.getLocScannedSourceDoc()).replace("mast", ""));
 
                     if (!documentsDir.exists()) {
                         documentsDir.mkdirs();
                     }
 
-                    /**
-                     * Setting File Name
-                     */
+                    // Setting File Name
                     sourceDocument.setScanedSourceDoc(originalFileName);
 
-                    /**
-                     * Add data to Source Document
-                     */
-                    mobileUserService.uploadMultimedia(sourceDocument, mpFile,
-                            documentsDir);
-
+                    // Add data to Source Document
+                    mobileUserService.uploadMultimedia(sourceDocument, mpFile, documentsDir);
                 }
             }
 
@@ -394,6 +363,7 @@ public class MobileDataController {
 
         } catch (Exception e) {
             logger.error("Exception", e);
+            e.printStackTrace();
             return "error uploading";
         }
     }
@@ -421,61 +391,15 @@ public class MobileDataController {
 
             // Transfor JSON to transfer object
             Gson gson = new Gson();
-            Type type = new TypeToken<List<Property>>() {
-            }.getType();
+            Type type = new TypeToken<List<Property>>() {}.getType();
             List<Property> properties = gson.fromJson(jsonString, type);
 
             return mobileUserService.saveClaims(properties, projectName, userId);
         } catch (Exception e) {
             logger.error("Exception", e);
-            result.put("Exception at feature Id: " + featureId, e.toString());
             e.printStackTrace();
+            result.put("Exception while saving claims.", e.toString());
             return result;
-        }
-    }
-
-    /**
-     * Sets Spatial unit object attributes based on property object
-     */
-    private void setPropAttibutes(SpatialUnit parcel, Property prop) {
-        if (parcel == null || prop == null || prop.getAttributes() == null || prop.getAttributes().size() < 1) {
-            return;
-        }
-
-        for (Attribute attribute : prop.getAttributes()) {
-            if (attribute.getId() == 9) {
-                parcel.setProposedUse(spatialUnitService.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
-            } else if (attribute.getId() == 15) {
-                parcel.setHousehidno(Integer.parseInt(attribute.getValue()));
-            } else if (attribute.getId() == 16) {
-                parcel.setExistingUse(spatialUnitService.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
-            } else if (attribute.getId() == 17) {
-                parcel.setComments(attribute.getValue());
-            } else if (attribute.getId() == 28) {
-                parcel.setLandOwner(attribute.getValue());
-            } else if (attribute.getId() == 34) {
-                parcel.setAddress1(attribute.getValue());
-            } else if (attribute.getId() == 35) {
-                parcel.setAddress2(attribute.getValue());
-            } else if (attribute.getId() == 36) {
-                parcel.setPostal_code(attribute.getValue());
-            } else if (attribute.getId() == 37) {
-                parcel.setTypeName(spatialUnitService.getLandTypeById(Integer.parseInt(attribute.getValue())));
-            } else if (attribute.getId() == 38) {
-                parcel.setSoilQuality(spatialUnitService.getSoilQualityValuesById(Integer.parseInt(attribute.getValue())));
-            } else if (attribute.getId() == 39) {
-                parcel.setSlope(spatialUnitService.getSlopeValuesById(Integer.parseInt(attribute.getValue())));
-            } else if (attribute.getId() == 44) {
-                parcel.setNeighborNorth(attribute.getValue());
-            } else if (attribute.getId() == 45) {
-                parcel.setNeighborSouth(attribute.getValue());
-            } else if (attribute.getId() == 46) {
-                parcel.setNeighborEast(attribute.getValue());
-            } else if (attribute.getId() == 47) {
-                parcel.setNeighborWest(attribute.getValue());
-            } else if (attribute.getId() == 53) {
-                parcel.setOtherUseType(attribute.getValue());
-            }
         }
     }
 
@@ -523,25 +447,6 @@ public class MobileDataController {
             logger.error("Error while parsing JSon for UPLOADING ADJUDICATED DATA::: "
                     + e);
             e.printStackTrace();
-            return null;
-        }
-    }
-
-    @RequestMapping(value = "/sync/mobile/download/FinalDataSet/{userId}", method = RequestMethod.POST)
-    public Map<Long, List<List<Object>>> downloadFinalDataset(
-            @PathVariable int userId, HttpServletRequest request,
-            HttpServletResponse response) {
-
-        // Get default project by userId
-        String projectId = mobileUserService.getDefaultProjectByUserId(userId);
-
-        try {
-
-            return surveyProjectAttribute.getSurveyAttributeValuesByProjectId(
-                    projectId, 7);
-
-        } catch (Exception ex) {
-            logger.error("Exception while DOWNLOADING FINAL DATASET", ex);
             return null;
         }
     }
@@ -627,53 +532,47 @@ public class MobileDataController {
         }
     }
 
-    private String saveSourceDocumentAttributes(SourceDocument sourceDocument,
-            String attributes) {
-
+    private String setDocumentAttributes(SourceDocument document, String attributes) {
         try {
             String mediaId = null;
-
             JSONArray sourceDocumentAttribute = new JSONArray(attributes);
+            JSONArray media = sourceDocumentAttribute.getJSONArray(0);
 
-            JSONArray gid = sourceDocumentAttribute.getJSONArray(0);
+            if (media.length() > 0) {
+                long usin = Long.parseLong(media.get(0).toString());
+                document.setUsin(usin);
 
-            if (gid.length() > 0) {
-
-                sourceDocument.setUsin(Long.parseLong(gid.get(0).toString()));
-
-                if (!gid.get(1).toString().isEmpty()) {
-                    sourceDocument.setPerson_gid(mobileUserService
-                            .findPersonByMobileGroupIdandUsin(gid.get(1)
-                                    .toString(), sourceDocument.getUsin()));
+                if (!media.get(1).toString().isEmpty()) {
+                    document.setPerson_gid(mobileUserService.findPersonByMobileGroupId(media.get(1).toString()));
                 } else {
-                    JSONArray attributeValueArray = sourceDocumentAttribute
-                            .getJSONArray(1);
-
+                    if (!media.get(5).toString().isEmpty() && Integer.parseInt(media.get(5).toString()) > 0) {
+                        List<Dispute> disputes = disputeDao.findByPropId(usin);
+                        if(disputes != null && disputes.size() > 0)
+                            document.setDisputeId(disputes.get(0).getId());
+                    }
+                    
+                    JSONArray attributeValueArray = sourceDocumentAttribute.getJSONArray(1);
                     for (int j = 0; j < attributeValueArray.length(); j++) {
-
                         JSONArray values = attributeValueArray.getJSONArray(j);
-
                         int attributeId = Integer.parseInt(values.getString(0));
-
                         if (attributeId == 10) {
-                            sourceDocument
-                                    .setComments(values.get(1).toString());
+                            document.setComments(values.get(1).toString());
                         }
                         if (attributeId == 11) {
-                            sourceDocument.setEntity_name(values.getString(1)
-                                    .toString());
+                            document.setEntity_name(values.getString(1));
+                        }
+                        if (attributeId == 340) {
+                            document.setDocumentType(documentTypeDao.getTypeByAttributeOptionId(Integer.parseInt(values.getString(1))));
                         }
                     }
                 }
 
-                mediaId = gid.getString(2);
-
-                sourceDocument.setMediaType(gid.getString(4));
+                mediaId = media.getString(2);
+                document.setMediaType(media.getString(4));
             }
 
-            sourceDocument.setActive(true);
-
-            sourceDocument.setRecordation(new SimpleDateFormat("dd/MM/yyyy")
+            document.setActive(true);
+            document.setRecordation(new SimpleDateFormat("dd/MM/yyyy")
                     .parse(new SimpleDateFormat("dd/MM/yyyy")
                             .format(new Date())));
 
@@ -681,8 +580,7 @@ public class MobileDataController {
 
         } catch (ParseException | JSONException pex) {
             logger.error("Exception", pex);
-            System.out.println("Exception in setting data in SOURCE DOCUMNET: "
-                    + pex);
+            System.out.println("Exception in setting data in SOURCE DOCUMNET: " + pex);
         }
         return null;
     }

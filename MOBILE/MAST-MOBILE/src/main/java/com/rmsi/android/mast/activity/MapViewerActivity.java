@@ -47,8 +47,8 @@ import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -61,6 +61,7 @@ import com.rmsi.android.mast.activity.R.string;
 import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Bookmark;
 import com.rmsi.android.mast.domain.Feature;
+import com.rmsi.android.mast.domain.MapFeature;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
 import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
@@ -82,6 +83,7 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
     Context context = this;
     List<Coordinate> jtspoints = new ArrayList<Coordinate>();
     private List<String> mLayerTitles = new ArrayList<String>();
+    private List<MapFeature> mapFeatures = new ArrayList<>();
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private LinearLayout drawerlayout;
@@ -106,6 +108,8 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
     int role = 0;
     String capturFeatureStr, satelliteMapStr, rasterStr, offlineStr;
     private boolean enableLabeling = false;
+    private boolean featuresAdded = false;
+    private float lastZoom = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -272,10 +276,6 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
             } else {
                 // Changing map type
                 googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-                //googleMap.setMapType(GoogleMap.MAP_TYPE_NONE);
 
                 // Showing / hiding your current location
                 googleMap.setMyLocationEnabled(true);
@@ -296,132 +296,142 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
                 googleMap.getUiSettings().setZoomGesturesEnabled(true);
 
                 googleMap.setOnMapLoadedCallback(new mapLoadedCallBackListener());
-                //googleMap.setOnMapClickListener(new mapClickListener());
-                //googleMap.setOnMarkerDragListener(new markerDragListener());
-                //googleMap.setOnMapClickListener(new tmpmapClickListener());
-
+                googleMap.setOnCameraIdleListener(new MapViewerActivity.mapCameraChangeListener());
+                googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        handleMapClick(marker.getPosition());
+                        return true;
+                    }
+                });
                 loadUserSelectedLayers();
             }
         }
     }
 
-    //########### MAP LOADED LISTENER STARTS  ######    ####################################
+    private class mapCameraChangeListener implements GoogleMap.OnCameraIdleListener {
+        @Override
+        public void onCameraIdle() {
+            drawFeatures();
+        }
+    }
+
     private class mapLoadedCallBackListener implements OnMapLoadedCallback {
         @Override
         public void onMapLoaded() {
             GisUtility.zoomToMapExtent(googleMap);
         }
     }
-    //########### MAP LOADED LISTENER ENDS ######    ####################################
 
-    //########### MAP CLICK LISTENER STARTS  ######    ####################################
     private class mapClickListener implements OnMapClickListener {
         @Override
         public void onMapClick(LatLng pointFromMap) {
-            // Condition for MAP_MEASURE_LINE_MODE MODE
-            if (MAP_MODE == MAP_MEASURE_LINE_MODE) {
-                if (!contextualMenuShown)
-                    toolbar.startActionMode(myActionModeCallback);
-
-                //for point
-                Coordinate jtspoint = new Coordinate(pointFromMap.longitude, pointFromMap.latitude);
-                jtspoints.add(jtspoint);
-                points.add(pointFromMap);
-                MarkerOptions marker = new MarkerOptions().position(pointFromMap);
-                marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
-                marker.snippet(pointFromMap.latitude + "," + pointFromMap.longitude);
-                Marker mark = googleMap.addMarker(marker);
-                currMarkers.add(mark);
-
-                if (points.size() > 1) {
-                    Polyline polyline;
-                    if (points.size() > 2) {
-                        polyline = (Polyline) drawnFeature;
-                        polyline.setPoints(points);
-                    } else {
-                        //for polyline
-                        PolylineOptions rectOptions = new PolylineOptions();
-
-                        for (LatLng p : points) {
-                            rectOptions.add(p);
-                        }
-                        rectOptions.zIndex(4);
-                        polyline = googleMap.addPolyline(rectOptions);
-                        drawnFeature = polyline;
-                    }
-
-                    //calculating Length
-                    Coordinate[] coordinates = jtspoints.toArray(new Coordinate[jtspoints.size()]);
-                    GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-                    LineString lineString = geometryFactory.createLineString(coordinates);
-                    double lineLength = lineString.getLength();
-                    double lengthMeter = lineLength * (111319.9) * Math.cos(Math.toRadians(jtspoints.get(0).y));
-                    String lineLengthStr = df.format(lengthMeter);
-
-                    if (actionMode != null) {
-                        actionMode.setTitle(lineLengthStr + " m");
-                    }
-                }
-            }// Condition for MAP_MEASURE_POLYGON_MODE MODE
-            else if (MAP_MODE == MAP_MEASURE_POLYGON_MODE) {
-                if (!contextualMenuShown)
-                    toolbar.startActionMode(myActionModeCallback);
-
-                //for point
-                Coordinate jtspoint = new Coordinate(pointFromMap.longitude, pointFromMap.latitude);
-                jtspoints.add(jtspoint);
-                points.add(pointFromMap);
-                MarkerOptions marker = new MarkerOptions().position(pointFromMap);
-                marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
-                marker.snippet(pointFromMap.latitude + "," + pointFromMap.longitude);
-                Marker mark = googleMap.addMarker(marker);
-                currMarkers.add(mark);
-
-                //for polygon
-                if (points.size() > 2) {
-                    if (points.size() > 3) {
-                        Polygon polygon = (Polygon) drawnFeature;
-                        polygon.setPoints(points);
-                    } else {
-                        PolygonOptions rectOptions = new PolygonOptions();
-                        for (LatLng p : points) {
-                            rectOptions.add(p);
-                        }
-                        rectOptions.fillColor(colorTransparent);
-                        rectOptions.zIndex(4);
-                        Polygon polygon = googleMap.addPolygon(rectOptions);
-                        drawnFeature = polygon;
-                    }
-
-                    //calculating Length
-                    List<Coordinate> tmpJtsPoints = new ArrayList<Coordinate>(jtspoints);
-                    tmpJtsPoints.add(jtspoints.get(0)); // adding first point at last to create Ring
-                    Coordinate[] coordinates = tmpJtsPoints.toArray(new Coordinate[tmpJtsPoints.size()]);
-                    GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-                    LinearRing lr = geometryFactory.createLinearRing(coordinates);
-                    com.vividsolutions.jts.geom.Polygon polygonJts = geometryFactory.createPolygon(lr, null);
-                    double area = polygonJts.getArea();
-                    //String areaStr = df.format(area);
-                    double areaMeter = area * (Math.pow(111319.9, 2)) * Math.cos(Math.toRadians(tmpJtsPoints.get(0).y));
-                    String areaStr = df.format(areaMeter);
-                    if (actionMode != null) {
-                        actionMode.setTitle(areaStr + " sqm");
-                    }
-                }
-            } else if (MAP_MODE == FEATURE_INFO_MODE) {
-                processFeaturesInfo(pointFromMap);
-                MAP_MODE = CLEAR_MODE;
-            } else if (MAP_MODE == MEASURE_FEATURE_AREA_MODE) {
-                processFeaturesForMeasurement(pointFromMap);
-            } else if (MAP_MODE == MEASURE_FEATURE_LENGTH_MODE) {
-                processFeaturesForMeasurement(pointFromMap);
-            } else if (MAP_MODE == FETCH_XY_MODE) {
-                showXYDialog(pointFromMap);
-            }
+            handleMapClick(pointFromMap);
         }
     }
 
-    //########### MAP CLICK LISTENER ENDS    ####################################
+    private void handleMapClick(LatLng pointFromMap){
+        // Condition for MAP_MEASURE_LINE_MODE MODE
+        if (MAP_MODE == MAP_MEASURE_LINE_MODE) {
+            if (!contextualMenuShown)
+                toolbar.startActionMode(myActionModeCallback);
+
+            //for point
+            Coordinate jtspoint = new Coordinate(pointFromMap.longitude, pointFromMap.latitude);
+            jtspoints.add(jtspoint);
+            points.add(pointFromMap);
+            MarkerOptions marker = new MarkerOptions().position(pointFromMap);
+            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+            marker.snippet(pointFromMap.latitude + "," + pointFromMap.longitude);
+            Marker mark = googleMap.addMarker(marker);
+            currMarkers.add(mark);
+
+            if (points.size() > 1) {
+                Polyline polyline;
+                if (points.size() > 2) {
+                    polyline = (Polyline) drawnFeature;
+                    polyline.setPoints(points);
+                } else {
+                    //for polyline
+                    PolylineOptions rectOptions = new PolylineOptions();
+
+                    for (LatLng p : points) {
+                        rectOptions.add(p);
+                    }
+                    rectOptions.zIndex(4);
+                    polyline = googleMap.addPolyline(rectOptions);
+                    drawnFeature = polyline;
+                }
+
+                //calculating Length
+                Coordinate[] coordinates = jtspoints.toArray(new Coordinate[jtspoints.size()]);
+                GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+                LineString lineString = geometryFactory.createLineString(coordinates);
+                double lineLength = lineString.getLength();
+                double lengthMeter = lineLength * (111319.9) * Math.cos(Math.toRadians(jtspoints.get(0).y));
+                String lineLengthStr = df.format(lengthMeter);
+
+                if (actionMode != null) {
+                    actionMode.setTitle(lineLengthStr + " m");
+                }
+            }
+        }// Condition for MAP_MEASURE_POLYGON_MODE MODE
+        else if (MAP_MODE == MAP_MEASURE_POLYGON_MODE) {
+            if (!contextualMenuShown)
+                toolbar.startActionMode(myActionModeCallback);
+
+            //for point
+            Coordinate jtspoint = new Coordinate(pointFromMap.longitude, pointFromMap.latitude);
+            jtspoints.add(jtspoint);
+            points.add(pointFromMap);
+            MarkerOptions marker = new MarkerOptions().position(pointFromMap);
+            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+            marker.snippet(pointFromMap.latitude + "," + pointFromMap.longitude);
+            Marker mark = googleMap.addMarker(marker);
+            currMarkers.add(mark);
+
+            //for polygon
+            if (points.size() > 2) {
+                if (points.size() > 3) {
+                    Polygon polygon = (Polygon) drawnFeature;
+                    polygon.setPoints(points);
+                } else {
+                    PolygonOptions rectOptions = new PolygonOptions();
+                    for (LatLng p : points) {
+                        rectOptions.add(p);
+                    }
+                    rectOptions.fillColor(colorTransparent);
+                    rectOptions.zIndex(4);
+                    Polygon polygon = googleMap.addPolygon(rectOptions);
+                    drawnFeature = polygon;
+                }
+
+                //calculating Length
+                List<Coordinate> tmpJtsPoints = new ArrayList<Coordinate>(jtspoints);
+                tmpJtsPoints.add(jtspoints.get(0)); // adding first point at last to create Ring
+                Coordinate[] coordinates = tmpJtsPoints.toArray(new Coordinate[tmpJtsPoints.size()]);
+                GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+                LinearRing lr = geometryFactory.createLinearRing(coordinates);
+                com.vividsolutions.jts.geom.Polygon polygonJts = geometryFactory.createPolygon(lr, null);
+                double area = polygonJts.getArea();
+                //String areaStr = df.format(area);
+                double areaMeter = area * (Math.pow(111319.9, 2)) * Math.cos(Math.toRadians(tmpJtsPoints.get(0).y));
+                String areaStr = df.format(areaMeter);
+                if (actionMode != null) {
+                    actionMode.setTitle(areaStr + " sqm");
+                }
+            }
+        } else if (MAP_MODE == FEATURE_INFO_MODE) {
+            processFeaturesInfo(pointFromMap);
+            MAP_MODE = CLEAR_MODE;
+        } else if (MAP_MODE == MEASURE_FEATURE_AREA_MODE) {
+            processFeaturesForMeasurement(pointFromMap);
+        } else if (MAP_MODE == MEASURE_FEATURE_LENGTH_MODE) {
+            processFeaturesForMeasurement(pointFromMap);
+        } else if (MAP_MODE == FETCH_XY_MODE) {
+            showXYDialog(pointFromMap);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -647,8 +657,10 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
 
                 visibleLayers.append("1");
 
-                if (!currVisibleLayers.contains("1"))
+                if (!currVisibleLayers.contains("1") && mapFeatures.size() < 1) {
                     loadFeaturesFromDB();
+                    drawFeatures();
+                }
             } else {
                 googleMap.clear();
             }
@@ -668,12 +680,6 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
                     //if(!currVisibleLayers.contains((i+2)+""))
                     loadOfflineData(i);
                 }
-/*					else
-					{
-						if(offlineSpatialData.get(i).getOverlay()!=null)
-						{	offlineSpatialData.get(i).getOverlay().remove();
-							offlineSpatialData.get(i).setOverlay(null);}
-					}*/
             }
         }
         cf.saveVisibleLayers(visibleLayers.toString());
@@ -681,88 +687,69 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
 
     private void loadFeaturesFromDB() {
         try {
-            DbController dbObj = DbController.getInstance(context);
-            List<Feature> features = dbObj.fetchFeatures();
-            dbObj.close();
-
-            int pointcolor = cf.getFeatureColor(cf.getPointColor(), "point");
-            int linecolor = cf.getFeatureColor(cf.getLineColor(), "line");
-            int polygoncolor = cf.getFeatureColor(cf.getPolygonColor(), "polygon");
+            clearMapFeatures();
+            List<Feature> features = DbController.getInstance(context).fetchFeatures();
 
             if (features.size() == 0) {
                 Toast.makeText(context, R.string.noFeaturesToLoad, Toast.LENGTH_SHORT).show();
+                return;
             }
+
             for (Feature feature : features) {
-                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
-                    String coordinates = feature.getCoordinates();
-
-                    String[] wktpoints = coordinates.replaceAll(", ", ",").split(",");
-
-                    PolygonOptions rectOptions = new PolygonOptions();
-
-                    for (String point : wktpoints) {
-                        String[] tmpPoint = point.split(" ");
-                        LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
-                        rectOptions.add(mapPoint);
-                    }
-
-                    // Add label
-                    if(enableLabeling) {
-                        googleMap.addMarker(GisUtility.makeLabel(feature));
-                    }
-
-                    if (feature.getStatus().equalsIgnoreCase("final")) {
-                        rectOptions.fillColor(Color.argb(100, 204, 153, 255)).strokeWidth(5).strokeColor(Color.BLACK);
-                    } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
-                        rectOptions.fillColor(Color.argb(100, 255, 51, 51)).strokeWidth(5).strokeColor(Color.BLACK);
-                    } else if (feature.getStatus().equalsIgnoreCase("complete")) {
-                        rectOptions.fillColor(Color.argb(150, 204, 255, 153)).strokeWidth(5).strokeColor(Color.BLACK);
-                    } else
-                        rectOptions.fillColor(polygoncolor).strokeWidth(5).strokeColor(Color.BLUE);
-                    rectOptions.zIndex(4);
-                    googleMap.addPolygon(rectOptions);
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
-                    String coordinates = feature.getCoordinates();
-
-                    String[] wktpoints = coordinates.replaceAll(", ", ",").split(",");
-
-                    PolylineOptions rectOptions = new PolylineOptions();
-                    if (feature.getStatus().equalsIgnoreCase("final")) {
-                        rectOptions.color(Color.rgb(204, 153, 255));
-                    } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
-                        rectOptions.color(Color.rgb(255, 51, 51));
-                    } else if (feature.getStatus().equalsIgnoreCase("complete")) {
-                        rectOptions.color(Color.rgb(128, 255, 0));
-                    } else
-                        rectOptions.color(linecolor);
-
-                    for (String point : wktpoints) {
-                        String[] tmpPoint = point.split(" ");
-                        LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
-                        rectOptions.add(mapPoint);
-                    }
-                    rectOptions.zIndex(4);
-                    googleMap.addPolyline(rectOptions);
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
-                    String coordinates = feature.getCoordinates();
-
-                    String[] tmpPoint = coordinates.split(" ");
-                    LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
-					/*MarkerOptions marker = new MarkerOptions().position(mapPoint);
-				marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
-				marker.draggable(false);
-				marker.snippet(mapPoint.latitude+","+mapPoint.longitude);
-				googleMap.addMarker(marker);*/
-                    CircleOptions circleOptions = new CircleOptions().center(mapPoint);
-                    circleOptions.radius(3); // In meters
-                    circleOptions.fillColor(pointcolor).strokeWidth(4).strokeColor(Color.BLUE);
-                    circleOptions.zIndex(4);
-                    googleMap.addCircle(circleOptions);
-                }
+                mapFeatures.add(new MapFeature(feature));
             }
         } catch (Exception e) {
-            cf.appLog("", e);//Toast.makeText(context,"unable to load features from db", Toast.LENGTH_SHORT).show();
+            cf.appLog("", e);
+            Toast.makeText(context,"unable to load features from db", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void drawFeatures(){
+        // Add features on the map
+        if(mapFeatures == null || mapFeatures.size() < 1)
+            return;
+
+        LatLngBounds bounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
+        float zoom = googleMap.getCameraPosition().zoom;
+
+        if(zoom >= 10 && !featuresAdded){
+            featuresAdded = true;
+            for (MapFeature mapFeature : mapFeatures) {
+                if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
+                    googleMap.addPolygon(mapFeature.getPolygon());
+                } else if (mapFeature.getFeatureType() == MapFeature.TYPE.LINE) {
+                    googleMap.addPolyline(mapFeature.getLine());
+                } else if (mapFeature.getFeatureType() == MapFeature.TYPE.POINT) {
+                    googleMap.addCircle(mapFeature.getPoint());
+                }
+            }
+        }
+
+        if(featuresAdded){
+            // Draw labels
+            if(enableLabeling && (lastZoom >= CommonFunctions.labelZoom || zoom >= CommonFunctions.labelZoom)){
+                for (MapFeature mapFeature : mapFeatures) {
+                    if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
+                        if(zoom >= CommonFunctions.labelZoom) {
+                            if(mapFeature.containsInBoundary(bounds) && mapFeature.getMapLabel() == null)
+                                mapFeature.setMapLabel(googleMap.addMarker(mapFeature.getLabel()));
+                        }
+                        else
+                            mapFeature.removeMapLabel();
+                    }
+                }
+            }
+        }
+
+        lastZoom = zoom;
+    }
+
+    private void clearMapFeatures(){
+        featuresAdded = false;
+        for(MapFeature mapFeature : mapFeatures){
+            mapFeature.removeFromMap();
+        }
+        mapFeatures.clear();
     }
 
     private void processFeaturesInfo(LatLng pointFromMap) {

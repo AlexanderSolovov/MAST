@@ -11,16 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.rmsi.mast.studio.domain.AttributeValues;
 import com.rmsi.mast.studio.domain.NaturalPerson;
 import com.rmsi.mast.studio.domain.NonNaturalPerson;
 import com.rmsi.mast.studio.domain.SocialTenureRelationship;
 import com.rmsi.mast.studio.domain.SourceDocument;
-import com.rmsi.mast.studio.domain.SpatialUnit;
-import com.rmsi.mast.studio.domain.SpatialUnitPersonWithInterest;
+import com.rmsi.mast.studio.domain.Surveyprojectattribute;
 import com.rmsi.mast.studio.domain.User;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
-import com.rmsi.mast.studio.domain.fetch.SpatialunitDeceasedPerson;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 
 /**
@@ -64,7 +61,7 @@ public interface UserDataService {
          * @param userId User ID who created the claim
          * @return 
          */
-        Map<String, String> saveClaims(List<Property> properties, String projectName, int userId);
+        Map<String, String> saveClaims(List<Property> properties, String projectName, int userId) throws Exception;
         
 	/**
 	 * This will be used to fetch record from source document if USIN and
@@ -80,10 +77,9 @@ public interface UserDataService {
 	 * It will fetch person based on mobile group id and Usin
 	 * 
 	 * @param mobileGroupId
-	 * @param usin
 	 * @return
 	 */
-	Long findPersonByMobileGroupIdandUsin(String mobileGroupId, Long usin);
+	Long findPersonByMobileGroupId(String mobileGroupId);
 
 	@Transactional
 	boolean updateNaturalPersonAttribValues(NaturalPerson naturalPerson,

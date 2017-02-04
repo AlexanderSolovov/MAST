@@ -65,9 +65,11 @@ import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -76,10 +78,14 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.geojson.GeoJsonLineStringStyle;
+import com.google.maps.android.geometry.Bounds;
 import com.rmsi.android.mast.adapter.AddFeaturesOptionsAdapter;
 import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Bookmark;
 import com.rmsi.android.mast.domain.Feature;
+import com.rmsi.android.mast.domain.MapFeature;
 import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GisUtility;
@@ -142,10 +148,12 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
     private boolean snapToVertex = true;
     private boolean snapToSegment = true;
     private int snappingTolerance = 30; // pixels
-    private List<SnappingObject> allSnappingObjects;
-    private List<SnappingObject> snappingObjects;
+    private List<MapFeature> snappingFeatures = new ArrayList<>();
     private boolean enableLabeling = false;
     private boolean enableVertexDrawing = true;
+    private List<MapFeature> mapFeatures = new ArrayList<>();
+    private boolean featuresAdded = false;
+    private float lastZoom = 0;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -351,8 +359,6 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
             }
         });
 
-        snappingObjects = new ArrayList<>();
-        allSnappingObjects = new ArrayList<>();
         snapToVertex = cf.getSnapToVertex();
         snapToSegment = cf.getSnapToSegment();
         snappingTolerance = cf.getSnapTolerance();
@@ -669,10 +675,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
     private class mapCameraChangeListener implements GoogleMap.OnCameraIdleListener {
         @Override
         public void onCameraIdle() {
-            if (MAP_MODE == FEATURE_DRAW_MAP_MODE || MAP_MODE == FEATURE_EDIT_MODE ||
-                    MAP_MODE == FEATURE_DRAW_LINE_GPS_MODE || MAP_MODE == FEATURE_DRAW_POLYGON_GPS_MODE) {
-                loadPointsForSnapping();
-            }
+            drawFeatures();
         }
     }
 
@@ -1191,8 +1194,10 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
 
                 visibleLayers.append("1");
 
-                if (!currVisibleLayers.contains("1"))
+                if (!currVisibleLayers.contains("1") && mapFeatures.size() < 1) {
                     loadFeaturesFromDB();
+                    drawFeatures();
+                }
             } else {
                 googleMap.clear();
             }
@@ -1217,125 +1222,124 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         cf.saveVisibleLayers(visibleLayers.toString());
     }
 
-    private void addPointsForSnapping(Feature feature, String[] wktpoints) {
-        if (snappingEnabled) {
-            // Add to the list for snapping
-            for (int i = 0; i < wktpoints.length - 1; i++) {
-                String[] tmpPoint1 = wktpoints[i].replaceAll(", ", ",").split(" ");
-                String[] tmpPoint2 = wktpoints[i + 1].replaceAll(", ", ",").split(" ");
-                allSnappingObjects.add(new SnappingObject(
-                        feature.getId(),
-                        new LatLng(Double.parseDouble(tmpPoint1[1]), Double.parseDouble(tmpPoint1[0])),
-                        new LatLng(Double.parseDouble(tmpPoint2[1]), Double.parseDouble(tmpPoint2[0]))
-                ));
-            }
-        }
-    }
-
     private void loadFeaturesFromDB() {
         try {
-            DbController dbObj = DbController.getInstance(context);
-            List<Feature> features = dbObj.fetchFeatures();
-            dbObj.close();
-
-            allSnappingObjects.clear();
-            int pointcolor = cf.getFeatureColor(cf.getPointColor(), "point");
-            int linecolor = cf.getFeatureColor(cf.getLineColor(), "line");
-            int polygoncolor = cf.getFeatureColor(cf.getPolygonColor(), "polygon");
+            clearMapFeatures();
+            List<Feature> features = DbController.getInstance(context).fetchFeatures();
 
             if (features.size() == 0) {
                 Toast.makeText(context, R.string.noFeaturesToLoad, Toast.LENGTH_SHORT).show();
+                return;
             }
 
             for (Feature feature : features) {
-                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
-                    String coordinates = feature.getCoordinates();
-
-                    String[] wktpoints = coordinates.split(",");
-
-                    // Add points for snapping
-                    addPointsForSnapping(feature, wktpoints);
-
-                    PolygonOptions rectOptions = new PolygonOptions();
-
-                    for (String point : wktpoints) {
-                        String[] tmpPoint = point.replaceAll(", ", ",").split(" ");
-                        LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
-                        rectOptions.add(mapPoint);
-                        if (enableVertexDrawing) {
-                            googleMap.addMarker(GisUtility.makeVertex(mapPoint, GisUtility.VERTEX_TYPE.NORMAL));
-                        }
-                    }
-
-                    // Add label
-                    if (enableLabeling) {
-                        googleMap.addMarker(GisUtility.makeLabel(feature));
-                    }
-
-                    if (feature.getStatus().equalsIgnoreCase("final")) {
-                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.argb(255, 80, 255, 80));
-                    } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
-                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.argb(255, 255, 51, 51));
-                    } else if (feature.getStatus().equalsIgnoreCase("complete")) {
-                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.argb(255, 255, 200, 0));
-                    } else
-                        rectOptions.fillColor(Color.argb(0, 0, 0, 0)).strokeWidth(5).strokeColor(Color.BLUE);
-
-                    rectOptions.zIndex(4);
-                    googleMap.addPolygon(rectOptions);
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
-                    String coordinates = feature.getCoordinates();
-
-                    String[] wktpoints = coordinates.replaceAll(", ", ",").split(",");
-
-                    // Add pooints for snapping
-                    addPointsForSnapping(feature, wktpoints);
-
-                    PolylineOptions rectOptions = new PolylineOptions();
-                    if (feature.getStatus().equalsIgnoreCase("final")) {
-                        rectOptions.color(Color.rgb(204, 153, 255));
-                    } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
-                        rectOptions.color(Color.rgb(255, 51, 51));
-                    } else if (feature.getStatus().equalsIgnoreCase("complete")) {
-                        rectOptions.color(Color.rgb(128, 255, 0));
-                    } else
-                        rectOptions.color(linecolor);
-
-                    for (String point : wktpoints) {
-                        String[] tmpPoint = point.split(" ");
-                        LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
-                        rectOptions.add(mapPoint);
-                    }
-                    rectOptions.zIndex(4);
-                    googleMap.addPolyline(rectOptions);
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
-                    String coordinates = feature.getCoordinates();
-
-                    String[] tmpPoint = coordinates.split(" ");
-
-                    LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
-
-                    // Add snepping point
-                    allSnappingObjects.add(new SnappingObject(feature.getId(), mapPoint, null));
-
-                    CircleOptions circleOptions = new CircleOptions().center(mapPoint);
-                    circleOptions.radius(3); // In meters
-                    if (feature.getStatus().equalsIgnoreCase("final")) {
-                        circleOptions.fillColor(Color.argb(100, 204, 153, 255)).strokeWidth(5).strokeColor(Color.BLACK);
-                    } else if (feature.getStatus().equalsIgnoreCase("rejected")) {
-                        circleOptions.fillColor(Color.argb(100, 255, 51, 51)).strokeWidth(4).strokeColor(Color.BLACK);
-                    } else if (feature.getStatus().equalsIgnoreCase("complete")) {
-                        circleOptions.fillColor(Color.argb(150, 204, 255, 153)).strokeWidth(5).strokeColor(Color.BLACK);
-                    } else
-                        circleOptions.fillColor(pointcolor).strokeWidth(4).strokeColor(Color.BLUE);
-                    circleOptions.zIndex(4);
-                    googleMap.addCircle(circleOptions);
-                }
+                mapFeatures.add(new MapFeature(feature));
             }
         } catch (Exception e) {
             cf.appLog("", e);
             Toast.makeText(context, "unable to load features from db", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void drawFeatures(){
+        snappingFeatures.clear();
+
+        // Add features on the map
+        if(mapFeatures == null || mapFeatures.size() < 1)
+            return;
+
+        LatLngBounds bounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
+        float zoom = googleMap.getCameraPosition().zoom;
+
+        if(zoom >= 10 && !featuresAdded){
+            featuresAdded = true;
+            for (MapFeature mapFeature : mapFeatures) {
+                if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
+                    googleMap.addPolygon(mapFeature.getPolygon());
+                } else if (mapFeature.getFeatureType() == MapFeature.TYPE.LINE) {
+                    googleMap.addPolyline(mapFeature.getLine());
+                } else if (mapFeature.getFeatureType() == MapFeature.TYPE.POINT) {
+                    googleMap.addCircle(mapFeature.getPoint());
+                }
+            }
+        }
+
+        float labelZoom = CommonFunctions.labelZoom;
+        float vertexZoom = CommonFunctions.vertexZoom;
+
+        if(featuresAdded){
+            // Draw labels and vertices if enabled
+            if((lastZoom >= labelZoom || zoom >= labelZoom) || (lastZoom >= vertexZoom || zoom >= vertexZoom)){
+                if(enableLabeling || enableVertexDrawing || snappingEnabled) {
+
+                    for (MapFeature mapFeature : mapFeatures) {
+                        if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
+                            if (zoom >= labelZoom || zoom >= vertexZoom) {
+
+                                // Check feature is in the visible bounds
+                                if (mapFeature.containsInBoundary(bounds)) {
+                                    // Add feature for snapping
+                                    if (snappingEnabled) {
+                                        snappingFeatures.add(mapFeature);
+                                    }
+
+                                    // For label
+                                    if (enableLabeling && zoom >= labelZoom) {
+                                        if(mapFeature.getMapLabel() == null)
+                                            mapFeature.setMapLabel(googleMap.addMarker(mapFeature.getLabel()));
+                                    } else if(enableLabeling)
+                                        mapFeature.removeMapLabel();
+
+                                    // For vertex
+                                    if (enableVertexDrawing && zoom >= vertexZoom) {
+                                        if(mapFeature.getMapVertices().size() < 1){
+                                            for (LatLng p : mapFeature.getPoints()) {
+                                                mapFeature.getMapVertices().add(
+                                                        googleMap.addMarker(GisUtility.makeVertex(p, GisUtility.VERTEX_TYPE.NORMAL))
+                                                );
+                                            }
+                                        }
+                                    } else if(enableVertexDrawing)
+                                        mapFeature.removeMapVertices();
+                                }
+                            } else {
+                                if (enableLabeling && zoom < CommonFunctions.labelZoom)
+                                    mapFeature.removeMapLabel();
+                                if (enableVertexDrawing && zoom < CommonFunctions.vertexZoom)
+                                    mapFeature.removeMapVertices();
+                            }
+                        }
+                    }
+
+                }
+            }
+            calculatePointsForSnapping();
+        }
+
+        lastZoom = zoom;
+    }
+
+    private void calculatePointsForSnapping(){
+        if (snappingFeatures.size() > 0
+                && (MAP_MODE == FEATURE_DRAW_MAP_MODE
+                || MAP_MODE == FEATURE_EDIT_MODE
+                || MAP_MODE == FEATURE_DRAW_LINE_GPS_MODE
+                || MAP_MODE == FEATURE_DRAW_POLYGON_GPS_MODE)) {
+
+            Projection proj = googleMap.getProjection();
+
+            for(MapFeature mapFeature : snappingFeatures){
+                mapFeature.calculateScreenPoints(proj);
+            }
+        }
+    }
+
+    private void clearMapFeatures(){
+        featuresAdded = false;
+        for(MapFeature mapFeature : mapFeatures){
+            mapFeature.removeFromMap();
+        }
+        mapFeatures.clear();
     }
 
     public void setCaptureSpatialDataMode(String captureMode) {
@@ -1361,7 +1365,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
             MAP_MODE = FEATURE_DRAW_MAP_MODE;
             dataCaptureMode = captureMode;
         }
-        loadPointsForSnapping();
+        calculatePointsForSnapping();
     }
 
     private class MyLocationListener implements LocationListener {
@@ -1408,7 +1412,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                 //googleMap.clear();
                 MAP_MODE = FEATURE_EDIT_MODE;
 
-                loadPointsForSnapping();
+                calculatePointsForSnapping();
 
                 if (!contextualMenuShown)
                     toolbar.startActionMode(myActionModeCallback);
@@ -1855,84 +1859,35 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         }
     }
 
-    private void loadPointsForSnapping() {
-        try {
-            snappingObjects.clear();
-
-            // Check is snapping enabled
-            if ((!snapToVertex && !snapToSegment) || allSnappingObjects.size() < 1) {
-                return;
-            }
-
-            double maxX = googleMap.getProjection().getVisibleRegion().latLngBounds.northeast.longitude;
-            double minX = googleMap.getProjection().getVisibleRegion().latLngBounds.southwest.longitude;
-            double maxY = googleMap.getProjection().getVisibleRegion().latLngBounds.northeast.latitude;
-            double minY = googleMap.getProjection().getVisibleRegion().latLngBounds.southwest.latitude;
-
-            for (SnappingObject snpObject : allSnappingObjects) {
-                // Check if any point falls into map bounds
-                boolean yes = false;
-                if ((snpObject.getPoint1().longitude >= minX && snpObject.getPoint1().longitude <= maxX)
-                        || (snpObject.getPoint1().latitude >= minY && snpObject.getPoint1().latitude <= maxY)) {
-                    yes = true;
-                }
-
-                if (!yes && snpObject.getPoint2() != null) {
-                    if ((snpObject.getPoint2().longitude >= minX && snpObject.getPoint2().longitude <= maxX)
-                            || (snpObject.getPoint2().latitude >= minY && snpObject.getPoint2().latitude <= maxY)) {
-                        yes = true;
-                    }
-                }
-
-                if (yes) {
-                    snpObject.calculateScreenPoints();
-                    snappingObjects.add(snpObject);
-                }
-            }
-        } catch (Exception e) {
-            cf.appLog("", e);
-            Toast.makeText(context, "unable to prepare objects for snapping", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private LatLng getPointToSnap(LatLng pointToTest) {
         try {
-            if (snappingObjects.size() < 1) {
+            if (snappingFeatures.size() < 1) {
                 return null;
             }
 
             // Translate LatLng into screen point
             android.graphics.Point sPointToTest = googleMap.getProjection().toScreenLocation(pointToTest);
+            LatLng pointToSnap = null;
+            LatLngBounds bounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
 
-            for (SnappingObject sObj : snappingObjects) {
+            for (MapFeature mapFeature : snappingFeatures) {
                 // Don't snap to itself
-                if (sObj.getFeatureId() == featureId) {
+                if (mapFeature.getFeature().getId().compareTo(featureId) == 0) {
                     continue;
                 }
 
                 // Give priority to the vertex
                 if (snapToVertex) {
-                    // Text first vertex in segment or single point if snapping object is Point
-                    if (GisUtility.getDistanceBetweenPoints(sObj.getScreenPoint1(), sPointToTest) <= snappingTolerance) {
-                        return sObj.getPoint1();
-                    }
-
-                    // Text second vertex in segment
-                    if (sObj.getScreenPoint2() != null) {
-                        if (GisUtility.getDistanceBetweenPoints(sObj.getScreenPoint2(), sPointToTest) <= snappingTolerance) {
-                            return sObj.getPoint2();
-                        }
-                    }
+                    pointToSnap = mapFeature.getPointToSnap(bounds, sPointToTest, snappingTolerance);
+                    if(pointToSnap != null)
+                        return pointToSnap;
                 }
 
-                // Test segment is no closest vertex found
+                // Test segment if no closest vertex found
                 if (snapToSegment) {
-                    // Only segments have second point
-                    if (sObj.getScreenPoint2() != null) {
-                        if (GisUtility.getDistanceToSegment(sPointToTest, sObj.getScreenPoint1(), sObj.getScreenPoint2()) <= snappingTolerance) {
-                            return GisUtility.getClosestPointOnSegment(pointToTest, sObj.getPoint1(), sObj.getPoint2());
-                        }
-                    }
+                    pointToSnap = mapFeature.getSegmentPointToSnap(bounds, pointToTest, sPointToTest, snappingTolerance);
+                    if(pointToSnap != null)
+                        return pointToSnap;
                 }
             }
             return null;
@@ -1940,65 +1895,6 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
             cf.appLog("", ex);
             Toast.makeText(context, "Snapping failed", Toast.LENGTH_SHORT).show();
             return null;
-        }
-    }
-
-    private class SnappingObject {
-        private LatLng point1;
-        private LatLng point2;
-        private android.graphics.Point screenPoint1;
-        private android.graphics.Point screenPoint2;
-        private long featureId;
-
-        public long getFeatureId() {
-            return featureId;
-        }
-
-        public LatLng getPoint1() {
-            return point1;
-        }
-
-        public void setPoint1(LatLng point1) {
-            this.point1 = point1;
-            //this.screenPoint1 = googleMap.getProjection().toScreenLocation(point1);
-        }
-
-        public LatLng getPoint2() {
-            return point2;
-        }
-
-        public void setPoint2(LatLng point2) {
-            this.point2 = point2;
-            //this.screenPoint2 = googleMap.getProjection().toScreenLocation(point2);
-        }
-
-        public android.graphics.Point getScreenPoint1() {
-            return screenPoint1;
-        }
-
-        public android.graphics.Point getScreenPoint2() {
-            return screenPoint2;
-        }
-
-        /**
-         * New SnappingObject constructor. If only first point is provided, the object will be
-         * considered as Point, otherwise segment.
-         */
-        public SnappingObject(long featureId, LatLng point1, LatLng point2) {
-            this.featureId = featureId;
-            this.point1 = point1;
-            this.point2 = point2;
-            //this.screenPoint1 = googleMap.getProjection().toScreenLocation(point1);
-            //this.screenPoint2 = googleMap.getProjection().toScreenLocation(point2);
-        }
-
-        public void calculateScreenPoints() {
-            if (point1 != null) {
-                this.screenPoint1 = googleMap.getProjection().toScreenLocation(point1);
-            }
-            if (point2 != null) {
-                this.screenPoint2 = googleMap.getProjection().toScreenLocation(point2);
-            }
         }
     }
 

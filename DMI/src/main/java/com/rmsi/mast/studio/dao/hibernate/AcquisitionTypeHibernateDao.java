@@ -16,7 +16,7 @@ public class AcquisitionTypeHibernateDao extends GenericHibernateDAO<Acquisition
         try {
             String query = "select t.* from acquisition_type t inner join attribute_options ao on ao.parent_id = t.code where ao.id =" + optId;
             List<AcquisitionType> result = getEntityManager()
-                    .createNativeQuery(query, IdType.class)
+                    .createNativeQuery(query, AcquisitionType.class)
                     .getResultList();
 
             if (result != null && result.size() > 0) {

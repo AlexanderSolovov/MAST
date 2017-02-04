@@ -7,28 +7,29 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="id_type")
+@Table(name = "id_type")
 public class IdType implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
-	@Id
-	private Long code;
-	@Column
-        private String name;
-        @Column(name="name_other_lang")
-        private String nameOtherLang;
-        @Column
-        boolean active;
-        
-        public IdType(){
-            
-        }
+    @Id
+    private int code;
+    @Column
+    private String name;
+    @Column(name = "name_other_lang")
+    private String nameOtherLang;
+    @Column
+    boolean active;
 
-    public Long getCode() {
+    public IdType() {
+
+    }
+
+    public int getCode() {
         return code;
     }
 
-    public void setCode(Long code) {
+    public void setCode(int code) {
         this.code = code;
     }
 

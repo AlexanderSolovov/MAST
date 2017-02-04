@@ -19,7 +19,8 @@ public class Property implements Serializable {
     private String adjudicator1;
     private String adjudicator2;
     private String claimTypeCode;
-
+    private int userId;
+    
     private Right right;
     private DeceasedPerson deceasedPerson;
     private List<PersonOfInterest> personOfInterests = new ArrayList<>();
@@ -37,6 +38,14 @@ public class Property implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getCoordinates() {

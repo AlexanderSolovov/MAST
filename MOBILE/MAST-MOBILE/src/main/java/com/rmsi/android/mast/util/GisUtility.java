@@ -2,6 +2,7 @@ package com.rmsi.android.mast.util;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -413,12 +414,68 @@ public class GisUtility {
             return new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(label)))
                     .position(new LatLng(center.getY(), center.getX()))
-                    .anchor(0.5f, 0.5f);
+                    .anchor(0.5f, 0.5f).draggable(false);
         } catch (ParseException e) {
             e.printStackTrace();
             CommonFunctions.getInstance().appLog("", e);
         }
 
         return null;
+    }
+
+    /**
+     * Finds the biggest distance between min/max X or min/max Y. Which one is bigger will be returned in pixels.
+     * @param  points List of points to test
+     * @param projection Map projection to be used for calculating screen points
+     */
+    public static double getBiggestDistanceInPixels(List<LatLng> points, Projection projection){
+        if(points == null || points.size() < 1)
+            return 0;
+
+        // Find min/max X and Y
+        double minX = 0;
+        double minY = 0;
+        double maxX = 0;
+        double maxY = 0;
+        boolean first = true;
+
+        for(LatLng p : points){
+            if(first){
+                first = false;
+                minX = p.longitude;
+                maxX = p.longitude;
+                minY = p.latitude;
+                maxY = p.latitude;
+            } else {
+                if(p.longitude < minX)
+                    minX = p.longitude;
+                else if(p.longitude > maxX)
+                    maxX = p.longitude;
+
+                if(p.latitude < minY)
+                    minY = p.latitude;
+                else if(p.latitude > maxY)
+                    maxY = p.latitude;
+            }
+        }
+
+        if(minX == 0 && maxX == 0 && minY == 0 && maxY == 0)
+            return 0;
+
+        double result = 0 ;
+        LatLng point1 = new LatLng(maxY, maxX);
+        LatLng point2 = new LatLng(minY, minX);
+        android.graphics.Point p1 = projection.toScreenLocation(point1);
+        android.graphics.Point p2 = projection.toScreenLocation(point2);
+
+        if(Math.abs(maxX - minX) > Math.abs(maxY - minY)){
+            // find distance by X
+            result = Math.abs(p1.x - p2.x);
+        } else {
+            // find distance by Y
+            result = Math.abs(p1.y - p2.y);
+        }
+
+        return result;
     }
 }

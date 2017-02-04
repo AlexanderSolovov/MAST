@@ -43,7 +43,6 @@ public class UploadService extends IntentService {
     CommonFunctions cf = CommonFunctions.getInstance();
     private static final String TAG = "UploadService";
     private String SERVER_ADDRESS = cf.getServerAddress();
-    int mediaId;
     boolean nodata = false;
     static int timeout = 10000; // 10 seconds 
 
@@ -113,7 +112,7 @@ public class UploadService extends IntentService {
                     updateNotification("MAST", UnableToUpload, Error);
                     if (receiver != null) receiver.send(STATUS_ERROR, Bundle.EMPTY);
                 }
-                fetchRejectedFeatures();
+                //fetchRejectedFeatures();
             } else {
                 boolean results = uploadverifiedData();
                 if (results && nodata) {
@@ -159,8 +158,8 @@ public class UploadService extends IntentService {
                 postData.append(URLEncoder.encode("data", "UTF-8") + "=" + URLEncoder.encode(syncData, "UTF-8"));
 
                 HttpURLConnection conn = (HttpURLConnection) new URL(requestUrl).openConnection();
-                conn.setReadTimeout(100000);
-                conn.setConnectTimeout(timeout);
+                conn.setReadTimeout(1000000);
+                conn.setConnectTimeout(1000000);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestProperty("charset", "utf-8");
@@ -200,7 +199,7 @@ public class UploadService extends IntentService {
     }
 
 
-    private boolean uploadMultimedia(String filepath, String attribData, int mediaId) {
+    private boolean uploadMultimedia(String filepath, String attribData) {
         nodata = false;
         String requestUrl = SERVER_ADDRESS + "/mast/sync/mobile/document/upload/";
         try {
@@ -240,8 +239,8 @@ public class UploadService extends IntentService {
                     mediaAvailable = true;
                     String filepath = syncDataObj.getJSONArray(0).getString(3);
                     String attribData = syncDataObj.toString();
-                    mediaId = syncDataObj.getJSONArray(0).getInt(2);
-                    boolean uploadResult = uploadMultimedia(filepath, attribData, mediaId);
+                    int mediaId = syncDataObj.getJSONArray(0).getInt(2);
+                    boolean uploadResult = uploadMultimedia(filepath, attribData);
 
                     if (!uploadResult)
                         DbController.getInstance(getApplicationContext()).updateMediaSyncedStatus(mediaId + "", CommonFunctions.MEDIA_SYNC_ERROR);
@@ -251,12 +250,10 @@ public class UploadService extends IntentService {
                     mediaAvailable = false;
                 }
             } catch (Exception e) {
-                mediaAvailable = false;
                 e.printStackTrace();
                 cf.syncLog("", e);
                 return false;
             }
-
         }
         while (mediaAvailable);
         return true;

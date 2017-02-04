@@ -64,8 +64,6 @@ public class LandingPageActivity extends ActionBarActivity implements Receiver {
         {
             findViewById(R.id.ad_menu1).setVisibility(View.GONE);
             findViewById(R.id.ad_view1).setVisibility(View.GONE);
-            findViewById(R.id.ad_menu2).setVisibility(View.GONE);
-            findViewById(R.id.ad_view2).setVisibility(View.GONE);
         } else if (roleId == 2) {
             findViewById(R.id.ti_menu1).setVisibility(View.GONE);
             findViewById(R.id.ti_menu2).setVisibility(View.GONE);
@@ -176,8 +174,8 @@ public class LandingPageActivity extends ActionBarActivity implements Receiver {
             }
         });
 
-        Button btn_download = (Button) findViewById(R.id.downloaddata);
-        btn_download.setOnClickListener(new OnClickListener() {
+        Button btnDownloadData = (Button) findViewById(R.id.downloaddata);
+        btnDownloadData.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 if (cf.getConnectivityStatus()) {
@@ -187,7 +185,27 @@ public class LandingPageActivity extends ActionBarActivity implements Receiver {
                         showToast(connectionMsg, Toast.LENGTH_SHORT);
                         Intent intent = new Intent(context, DownloadService.class);
                         intent.putExtra("userid", user.getUserId().toString());
-                        intent.putExtra("datadownload", "config");
+                        intent.putExtra("downloadType", "data");
+                        intent.putExtra("receiver", mReceiver);
+                        startService(intent);
+                    }
+                } else
+                    cf.showIntenetSettingsAlert(context);
+            }
+        });
+
+        Button btnDownloadConfig = (Button) findViewById(R.id.downloadConfig);
+        btnDownloadConfig.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (cf.getConnectivityStatus()) {
+                    User user = DbController.getInstance(context).getLoggedUser();
+                    if (user != null && user.getUserId() != null) {
+                        String connectionMsg = getResources().getString(R.string.webserviceconnectMsg);
+                        showToast(connectionMsg, Toast.LENGTH_SHORT);
+                        Intent intent = new Intent(context, DownloadService.class);
+                        intent.putExtra("userid", user.getUserId().toString());
+                        intent.putExtra("downloadType", "config");
                         intent.putExtra("receiver", mReceiver);
                         startService(intent);
                     }
@@ -210,27 +228,6 @@ public class LandingPageActivity extends ActionBarActivity implements Receiver {
                     cf.showIntenetSettingsAlert(context);
             }
         });
-
-        Button btn_downloadFinal = (Button) findViewById(R.id.downloadFinaldata);
-        btn_downloadFinal.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                if (cf.getConnectivityStatus()) {
-                    User user = DbController.getInstance(context).getLoggedUser();
-                    if (user != null && user.getUserId() != null) {
-                        String connectionMsg = getResources().getString(R.string.webserviceconnectMsg);
-                        showToast(connectionMsg, Toast.LENGTH_SHORT);
-                        Intent intent = new Intent(context, DownloadService.class);
-                        intent.putExtra("userid", user.getUserId().toString());
-                        intent.putExtra("datadownload", "final");
-                        intent.putExtra("receiver", mReceiver);
-                        startService(intent);
-                    }
-                } else
-                    cf.showIntenetSettingsAlert(context);
-            }
-        });
-
     }
 
     @Override

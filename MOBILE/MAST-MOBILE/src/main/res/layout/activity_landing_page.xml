@@ -234,10 +234,11 @@
                     android:drawableRight="@drawable/action_next"
                     android:gravity="left|center_vertical"
                     android:paddingLeft="10dp"
-                    android:text="@string/syncdata"
+                    android:text="@string/UploadData"
                     android:textColor="@color/black"
                     android:textSize="22sp" />
             </LinearLayout>
+
 
             <View
                 android:id="@+id/ad_view2"
@@ -246,7 +247,6 @@
                 android:background="#CCCCCC" />
 
             <LinearLayout
-                 android:id="@+id/ad_menu2"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
@@ -255,7 +255,7 @@
                 android:paddingTop="5dp" >
 
                 <ImageView
-                    android:id="@+id/finaldataImage"
+                    android:id="@+id/downloadConfigImage"
                     android:layout_width="60dp"
                     android:layout_height="match_parent"
                     android:adjustViewBounds="true"
@@ -263,14 +263,14 @@
                     android:src="@drawable/download_data" />
 
                 <Button
-                    android:id="@+id/downloadFinaldata"
+                    android:id="@+id/downloadConfig"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/menu_button_selector"
                     android:drawableRight="@drawable/action_next"
                     android:gravity="left|center_vertical"
                     android:paddingLeft="10dp"
-                    android:text="@string/dowbloadFinaldata"
+                    android:text="@string/DownloadConfig"
                     android:textColor="@color/black"
                     android:textSize="22sp" />
             </LinearLayout>

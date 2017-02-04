@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.rmsi.mast.studio.util;
 
 import java.util.Iterator;
@@ -20,129 +17,121 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 /**
  * This class will be used in converting Geometry Type to String and vice-versa
- * 
+ *
  * @author shruti.thakur
  */
 public class GeometryConversion {
 
-	/**
-	 * This method converts the Geometry to String
-	 * 
-	 * @param spatialUnitList
-	 * @return
-	 */
-	public List<SpatialUnit> converGeometryToString(
-			List<SpatialUnit> spatialUnitList) {
+    /**
+     * This method converts the Geometry to String
+     *
+     * @param spatialUnitList
+     * @return
+     */
+    public List<SpatialUnit> converGeometryToString(
+            List<SpatialUnit> spatialUnitList) {
 
-		Iterator<SpatialUnit> spatialUnitIter = spatialUnitList.iterator();
+        Iterator<SpatialUnit> spatialUnitIter = spatialUnitList.iterator();
 
-		Geometry geom = null;
+        Geometry geom = null;
 
-		SpatialUnit spatialUnitLocal = null;
+        SpatialUnit spatialUnitLocal = null;
 
-		String coords = "";
+        String coords = "";
 
-		while (spatialUnitIter.hasNext()) {
+        while (spatialUnitIter.hasNext()) {
 
-			spatialUnitLocal = spatialUnitIter.next();
+            spatialUnitLocal = spatialUnitIter.next();
 
-			coords = "";
+            coords = "";
+            geom = spatialUnitLocal.getTheGeom().getGeometryN(0);
+                        
+            if (spatialUnitLocal.getGtype().equalsIgnoreCase("point")) {
+                String coString = geom.toText();
+                coords = coString.substring(coString.indexOf("(") + 1);
+                coords = coords.substring(0, coords.indexOf(")"));
+                spatialUnitLocal.setGeometry(coords);
+            } else if (spatialUnitLocal.getGtype().equalsIgnoreCase("line")) {
+                String coString = geom.toText();
+                coords = coString.substring(coString.indexOf("(") + 1);
+                coords = coords.substring(0, coords.indexOf(")"));
+                spatialUnitLocal.setGeometry(coords);
+            } else if (spatialUnitLocal.getGtype().equalsIgnoreCase("polygon")) {
+                String coString = geom.toText();
+                coords = coString.substring(coString.indexOf("((") + 2);
+                coords = coords.substring(0, coords.indexOf("))"));
+                spatialUnitLocal.setGeometry(coords);
+            } else {
+                System.out.println("GType doesn't contain relevent value");
+            }
 
-			if (spatialUnitLocal.getGtype().equalsIgnoreCase("point")) {
-				geom = spatialUnitLocal.getPoint();
-				String coString = geom.toText();
-				System.out.println("Point coordinates:" + coString);
-				coords = coString.substring(coString.indexOf("(") + 1);
-				coords = coords.substring(0, coords.indexOf(")"));
-				spatialUnitLocal.setGeometry(coords);
-			} else if (spatialUnitLocal.getGtype().equalsIgnoreCase("line")) {
-				geom = spatialUnitLocal.getLine();
-				
-				String coString = geom.toText();
-				System.out.println("Line coordinates:" + coString);
-				coords = coString.substring(coString.indexOf("(") + 1);
-				coords = coords.substring(0, coords.indexOf(")"));
-				spatialUnitLocal.setGeometry(coords);
-			} else if (spatialUnitLocal.getGtype().equalsIgnoreCase("polygon")) {
-				geom = spatialUnitLocal.getPolygon();
-				
-				String coString = geom.toText();
-				System.out.println("Polygon coordinates:" + coString);
-				coords = coString.substring(coString.indexOf("((") + 2);
-				coords = coords.substring(0, coords.indexOf("))"));
-				spatialUnitLocal.setGeometry(coords);
-			} else {
-				System.out.println("GType doesn't contain relevent value");
-			}
+        }
+        return spatialUnitList;
+    }
 
-		}
-		return spatialUnitList;
-	}
+    /**
+     * This method will get Coordinate Sequence
+     *
+     * @param wkt
+     * @return
+     */
+    public CoordinateArraySequence getCoordinateSequence(String wkt) {
 
-	/**
-	 * This method will get Coordinate Sequence
-	 * 
-	 * @param wkt
-	 * @return
-	 */
-	public CoordinateArraySequence getCoordinateSequence(String wkt) {
+        String[] coord = wkt.split(",");
 
-		String[] coord = wkt.split(",");
+        try {
+            Coordinate[] coordinate = new Coordinate[coord.length];
 
-		try {
-			Coordinate[] coordinate = new Coordinate[coord.length];
+            for (int i = 0; i < coord.length; i++) {
 
-			for (int i = 0; i < coord.length; i++) {
+                String axis[] = coord[i].split(" ");
 
-				String axis[] = coord[i].split(" ");
+                coordinate[i] = new Coordinate(Double.parseDouble(axis[0]),
+                        Double.parseDouble(axis[1]));
 
-				coordinate[i] = new Coordinate(Double.parseDouble(axis[0]),
-						Double.parseDouble(axis[1]));
+            }
 
-			}
+            return new CoordinateArraySequence(coordinate);
+        } catch (Exception ex) {
 
-			return new CoordinateArraySequence(coordinate);
-		} catch (Exception ex) {
+            System.out.println("Exception while fetching coordinates::::::"
+                    + ex);
+            return null;
+        }
+    }
 
-			System.out.println("Exception while fetching coordinates::::::"
-					+ ex);
-			return null;
-		}
-	}
+    /**
+     * This method will convert wkt to Polygon
+     *
+     * @param wkt
+     * @return
+     */
+    public Polygon convertWktToPolygon(String wkt) {
 
-	/**
-	 * This method will convert wkt to Polygon
-	 * 
-	 * @param wkt
-	 * @return
-	 */
-	public Polygon convertWktToPolygon(String wkt) {
+        return new Polygon(new LinearRing(getCoordinateSequence(wkt),
+                new GeometryFactory(new PrecisionModel(), 4326)), null, new GeometryFactory());
+    }
 
-		return new Polygon(new LinearRing(getCoordinateSequence(wkt),
-				new GeometryFactory(new PrecisionModel(), 4326)), null, new GeometryFactory());
-	}
+    /**
+     * This method will convert wkt to LineString
+     *
+     * @param wkt
+     * @return
+     */
+    public LineString convertWktToLineString(String wkt) {
 
-	/**
-	 * This method will convert wkt to LineString
-	 * 
-	 * @param wkt
-	 * @return
-	 */
-	public LineString convertWktToLineString(String wkt) {
+        return new LineString(getCoordinateSequence(wkt), new GeometryFactory(new PrecisionModel(), 4326));
+    }
 
-		return new LineString(getCoordinateSequence(wkt), new GeometryFactory(new PrecisionModel(), 4326));
-	}
+    /**
+     * This method will convert wkt to Point
+     *
+     * @param wkt
+     * @return
+     */
+    public Point convertWktToPoint(String wkt) {
 
-	/**
-	 * This method will convert wkt to Point
-	 * 
-	 * @param wkt
-	 * @return
-	 */
-	public Point convertWktToPoint(String wkt) {
+        return new Point(getCoordinateSequence(wkt), new GeometryFactory(new PrecisionModel(), 4326));
+    }
 
-		return new Point(getCoordinateSequence(wkt), new GeometryFactory(new PrecisionModel(), 4326));
-	}
-	
-	
 }

@@ -268,7 +268,7 @@
 
     <string name="select">Select an option</string>
     <string name="info">Info</string>
-    <string name="download_data_first">Please download project data first</string>
+    <string name="download_data_first">Please download configuration first</string>
     <string name="verify_data">Verify Data</string>
 
     <string-array name="verifyDataStatus">
@@ -301,7 +301,7 @@
     <string name="UploadingError">Uploading Error</string>
     <string name="Uploading">Uploading..</string>
     <string name="ConnectingtoWebService">Connecting to Web Service..</string>
-    <string name="DataDownloadCompleted">Data download completed</string>
+    <string name="DataDownloadCompleted">Download completed</string>
     <string name="ErrorInDownloadingData">Error in Downloading data</string>
     <string name="featurenotdraft">This feature is not in draft mode</string>
     <string name="dowbloadFinaldata">Download Final Data</string>
@@ -533,4 +533,12 @@
     <string name="SelectAcquisitionType">Select acquisition type</string>
     <string name="DisputeDetails">Dispute details</string>
     <string name="FailedToFormJson">Failed to form JSON string</string>
+    <string name="DownloadConfig">Download config</string>
+    <string name="UploadData">Upload data</string>
+    <string name="DownloadingConfig">Downloading configuration data</string>
+    <string name="DownloadingData">Downloading data. It may take few minutes.</string>
+    <string name="ConfigDownloadSuccessful">Configuration has been successfully downloaded</string>
+    <string name="DataDownloadSuccessful">Data has been downloaded successfully</string>
+    <string name="ConfigDonwloadFailed">Failed to download configuration</string>
+    <string name="DataDownloadFailed">Failed to download data</string>
 </resources>

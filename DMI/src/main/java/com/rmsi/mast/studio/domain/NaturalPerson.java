@@ -95,10 +95,7 @@ public class NaturalPerson extends Person implements Serializable {
     @ManyToOne
     @JoinColumn(name = "acquisition_type")
     private AcquisitionType acquisitionType;
-    
-    @Column(name = "dispute_id")
-    private Long disputeId;
-    
+        
     public IdType getIdType() {
         return idType;
     }
@@ -326,13 +323,4 @@ public class NaturalPerson extends Person implements Serializable {
     public void setPersonSubType(PersonType personSubType) {
         this.personSubType = personSubType;
     }
-
-    public Long getDisputeId() {
-        return disputeId;
-    }
-
-    public void setDisputeId(Long disputeId) {
-        this.disputeId = disputeId;
-    }
-
 }
