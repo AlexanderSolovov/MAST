@@ -641,7 +641,7 @@ a.fg-button {
 }
 
 .ui-dialog {
-/* 	background: none repeat scroll 0 0 /*#5B5B5B*/   #aaaaaa; */
+        z-index: 2000 !important;
 	-webkit-box-shadow: 4px 4px 2px #E6E6E6; /* Safari and Chrome */
 	box-shadow: 4px 4px 2px #E6E6E6;
 }

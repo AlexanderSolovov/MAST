@@ -297,7 +297,12 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.3.2</version>
         </dependency>
-
+        
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
 
         <!-- Test -->
         <dependency>
@@ -358,8 +363,12 @@
             <id>org.jboss.repository.release</id>
             <name>JBoss Maven Release Repository</name>
             <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
             <snapshots>
                 <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
             </snapshots>
         </repository>
 
@@ -367,8 +376,12 @@
             <id>it.geosolutions.release</id>
             <name>geo-solutions Repository</name>
             <url>http://maven.geo-solutions.it/</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
             <snapshots>
                 <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
             </snapshots>
         </repository>
 
@@ -382,8 +395,10 @@
             <url>http://repo1.maven.org/maven2</url>
             <releases>
                 <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
             </releases>
             <snapshots>
+                <updatePolicy>never</updatePolicy>
                 <enabled>false</enabled>
             </snapshots>
         </repository>

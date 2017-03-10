@@ -254,6 +254,9 @@ public class UserDataServiceImpl implements UserDataService {
 
                 spatialUnit = new SpatialUnit();
                 spatialUnit.setClaimType(claimTypeDAO.findById(prop.getClaimTypeCode(), false));
+                if(prop.getClaimTypeCode().equalsIgnoreCase("existingClaim") && !StringUtils.isEmpty(prop.getUkaNumber())){
+                    spatialUnit.setPropertyno(prop.getUkaNumber());
+                }
                 spatialUnit.setPolygonNumber(prop.getPolygonNumber());
                 spatialUnit.setSurveyDate(new SimpleDateFormat("yyyy-MM-dd").parse(prop.getSurveyDate()));
                 spatialUnit.setStatusUpdateTime(creationDate);
@@ -592,7 +595,7 @@ public class UserDataServiceImpl implements UserDataService {
         }
 
         for (Attribute propAttribute : propAttributes) {
-            if (propAttribute.getValue() != null && propAttribute.getValue().equalsIgnoreCase("null")) {
+            if (propAttribute.getValue() != null && !propAttribute.getValue().equalsIgnoreCase("null")) {
                 AttributeValues attribute = new AttributeValues();
                 attribute.setValue(propAttribute.getValue());
                 for (Surveyprojectattribute projectAttribute : projectAttributes) {
@@ -694,7 +697,7 @@ public class UserDataServiceImpl implements UserDataService {
             attributeValues.setUid(surveyProjectAttribute
                     .getSurveyProjectAttributeId(340, projectName));
 
-            attributeValues.setValue(sourceDocument.getDocumentType().getCode().toString());
+            attributeValues.setValue(attributeOptionsDao.getAttributeOptionsId(340, sourceDocument.getDocumentType().getCode().intValue()));
             attributeValuesList.add(attributeValues);
         }
 

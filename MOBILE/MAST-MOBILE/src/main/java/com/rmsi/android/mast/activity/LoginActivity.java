@@ -52,7 +52,7 @@ public class LoginActivity extends ActionBarActivity {
     CommonFunctions cf = CommonFunctions.getInstance();
     String error_msg, error_tag;
     ProgressDialog ringProgressDialog;
-    String userName, password, role;
+    String userName, password, roleName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,9 +102,9 @@ public class LoginActivity extends ActionBarActivity {
             cmdHideServerAddress.setVisibility(View.GONE);
             cmdShowServerAddress.setVisibility(View.VISIBLE);
             txtServerAddress.setVisibility(View.GONE);
-            //cmdHideServerAddress.setVisibility(View.GONE);
-            //cmdShowServerAddress.setVisibility(View.GONE);
-            //txtServerAddress.setVisibility(View.GONE);
+            cmdHideServerAddress.setVisibility(View.GONE);
+            cmdShowServerAddress.setVisibility(View.GONE);
+            txtServerAddress.setVisibility(View.GONE);
         } else {
             cmdHideServerAddress.setVisibility(View.GONE);
             cmdShowServerAddress.setVisibility(View.VISIBLE);
@@ -164,7 +164,7 @@ public class LoginActivity extends ActionBarActivity {
         if (user != null) {
             mUsernameView.setText(user.getUserName());
             mPasswordView.setText(user.getPassword());
-            role = user.getRoleName();
+            roleName = user.getRoleName();
 
             mUsernameView.setEnabled(false);
             mPasswordView.setEnabled(false);
@@ -260,17 +260,20 @@ public class LoginActivity extends ActionBarActivity {
                         if (Obj.has("password")) {
                             values.put("PASSWORD", Obj.get("password").toString());
                         }
+
+
+
                         if (Obj.has("roles")) {
                             JSONArray jsonarrayForRoles = Obj.getJSONArray("roles");
                             childObj = new JSONObject(jsonarrayForRoles.get(0).toString());
-                            role = childObj.get("name").toString();
+                            roleName = childObj.get("name").toString();
                             values.put("ROLE_ID", childObj.get("id").toString());
                             values.put("ROLE_NAME", childObj.get("name").toString());
                         }
                         valueList.add(values);
                         String tableName = "USER";
-                        loginAction(true, "Success");
                         DbController.getInstance(getApplicationContext()).insertValues(valueList, tableName);
+                        loginAction(true, "Success");
                     }
                 } else {
                     error_msg = getResources().getString(string.login_error);
@@ -292,8 +295,13 @@ public class LoginActivity extends ActionBarActivity {
             ringProgressDialog.dismiss();
 
         if (loginSuccess) {
+            if (roleName.equals("ROLE_TRUSTED_INTERMEDIARY")) {
+                CommonFunctions.setRoleID(User.ROLE_TRUSTED_INTERMEDIARY);
+            } else if (roleName.equals("ROLE_ADJUDICATOR")) {
+                CommonFunctions.setRoleID(User.ROLE_ADJUDICATOR);
+            }
+
             Intent intentlogin = new Intent(getApplicationContext(), LandingPageActivity.class);
-            intentlogin.putExtra("role", role);
             startActivity(intentlogin);
         } else {
             cf.showMessage(context, "Login Failed", msg);

@@ -38,7 +38,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
+import com.rmsi.android.mast.domain.Feature;
+import com.rmsi.android.mast.domain.Property;
 import com.rmsi.android.mast.domain.User;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class CommonFunctions {
     private static CommonFunctions mInstance;
@@ -52,6 +55,7 @@ public class CommonFunctions {
     String syncLogFileName = Environment.getExternalStorageDirectory() + "/MAST/MASTSync_LOG.txt";
     List<LatLng> points;
     int MAP_MODE = 0;
+    private WKTReader wktReader;
 
     private final String KEY_SERVER_ADDRESS = "server_address";
     private final String KEY_SNAP_TO_VERTEX = "snap_to_vertex";
@@ -73,7 +77,7 @@ public class CommonFunctions {
     public static int pointColor = Color.argb(255, 255, 255, 0);
 
     private static String roleStr;
-    public static int roleId = -1;
+    private static int roleId = -1;
 
     // Point in Tanzania
     public static double latitude = -7.8595;
@@ -94,6 +98,7 @@ public class CommonFunctions {
         mMyPreferences = mContext.getSharedPreferences("MASTMobilePref", Activity.MODE_PRIVATE);
         lineColor = getFeatureColor(getLineColor(), "line");
         pointColor = getFeatureColor(getPointColor(), "point");
+        wktReader = new WKTReader();
     }
 
     public static Context getApplicationContext() {
@@ -136,6 +141,10 @@ public class CommonFunctions {
             Initialize(mContext.getApplicationContext());
         }
         return mMyPreferences;
+    }
+
+    public WKTReader getWktReader() {
+        return wktReader;
     }
 
     public void addErrorMessage(String Tag, String message) {
@@ -551,22 +560,23 @@ public class CommonFunctions {
         });
     }
 
-    public static int getRoleID() {
-        if (roleId < 0) {
-            DbController sqllite = DbController.getInstance(mContext);
-            User user = sqllite.getLoggedUser();
+    public static boolean isFeatureReadOnly (long featureId){
+        if(getRoleID() == User.ROLE_ADJUDICATOR)
+            return true;
 
-            if (user != null) {
-                roleStr = user.getRoleName();
-                sqllite.close();
-                if (roleStr.equals("ROLE_TRUSTED_INTERMEDIARY")) {
-                    roleId = User.ROLE_TRUSTED_INTERMEDIARY;
-                } else if (roleStr.equals("ROLE_ADJUDICATOR")) {
-                    roleId = User.ROLE_ADJUDICATOR;
-                }
-            }
-        }
+        Feature feature = DbController.getInstance(mContext).fetchFeaturebyID(featureId);
+        if(feature != null && !StringUtility.empty(feature.getStatus()).equalsIgnoreCase(Property.CLIENT_STATUS_DRAFT))
+            return true;
+
+        return false;
+    }
+
+    public static int getRoleID() {
         return roleId;
+    }
+
+    public static void setRoleID(int id) {
+        roleId = id;
     }
 
     // Added to scale down big images

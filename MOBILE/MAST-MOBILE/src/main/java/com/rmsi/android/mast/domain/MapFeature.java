@@ -16,6 +16,8 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GisUtility;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.io.ParseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,9 @@ public class MapFeature {
     private List<Marker> mapVertices;
     private PolylineOptions line;
     private Polygon mapPolygon;
+    private com.vividsolutions.jts.geom.Polygon wktPolygon;
+    private com.vividsolutions.jts.geom.LineString wktLine;
+    private com.vividsolutions.jts.geom.Point wktPoint;
     private Circle mapPoint;
     private Polyline mapLine;
     private TYPE featureType;
@@ -77,6 +82,18 @@ public class MapFeature {
         return polygon;
     }
 
+    public com.vividsolutions.jts.geom.Polygon getWktPolygon() {
+        if(wktPolygon == null && points != null && points.size() > 0){
+            try {
+                wktPolygon = (com.vividsolutions.jts.geom.Polygon) CommonFunctions.getInstance().getWktReader()
+                        .read("POLYGON ((" + feature.getCoordinates() + "))");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return wktPolygon;
+    }
+
     public PolylineOptions getLine() {
         if(line == null && points != null && points.size() > 0){
             line = new PolylineOptions();
@@ -95,6 +112,18 @@ public class MapFeature {
             line.zIndex(4);
         }
         return line;
+    }
+
+    public LineString getWktLine() {
+        if(wktLine == null && points != null && points.size() > 0){
+            try {
+                wktLine = (com.vividsolutions.jts.geom.LineString) CommonFunctions.getInstance().getWktReader()
+                        .read("LINESTRING (" + feature.getCoordinates() + ")");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return wktLine;
     }
 
     public Polygon getMapPolygon() {
@@ -120,6 +149,18 @@ public class MapFeature {
             point.zIndex(4);
         }
         return point;
+    }
+
+    public com.vividsolutions.jts.geom.Point getWktPoint() {
+        if(wktPoint == null && points != null && points.size() > 0){
+            try {
+                wktPoint = (com.vividsolutions.jts.geom.Point) CommonFunctions.getInstance().getWktReader()
+                        .read("POINT (" + feature.getCoordinates() + ")");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return wktPoint;
     }
 
     public Circle getMapPoint() {
@@ -173,9 +214,12 @@ public class MapFeature {
         points = new ArrayList<>();
         screenPoints = new ArrayList<>();
         polygon = null;
+        wktPolygon = null;
         point = null;
+        wktPoint = null;
         label = null;
         line = null;
+        wktLine = null;
         vertices = null;
 
         removeFromMap();
@@ -278,5 +322,19 @@ public class MapFeature {
             }
         }
         return null;
+    }
+
+    public boolean containsPoint(com.vividsolutions.jts.geom.Point p){
+        if (getFeatureType() == TYPE.POLYGON) {
+            if(getWktPolygon() != null)
+                return GisUtility.IsPointInPolygon(p, wktPolygon);
+        } else if (getFeatureType() == TYPE.LINE) {
+            if(getWktLine() != null)
+                return GisUtility.IsPointIntersectsLine(p, wktLine);
+        } else if (getFeatureType() == TYPE.POINT) {
+            if(getWktPoint() != null)
+                return GisUtility.IsPointIntersectsPoint(p, wktPoint);
+        }
+        return false;
     }
 }

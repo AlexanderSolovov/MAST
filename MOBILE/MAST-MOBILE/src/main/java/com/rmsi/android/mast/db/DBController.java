@@ -57,13 +57,6 @@ public class DbController extends SQLiteOpenHelper {
     static String DB_FULL_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + DBPATH;
     SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.ENGLISH);
 
-    private static String STATUS_DRAFT = "draft";
-    private static String STATUS_COMPLETE = "complete";
-    private static String STATUS_SYNCED = "synced";
-    private static String STATUS_VERIFIED = "verified";
-    private static String STATUS_VERIFIED_SYNCED = "verified&synced";
-    private static String STATUS_REJECTED = "rejected";
-    private static String STATUS_FINAL = "final";
     private static int DB_VERSION = 6;
     CommonFunctions cf = null;
 
@@ -101,7 +94,8 @@ public class DbController extends SQLiteOpenHelper {
                 "WITNESS_2 TEXT," +
                 "CLAIM_TYPE INTEGER," +
                 "POLYGON_NUMBER TEXT," +
-                "SURVEY_DATE TEXT" +
+                "SURVEY_DATE TEXT," +
+                "UKA_NUMBER TEXT" +
                 ")";
 
         String query_table10 = "CREATE TABLE SOCIAL_TENURE(" +
@@ -387,7 +381,7 @@ public class DbController extends SQLiteOpenHelper {
             value.put(Feature.COL_COORDINATES, wKTStr);
             value.put(Feature.COL_GEOM_TYPE, geomtype);
             value.put(Property.COL_CREATION_DATE, time);
-            value.put(Property.COL_STATUS, STATUS_DRAFT);
+            value.put(Property.COL_STATUS, Property.CLIENT_STATUS_DRAFT);
             value.put(Property.COL_IMEI, imei);
 
             getDb().insert(Feature.TABLE_NAME, null, value);
@@ -433,31 +427,31 @@ public class DbController extends SQLiteOpenHelper {
     }
 
     public List<Feature> fetchDraftFeatures() {
-        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + " = '" + STATUS_DRAFT + "'";
+        String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + " = '" + Property.CLIENT_STATUS_DRAFT + "'";
         return getFeatures(q);
     }
 
     public List<Feature> fetchCompletedFeatures() {
         String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + "='" +
-                STATUS_COMPLETE + "' AND (" + Feature.COL_SERVER_ID + " = '' OR " + Feature.COL_SERVER_ID + " IS NULL)";
+                Property.CLIENT_STATUS_COMPLETE + "' AND (" + Feature.COL_SERVER_ID + " = '' OR " + Feature.COL_SERVER_ID + " IS NULL)";
         return getFeatures(q);
     }
 
     public List<Feature> fetchSyncededFeatures() {
         String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + "='" +
-                STATUS_COMPLETE + "' AND (" + Feature.COL_SERVER_ID + " != '' AND " + Feature.COL_SERVER_ID + " IS NOT NULL)";
+                Property.CLIENT_STATUS_COMPLETE + "' AND (" + Feature.COL_SERVER_ID + " != '' AND " + Feature.COL_SERVER_ID + " IS NOT NULL)";
         return getFeatures(q);
     }
 
     public List<Feature> fetchVerifiedFeatures() {
         String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + " IN ('" +
-                STATUS_VERIFIED + "','" + STATUS_VERIFIED_SYNCED + "')";
+                Property.CLIENT_STATUS_VERIFIED + "','" + Property.CLIENT_STATUS_VERIFIED_AND_SYNCHED + "')";
         return getFeatures(q);
     }
 
     public List<Feature> fetchFinalFeatures() {
         String q = "SELECT * FROM " + Feature.TABLE_NAME + " WHERE " + Feature.COL_STATUS + "='" +
-                STATUS_FINAL + "' AND (" + Feature.COL_SERVER_ID + " != '' AND " + Feature.COL_SERVER_ID + " IS NOT NULL)";
+                Property.CLIENT_STATUS_FINAL + "' AND (" + Feature.COL_SERVER_ID + " != '' AND " + Feature.COL_SERVER_ID + " IS NOT NULL)";
         return getFeatures(q);
     }
 
@@ -484,7 +478,7 @@ public class DbController extends SQLiteOpenHelper {
         String whereClause = Feature.COL_ID + " = " + featureid;
         try {
             String time = sdf.format(new Date());
-            values.put(Feature.COL_STATUS, STATUS_COMPLETE);
+            values.put(Feature.COL_STATUS, Property.CLIENT_STATUS_COMPLETE);
             values.put(Property.COL_COMPLETION_DATE, time);
             getDb().update(Feature.TABLE_NAME, values, whereClause, null);
         } catch (Exception e) {
@@ -500,7 +494,7 @@ public class DbController extends SQLiteOpenHelper {
         String whereClause = Feature.COL_ID + " = " + featureid;
         try {
             String time = sdf.format(new Date());
-            values.put(Feature.COL_STATUS, STATUS_VERIFIED);
+            values.put(Feature.COL_STATUS, Property.CLIENT_STATUS_VERIFIED);
             values.put(Property.COL_COMPLETION_DATE, time);
             getDb().update(Feature.TABLE_NAME, values, whereClause, null);
         } catch (Exception e) {
@@ -532,6 +526,7 @@ public class DbController extends SQLiteOpenHelper {
                 int indxCreationDate = cur.getColumnIndex(Property.COL_CREATION_DATE);
                 int indxHamletId = cur.getColumnIndex(Property.COL_HAMLET_ID);
                 int indxImei = cur.getColumnIndex(Property.COL_IMEI);
+                int ukaNumber = cur.getColumnIndex(Property.COL_UKA_NUMBER);
 
                 do{
                     Property property = new Property();
@@ -550,6 +545,8 @@ public class DbController extends SQLiteOpenHelper {
                     property.setCreationDate(cur.getString(indxCreationDate));
                     property.setHamletId(cur.getLong(indxHamletId));
                     property.setImei(cur.getString(indxImei));
+                    if (!cur.isNull(ukaNumber))
+                        property.setUkaNumber(cur.getString(ukaNumber));
 
                     property.setDeceasedPerson(getDeceasedPersonByProp(property.getId()));
                     property.setMedia(getMediaByProp(property.getId()));
@@ -1436,7 +1433,7 @@ public class DbController extends SQLiteOpenHelper {
 
     public User getLoggedUser() {
         User user = null;
-        String selectSQLUser = "SELECT * FROM USER ";
+        String selectSQLUser = "SELECT * FROM " + User.TABLE_NAME;
         Cursor cursor = getDb().rawQuery(selectSQLUser, null);
 
         if (cursor.moveToFirst()) {
@@ -1894,6 +1891,7 @@ public class DbController extends SQLiteOpenHelper {
             row.put(Media.COL_TYPE, media.getType());
             row.put(Media.COL_PERSON_ID, media.getPersonId());
             row.put(Media.COL_DISPUTE_ID, media.getDisputeId());
+            row.put(Media.COL_SYNCED, media.getSynced());
 
             getDb().insert(Media.TABLE_NAME, null, row);
 
@@ -1926,36 +1924,10 @@ public class DbController extends SQLiteOpenHelper {
         return projectName;
     }
 
-    public JSONArray getpersonSubTypeValue(long featureId, int groupId) {
-        String query = "SELECT * FROM FORM_VALUES WHERE ATTRIB_ID=54 AND GROUP_ID=" + groupId + " AND FEATURE_ID=" + featureId;
-        Cursor cursor = getDb().rawQuery(query, null);
-
-        JSONArray personSubTypeJsonList = new JSONArray();
-
-        if (cursor.moveToFirst()) {
-
-            try {
-                do {
-                    JSONArray personSubTypeJsonArr = new JSONArray();
-                    personSubTypeJsonArr.put(0, featureId);//featureid
-                    personSubTypeJsonArr.put(1, cursor.getString(0));//groupid
-                    personSubTypeJsonArr.put(2, cursor.getString(1));//attribID
-                    personSubTypeJsonArr.put(3, cursor.getString(2));//attribvalue
-                    personSubTypeJsonList.put(personSubTypeJsonArr);
-                }
-                while (cursor.moveToNext());
-                cursor.close();
-            } catch (Exception e) {
-                // TODO: handle exception
-            }
-        }
-        return personSubTypeJsonList;
-    }
-
     public String getProjectDataForUpload() {
         try{
             List<Property> properties = createPropertyList("SELECT * FROM " + Property.TABLE_NAME +
-                    " WHERE " + Property.COL_STATUS + " = '" + STATUS_COMPLETE + "' AND (" +
+                    " WHERE " + Property.COL_STATUS + " = '" + Property.CLIENT_STATUS_COMPLETE + "' AND (" +
                     Property.COL_SERVER_ID + " IS NULL OR " + Property.COL_SERVER_ID + " = '')");
 
             if(properties == null || properties.size() < 1)
@@ -2042,7 +2014,7 @@ public class DbController extends SQLiteOpenHelper {
                     "SF.SERVER_FEATURE_ID," +
                     "MV.TYPE "
                     + "FROM MEDIA AS MV INNER JOIN SPATIAL_FEATURES AS SF ON MV.FEATURE_ID =  SF.FEATURE_ID "
-                    + "WHERE SF.STATUS = '" + STATUS_COMPLETE + "' and MV.SYNCED=0 Limit 1";
+                    + "WHERE SF.STATUS = '" + Property.CLIENT_STATUS_COMPLETE + "' and MV.SYNCED=0 Limit 1";
 
             JSONArray medias = new JSONArray();
             JSONArray mediasAttributes = new JSONArray();
@@ -2109,13 +2081,14 @@ public class DbController extends SQLiteOpenHelper {
     }
 
     public List<Feature> fetchRejectedFeatures() {
-        String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_REJECTED + "'";
+        String q = "SELECT * FROM SPATIAL_FEATURES where status = '" + Property.CLIENT_STATUS_REJECTED + "'";
         return getFeatures(q);
     }
 
     public boolean checkPendingDraftAndCompletedRecordsToSync() {
         boolean flag = false;
-        String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_DRAFT + "' OR status = '" + STATUS_COMPLETE + "' and SERVER_FEATURE_ID IS NULL OR SERVER_FEATURE_ID = ''";
+        String spatialFeatureSql = "SELECT * FROM SPATIAL_FEATURES where status = '" + Property.CLIENT_STATUS_DRAFT
+                + "' OR status = '" + Property.CLIENT_STATUS_COMPLETE + "' and SERVER_FEATURE_ID IS NULL OR SERVER_FEATURE_ID = ''";
         Cursor cursor = getDb().rawQuery(spatialFeatureSql, null);
         if (cursor.moveToFirst()) {
             flag = true;
@@ -2128,7 +2101,7 @@ public class DbController extends SQLiteOpenHelper {
         try {
             String sptialids = json_string.substring(1, json_string.length() - 1);
             ContentValues values = new ContentValues();
-            values.put("STATUS", STATUS_REJECTED);
+            values.put("STATUS", Property.CLIENT_STATUS_REJECTED);
             String sqlwhere = " SERVER_FEATURE_ID in (" + sptialids + ")";
             getDb().update("SPATIAL_FEATURES", values, sqlwhere, null);
         } catch (Exception e) {
@@ -2183,7 +2156,7 @@ public class DbController extends SQLiteOpenHelper {
                         continue;
                     }
                     // Update property with local feaure id
-                    prop.setId(feature.getId());
+                    //prop.setId(feature.getId());
                 }
 
                 status = StringUtility.empty(prop.getStatus());
@@ -2252,6 +2225,7 @@ public class DbController extends SQLiteOpenHelper {
         values.put(Property.COL_COMPLETION_DATE, prop.getCompletionDate());
         values.put(Property.COL_CREATION_DATE, prop.getCreationDate());
         values.put(Property.COL_IMEI, prop.getImei());
+        values.put(Property.COL_UKA_NUMBER, prop.getUkaNumber());
 
         getDb().insert(Feature.TABLE_NAME, null, values);
         long featureId = getGeneratedId(Feature.TABLE_NAME);
@@ -2307,6 +2281,7 @@ public class DbController extends SQLiteOpenHelper {
             for(Media media : prop.getMedia()){
                 media.setId(null);
                 media.setFeatureId(featureId);
+                media.setSynced(1);
                 saveMedia(media);
             }
         }
@@ -2334,304 +2309,13 @@ public class DbController extends SQLiteOpenHelper {
                     media.setId(null);
                     media.setFeatureId(featureId);
                     media.setDisputeId(dispute.getId());
+                    media.setSynced(1);
                     saveMedia(media);
                 }
             }
         }
 
         return prop;
-    }
-
-
-    public boolean saveDownloadedProperties(String data, String status) {
-        if (data != null) {
-            Long groupId = 0L;
-            String personType = null;
-            JSONObject jsonObj = null;
-
-            try {
-                jsonObj = new JSONObject(data);
-
-                Iterator<String> iterator = jsonObj.keys();
-                while (iterator.hasNext()) {
-                    try {
-                        Long featureId = 0L;
-                        String key = (String) iterator.next();
-                        String server_featureId = key;
-
-                        if (status.equalsIgnoreCase(STATUS_FINAL)) {
-                            ContentValues value = new ContentValues();
-                            String whereClause = "SERVER_FEATURE_ID = " + server_featureId;
-                            value.put("STATUS", STATUS_FINAL);
-                            int rows = getDb().update("SPATIAL_FEATURES", value, whereClause, null);
-                            if (rows > 0) {
-                                continue;
-                            }
-                        } else {
-                            ContentValues value = new ContentValues();
-                            String whereClause = "SERVER_FEATURE_ID = " + server_featureId;
-                            value.put("SERVER_FEATURE_ID", server_featureId);
-                            int rows = getDb().update("SPATIAL_FEATURES", value, whereClause, null);
-                            if (rows > 0) {
-                                continue;
-                            }
-                        }
-                        getDb().beginTransaction();
-                        ContentValues spatialFeatureValues = new ContentValues();
-                        ContentValues attribValues = new ContentValues();
-                        ContentValues attribListing = new ContentValues();
-                        spatialFeatureValues.clear();
-                        spatialFeatureValues.put("SERVER_FEATURE_ID", server_featureId);
-
-                        JSONArray arry = jsonObj.getJSONArray(key);
-
-                        if (((JSONArray) arry.get(3)).length() == 0) {
-                            personType = "Natural";
-                        } else if (((JSONArray) arry.get(3)).length() > 0) {
-                            personType = "Non-Natural";
-                        }
-                        attribValues.clear();
-                        //Spatial details[0]
-
-
-                        JSONArray spatialDetailsArr1 = new JSONArray(arry.get(0).toString());
-
-                        //Spatial details at index 0
-                        JSONObject spatialAttribDetailsJsonObj = new JSONObject(spatialDetailsArr1.get(0).toString());
-                        if (spatialAttribDetailsJsonObj.has("geometry")) {
-                            String geom = spatialAttribDetailsJsonObj.getString("geometry").replaceAll(", ", ",");
-                            spatialFeatureValues.put("COORDINATES", geom);
-                        }
-                        //
-                        if (spatialAttribDetailsJsonObj.has("gtype")) {
-                            spatialFeatureValues.put("GEOMTYPE", spatialAttribDetailsJsonObj.getString("gtype"));
-                        }
-                        if (spatialAttribDetailsJsonObj.has("imeiNumber")) {
-                            spatialFeatureValues.put("IMEI", spatialAttribDetailsJsonObj.getString("imeiNumber"));
-                        }
-                        if (spatialAttribDetailsJsonObj.has("hamletId")) {
-                            spatialFeatureValues.put("HAMLET_ID", spatialAttribDetailsJsonObj.getString("hamletId"));
-                        }
-                        if (spatialAttribDetailsJsonObj.has("witness1")) {
-                            spatialFeatureValues.put("WITNESS_1", spatialAttribDetailsJsonObj.getString("witness1"));
-                        }
-                        if (spatialAttribDetailsJsonObj.has("witness2")) {
-                            spatialFeatureValues.put("WITNESS_2", spatialAttribDetailsJsonObj.getString("witness2"));
-                        }
-                        spatialFeatureValues.put("STATUS", status);
-                        //insert spatial data
-
-                        getDb().insert("SPATIAL_FEATURES", null, spatialFeatureValues);
-
-                        featureId = getGeneratedId(Feature.TABLE_NAME);
-
-                        JSONArray attribDetailsArr = new JSONArray(spatialDetailsArr1.get(2).toString());
-                        if (attribDetailsArr != null) {
-                            groupId = getNewGroupId();
-                            for (int i = 0; i < attribDetailsArr.length(); i++) {
-                                JSONArray attribValuesArr = new JSONArray(attribDetailsArr.get(i).toString());
-                                attribValues.clear();
-                                attribValues.put("GROUP_ID", groupId);
-                                attribValues.put("ATTRIB_ID", attribValuesArr.getInt(0));
-                                attribValues.put("ATTRIB_VALUE", attribValuesArr.getString(1));
-                                attribValues.put("FEATURE_ID", featureId);
-
-                                getDb().insert("FORM_VALUES", null, attribValues);
-                            }
-                        }
-
-                        JSONArray attribSocialTenureDetailsArr = new JSONArray(arry.get(1).toString());
-
-                        groupId = getNewGroupId();
-                        //same multiple tenure is coming from downloaded data ,so we will save tenure data of  0 index only.
-                        JSONArray attribTenureChildArr = new JSONArray(attribSocialTenureDetailsArr.get(0).toString());
-
-                        for (int j = 0; j < attribTenureChildArr.length(); j++) {
-                            JSONArray attribChildValuesArr = new JSONArray(attribTenureChildArr.get(j).toString());
-                            attribValues.clear();
-                            attribValues.put("GROUP_ID", groupId);
-                            attribValues.put("ATTRIB_ID", attribChildValuesArr.getInt(0));              //attribute id
-                            attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));        //attribute value
-                            attribValues.put("FEATURE_ID", featureId);
-
-                            getDb().insert("FORM_VALUES", null, attribValues);
-                            String residentValue = "Yes";
-                            String whereClause = "FEATURE_ID = " + featureId;
-                            if (attribChildValuesArr.getInt(0) == 23) {
-
-                                if (attribChildValuesArr.getString(1).equalsIgnoreCase("29")) {
-                                    residentValue = "Yes";
-                                } else if (attribChildValuesArr.getString(1).equalsIgnoreCase("29")) {
-                                    residentValue = "No";
-                                }
-
-                            }
-                            ContentValues value = new ContentValues();
-                            value.put("SERVER_PK", residentValue);
-                            getDb().update("SPATIAL_FEATURES", value, whereClause, null);
-                        }
-
-                        JSONArray attribNaturalPersonDetailsArr = new JSONArray(arry.get(2).toString());
-
-                        for (int i = 0; i < attribNaturalPersonDetailsArr.length(); i++) {
-
-                            Long personId = 0L;
-                            JSONArray attribChildArr = new JSONArray(attribNaturalPersonDetailsArr.get(i).toString());
-
-                            groupId = getNewGroupId();
-
-                            //for adding to person table
-                            attribListing.clear();
-                            attribListing.put("ID", groupId);
-                            attribListing.put("FEATURE_ID", featureId);
-
-                            for (int j = 1; j < attribChildArr.length(); j++) {
-
-                                JSONArray attribChildValuesArr = new JSONArray(attribChildArr.get(j - 1).toString());
-                                attribValues.clear();
-
-                                attribValues.put("GROUP_ID", groupId);
-                                attribValues.put("ATTRIB_ID", attribChildValuesArr.getInt(0));
-                                attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
-                                attribValues.put("FEATURE_ID", featureId);
-
-                                getDb().insert("FORM_VALUES", null, attribValues);
-
-                                if (attribChildValuesArr.getString(2).equalsIgnoreCase("1")) // listing
-                                {
-                                    attribListing.put("ATTRIB_1", attribChildValuesArr.getString(1));
-                                }
-
-                                if (attribChildValuesArr.getString(2).equalsIgnoreCase("2")) {
-                                    attribListing.put("ATTRIB_2", attribChildValuesArr.getString(1));
-                                }
-                                personId = groupId;
-                            }
-                            String personSubType = "";
-                            if ((attribChildArr.getString(attribChildArr.length() - 1)).equalsIgnoreCase("3")) {
-                                personSubType = "Owner";
-                            } else if ((attribChildArr.getString(attribChildArr.length() - 1)).equalsIgnoreCase("4")) {
-                                personSubType = "Administrator";
-                            } else if ((attribChildArr.getString(attribChildArr.length() - 1)).equalsIgnoreCase("5")) {
-                                personSubType = "Guardian";
-                            }
-
-                            attribListing.put("PERSON_SUBTYPE", personSubType);
-                            getDb().insert("PERSON", null, attribListing);
-                        }
-
-                        JSONArray attribNonNaturalPersonDetailsArr = new JSONArray(arry.get(3).toString());
-                        String whereClause = "SERVER_FEATURE_ID = " + server_featureId;
-
-                        if (attribNonNaturalPersonDetailsArr.length() > 0) {
-                            spatialFeatureValues.put("PERSON_TYPE", "Non-Natural");
-                            getDb().update("SPATIAL_FEATURES", spatialFeatureValues, whereClause, null);
-                            for (int i = 0; i < attribNonNaturalPersonDetailsArr.length(); i++) {
-                                JSONArray attribChildArr = new JSONArray(attribNonNaturalPersonDetailsArr.get(i).toString());
-                                groupId = getNewGroupId();
-                                Long personId = 0L;
-                                for (int j = 0; j < attribChildArr.length(); j++) {
-                                    JSONArray attribChildValuesArr = new JSONArray(attribChildArr.get(j).toString());
-                                    attribValues.clear();
-
-                                    attribValues.put("GROUP_ID", groupId);
-                                    attribValues.put("ATTRIB_ID", attribChildValuesArr.getInt(0));
-                                    attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
-                                    attribValues.put("FEATURE_ID", featureId);
-
-                                    getDb().insert("FORM_VALUES", null, attribValues);
-
-                                    personId = groupId;
-                                }
-                            }
-                        } else if (attribNonNaturalPersonDetailsArr.length() == 0) {
-                            spatialFeatureValues.put("PERSON_TYPE", "Natural");
-                            getDb().update("SPATIAL_FEATURES", spatialFeatureValues, whereClause, null);
-                        }
-
-                        JSONArray attribMediaDetailsArr = new JSONArray(arry.get(4).toString());
-                        if (attribMediaDetailsArr.length() > 0) {
-                            for (int i = 0; i < attribMediaDetailsArr.length(); i++) {
-                                JSONArray attribChildArr = new JSONArray(attribMediaDetailsArr.get(i).toString());
-                                if (attribChildArr.length() > 0) {
-                                    groupId = getNewGroupId();
-                                    //For inserting values in MEDIA table
-                                    attribListing.clear();
-                                    attribListing.put("MEDIA_ID", groupId);
-                                    attribListing.put("FEATURE_ID", featureId);
-
-                                    for (int j = 0; j < attribChildArr.length(); j++) {
-
-                                        JSONArray attribChildValuesArr = new JSONArray(attribChildArr.get(j).toString());
-                                        attribValues.clear();
-
-                                        attribValues.put("GROUP_ID", groupId);
-                                        attribValues.put("ATTRIB_ID", attribChildValuesArr.getInt(0));
-                                        attribValues.put("ATTRIB_VALUE", attribChildValuesArr.getString(1));
-                                        attribValues.put("FEATURE_ID", featureId);
-
-                                        getDb().insert("FORM_VALUES", null, attribValues);
-
-                                        if (attribChildValuesArr.getString(2).equalsIgnoreCase("1")) {
-                                            attribListing.put("ATTRIB_1", attribChildValuesArr.getString(1));
-                                        } else if (attribChildValuesArr.getString(2).equalsIgnoreCase("2")) {
-                                            attribListing.put("ATTRIB_2", attribChildValuesArr.getString(1));
-                                        }
-                                    }
-                                    getDb().insert("MEDIA", null, attribListing);
-                                }
-                            }
-                        }
-
-                        JSONArray attribPOIDetailsArr = new JSONArray(arry.get(5).toString());
-                        if (attribPOIDetailsArr.length() > 0) {
-                            for (int i = 0; i < attribPOIDetailsArr.length(); i++) {
-                                JSONObject POIDetailsJsonObj = new JSONObject(attribPOIDetailsArr.get(i).toString());
-                                if (POIDetailsJsonObj.has("personName")) {
-                                    attribValues.clear();
-
-                                    attribValues.put("NEXT_KIN_NAME", POIDetailsJsonObj.getString("personName"));
-                                    attribValues.put("FEATURE_ID", featureId);
-                                    getDb().insert("NEXT_KIN_DETAILS", null, attribValues);
-                                }
-                            }
-                        }
-
-                        JSONArray attribDeceasedPersonDetailsArr = new JSONArray(arry.get(6).toString());
-                        if (attribDeceasedPersonDetailsArr.length() > 0) {
-                            for (int i = 0; i < attribDeceasedPersonDetailsArr.length(); i++) {
-                                JSONObject DeceasedPersonDetailsJsonObj = new JSONObject(attribDeceasedPersonDetailsArr.get(i).toString());
-                                attribValues.clear();
-                                if (DeceasedPersonDetailsJsonObj.has("firstname")) {
-                                    attribValues.put("FIRST_NAME", DeceasedPersonDetailsJsonObj.getString("firstname"));
-                                }
-                                if (DeceasedPersonDetailsJsonObj.has("middlename")) {
-                                    attribValues.put("MIDDLE_NAME", DeceasedPersonDetailsJsonObj.getString("middlename"));
-                                }
-                                if (DeceasedPersonDetailsJsonObj.has("lastname")) {
-                                    attribValues.put("LAST_NAME", DeceasedPersonDetailsJsonObj.getString("lastname"));
-                                }
-
-                                attribValues.put("FEATURE_ID", featureId);
-                                getDb().insert("DECEASED_PERSON", null, attribValues);
-                            }
-                        }
-                        getDb().setTransactionSuccessful();
-                    } catch (Exception e) {
-                        cf.syncLog("", e);
-                        e.printStackTrace();
-                    } finally {
-                        if (getDb().inTransaction())
-                            getDb().endTransaction();
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
 
     public boolean resetMediaStatus() {
@@ -2649,7 +2333,7 @@ public class DbController extends SQLiteOpenHelper {
     }
 
     public String getVerifiedFeaturesForUpload() {
-        String q = "SELECT SERVER_FEATURE_ID FROM SPATIAL_FEATURES where status = '" + STATUS_VERIFIED + "'";
+        String q = "SELECT SERVER_FEATURE_ID FROM SPATIAL_FEATURES where status = '" + Property.CLIENT_STATUS_VERIFIED + "'";
         JSONObject json_obj = new JSONObject();
         JSONArray usins = new JSONArray();
         try {
@@ -2677,7 +2361,7 @@ public class DbController extends SQLiteOpenHelper {
         try {
             String sptialids = data.substring(1, data.length() - 1);
             ContentValues values = new ContentValues();
-            values.put("STATUS", STATUS_VERIFIED_SYNCED);
+            values.put("STATUS", Property.CLIENT_STATUS_VERIFIED_AND_SYNCHED);
             String sqlwhere = " SERVER_FEATURE_ID in (" + sptialids + ")";
             getDb().update("SPATIAL_FEATURES", values, sqlwhere, null);
         } catch (Exception e) {
@@ -2692,15 +2376,15 @@ public class DbController extends SQLiteOpenHelper {
         int count = 0;
         String selectQueryQues = null;
 
-        if (status.equalsIgnoreCase(STATUS_DRAFT)) {
+        if (status.equalsIgnoreCase(Property.CLIENT_STATUS_DRAFT)) {
 
-            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_DRAFT + "'";
-        } else if (status.equalsIgnoreCase(STATUS_COMPLETE)) {
-            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID = '' or SERVER_FEATURE_ID is null)";
-        } else if (status.equalsIgnoreCase(STATUS_SYNCED)) {
-            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + STATUS_COMPLETE + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
-        } else if (status.equalsIgnoreCase(STATUS_REJECTED)) {
-            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + STATUS_REJECTED + "'";
+            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + Property.CLIENT_STATUS_DRAFT + "'";
+        } else if (status.equalsIgnoreCase(Property.CLIENT_STATUS_COMPLETE)) {
+            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + Property.CLIENT_STATUS_COMPLETE + "' and (SERVER_FEATURE_ID = '' or SERVER_FEATURE_ID is null)";
+        } else if (status.equalsIgnoreCase(Property.CLIENT_STATUS_SYNCED)) {
+            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where STATUS='" + Property.CLIENT_STATUS_COMPLETE + "' and (SERVER_FEATURE_ID IS not NULL OR SERVER_FEATURE_ID != '')";
+        } else if (status.equalsIgnoreCase(Property.CLIENT_STATUS_REJECTED)) {
+            selectQueryQues = "SELECT * FROM SPATIAL_FEATURES where status = '" + Property.CLIENT_STATUS_REJECTED + "'";
         }
 
         Cursor cursor = getDb().rawQuery(selectQueryQues, null);
@@ -2776,6 +2460,7 @@ public class DbController extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(Property.COL_CLAIM_TYPE_CODE, prop.getClaimTypeCode());
             values.put(Property.COL_POLYGON_NUMBER, prop.getPolygonNumber());
+            values.put(Property.COL_UKA_NUMBER, prop.getUkaNumber());
             values.put(Property.COL_SURVEY_DATE, prop.getSurveyDate());
             values.put(Property.COL_HAMLET_ID, prop.getHamletId());
             values.put(Property.COL_ADJUDICATOR1, prop.getAdjudicator1());

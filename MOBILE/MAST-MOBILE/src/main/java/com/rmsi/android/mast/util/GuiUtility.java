@@ -2,7 +2,6 @@ package com.rmsi.android.mast.util;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.hardware.usb.UsbRequest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -21,12 +20,8 @@ import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.adapter.SpinnerAdapter;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.Option;
-import com.rmsi.android.mast.domain.User;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,11 +35,11 @@ public class GuiUtility {
      * @param layout     Layout to append
      * @param attributes List of attributes
      */
-    public static void appendLayoutWithAttributes(LinearLayout layout, List<Attribute> attributes) {
+    public static void appendLayoutWithAttributes(LinearLayout layout, List<Attribute> attributes, boolean readOnly) {
         if (attributes != null && attributes.size() > 0) {
             LayoutInflater inflater = (LayoutInflater) layout.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             for (Attribute attr : attributes) {
-                layout.addView(createViewFromAttribute(attr, inflater, true));
+                layout.addView(createViewFromAttribute(attr, inflater, true, readOnly));
             }
         }
     }
@@ -55,24 +50,24 @@ public class GuiUtility {
      * @param attribute Attribute to be used for creating View item
      * @param inflater  Layout inflater to be used for getting appropriate layout
      */
-    public static View createViewFromAttribute(Attribute attribute, LayoutInflater inflater, boolean addSeparator) {
+    public static View createViewFromAttribute(Attribute attribute, LayoutInflater inflater, boolean addSeparator, boolean readOnly) {
         View container = null;
 
         if (attribute.getControlType() == Attribute.CONTROL_TYPE_STIRNG) {
             container = inflater.inflate(R.layout.item_edit_text, null, false);
-            attribute.setView(createInputRow(container, attribute));
+            attribute.setView(createInputRow(container, attribute, readOnly));
         } else if (attribute.getControlType() == Attribute.CONTROL_TYPE_DATE) {
             container = inflater.inflate(R.layout.item_date, null, false);
-            attribute.setView(createTimePickerRow(container, attribute));
+            attribute.setView(createTimePickerRow(container, attribute, readOnly));
         } else if (attribute.getControlType() == Attribute.CONTROL_TYPE_BOOLEAN) {
             container = inflater.inflate(R.layout.item_spinner, null, false);
-            attribute.setView(createSpinnerViewForBoolean(container, attribute));
+            attribute.setView(createSpinnerViewForBoolean(container, attribute, readOnly));
         } else if (attribute.getControlType() == Attribute.CONTROL_TYPE_NUMBER) {
             container = inflater.inflate(R.layout.item_edittext_numeric, null, false);
-            attribute.setView(createInputRow(container, attribute));
+            attribute.setView(createInputRow(container, attribute, readOnly));
         } else if (attribute.getControlType() == Attribute.CONTROL_TYPE_SPINNER) {
             container = inflater.inflate(R.layout.item_spinner, null, false);
-            attribute.setView(createSpinnerViewFromArray(container, attribute));
+            attribute.setView(createSpinnerViewFromArray(container, attribute, readOnly));
         }
 
         if (container != null && !addSeparator) {
@@ -83,13 +78,13 @@ public class GuiUtility {
         return container;
     }
 
-    private static View createInputRow(View container, final Attribute attribute) {
+    private static View createInputRow(View container, final Attribute attribute, boolean readOnly) {
         TextView field = (TextView) container.findViewById(R.id.field);
         field.setText(attribute.getName());
         final EditText fieldValue = (EditText) container.findViewById(R.id.fieldValue);
         fieldValue.setTag(attribute.getId());
 
-        if (CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             fieldValue.setEnabled(false);
         }
 
@@ -112,14 +107,14 @@ public class GuiUtility {
         return fieldValue;
     }
 
-    private static View createTimePickerRow(View container, final Attribute attribute) {
+    private static View createTimePickerRow(View container, final Attribute attribute, boolean readOnly) {
         TextView field = (TextView) container.findViewById(R.id.field);
         field.setText(attribute.getName());
 
         final TextView textDatePicker = (TextView) container.findViewById(R.id.textview_datepicker);
         textDatePicker.setTag(attribute.getId());
 
-        if (CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             textDatePicker.setEnabled(false);
         }
 
@@ -262,7 +257,7 @@ public class GuiUtility {
         });
     }
 
-    private static Spinner createSpinnerViewFromArray(View container, final Attribute attribute) {
+    private static Spinner createSpinnerViewFromArray(View container, final Attribute attribute, boolean readOnly) {
         TextView fieldAlias = (TextView) container.findViewById(R.id.field);
         final Spinner spinner = (Spinner) container.findViewById(R.id.spinner1);
         fieldAlias.setText(attribute.getName());
@@ -276,8 +271,7 @@ public class GuiUtility {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
 
-        if (CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-        {
+        if (readOnly) {
             spinner.setEnabled(false);
         }
 
@@ -298,14 +292,14 @@ public class GuiUtility {
         return spinner;
     }
 
-    private static Spinner createSpinnerViewForBoolean(View container, final Attribute attribute) {
+    private static Spinner createSpinnerViewForBoolean(View container, final Attribute attribute, boolean readOnly) {
         TextView fieldAlias = (TextView) container.findViewById(R.id.field);
 
         final Spinner spinner = (Spinner) container.findViewById(R.id.spinner1);
         fieldAlias.setText(attribute.getName());
         spinner.setPrompt(attribute.getName());
 
-        if (CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             spinner.setEnabled(false);
         }
 

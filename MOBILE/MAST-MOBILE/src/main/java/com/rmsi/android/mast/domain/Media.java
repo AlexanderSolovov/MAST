@@ -19,7 +19,7 @@ public class Media implements Serializable {
     transient private Long personId;
     private String path;
     private String type;
-    transient private int synced;
+    transient private int synced = 0;
     transient private Long disputeId;
     private List<Attribute> attributes = new ArrayList<>();
 
@@ -71,7 +71,7 @@ public class Media implements Serializable {
         this.personId = personId;
     }
 
-    public int isSynced() {
+    public int getSynced() {
         return synced;
     }
 

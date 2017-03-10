@@ -32,6 +32,7 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 	private AttributeAdapter adapterList;
 	private Button btnSave,btnBack;
 	private CommonFunctions cf = CommonFunctions.getInstance();
+	private boolean readOnly = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
@@ -41,15 +42,32 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 		//Initializing context in common functions in case of a crash
 		try{CommonFunctions.getInstance().Initialize(getApplicationContext());}catch(Exception e){}
 		cf.loadLocale(getApplicationContext());
-		
-		setContentView(R.layout.activity_add_property_info);		
+
+		DbController db = DbController.getInstance(context);
+		Bundle extras = getIntent().getExtras();
+
+		if (extras != null) 
+		{
+			featureId = extras.getLong("featureid");
+			isDispute = extras.getBoolean("isDispute");
+
+			attributes = db.getPropAttributesByType(featureId, Attribute.TYPE_GENERAL_PROPERTY);
+			if(attributes.size()<1) {
+				// Try to get list of attributes of general type
+				attributes = db.getAttributesByType(Attribute.TYPE_GENERAL_PROPERTY);
+			}
+		}
+
+		readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+
+		setContentView(R.layout.activity_add_property_info);
 
 		btnSave=(Button) findViewById(R.id.btn_save);
 		btnBack=(Button) findViewById(R.id.btn_cancel);
 
 		listView = (ListView)findViewById(android.R.id.list);
 		TextView emptyText = (TextView)findViewById(android.R.id.empty);
-		listView.setEmptyView(emptyText);	
+		listView.setEmptyView(emptyText);
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		toolbar.setTitle(R.string.AddNewProperty);
@@ -57,24 +75,8 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 			setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		DbController db = DbController.getInstance(context);
-
-		Bundle extras = getIntent().getExtras();
-		if (extras != null) 
-		{
-			featureId = extras.getLong("featureid");
-			isDispute = extras.getBoolean("isDispute");
-
-			attributes = db.getPropAttributesByType(featureId, Attribute.TYPE_GENERAL_PROPERTY);
-			if(attributes.size()<1)
-			{
-				// Try to get list of attributes of general type
-				attributes = db.getAttributesByType(Attribute.TYPE_GENERAL_PROPERTY);
-			}
-		}
-
 		try {
-			adapterList = new AttributeAdapter(context, attributes);
+			adapterList = new AttributeAdapter(context, attributes, readOnly);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -82,9 +84,8 @@ public class AddGeneralPropertyActivity extends ActionBarActivity {
 
 		listView.setAdapter(adapterList);
 
-		if(CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR)
-		{
-			btnSave.setEnabled(false);			
+		if(readOnly) {
+			btnSave.setVisibility(View.GONE);
 		}
 
 		btnSave.setOnClickListener(new OnClickListener() 

@@ -6,6 +6,7 @@ public class User implements Serializable
 {
 	public static int ROLE_TRUSTED_INTERMEDIARY = 1;
 	public static int ROLE_ADJUDICATOR = 2;
+	public static String TABLE_NAME = "USER";
 
 	private Long userId; 
 

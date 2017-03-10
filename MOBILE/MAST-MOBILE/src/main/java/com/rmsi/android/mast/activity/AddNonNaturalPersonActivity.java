@@ -33,7 +33,7 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
     private Long rightId = 0L;
     private final Context context = this;
     private CommonFunctions cf = CommonFunctions.getInstance();
-    private int roleId = 0;
+    private boolean readOnly = false;
     private Person nonNaturalPerson;
     private Property property;
     private Spinner spinnerResident;
@@ -53,6 +53,15 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
 
         cf.loadLocale(getApplicationContext());
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+            rightId = extras.getLong("rightId");
+        }
+
+        DbController db = DbController.getInstance(context);
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+
         setContentView(R.layout.activity_add_non_natural_person);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -62,8 +71,6 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
             setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        roleId = CommonFunctions.getRoleID();
-
         shareTypeLabel = getResources().getString(R.string.shareType);
         lblShareType = (TextView) findViewById(R.id.tenureType_lbl);
         Button btnAddPerson = (Button) findViewById(R.id.btn_save);
@@ -72,16 +79,6 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
         personsFragment = (PersonListFragment) getFragmentManager().findFragmentById(R.id.compPersonsList);
         LinearLayout mainLayout = (LinearLayout) findViewById(R.id.mainLayout);
         LinearLayout personsLayout = (LinearLayout) findViewById(R.id.personsLayout);
-
-        String backStr = getResources().getString(R.string.back);
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            featureId = extras.getLong("featureid");
-            rightId = extras.getLong("rightId");
-        }
-
-        DbController db = DbController.getInstance(context);
 
         property = db.getProperty(featureId);
 
@@ -118,15 +115,15 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
         }
 
         if (nonNaturalPerson.getAttributes() != null) {
-            GuiUtility.appendLayoutWithAttributes(mainLayout, nonNaturalPerson.getAttributes());
+            GuiUtility.appendLayoutWithAttributes(mainLayout, nonNaturalPerson.getAttributes(), readOnly);
             // Move list of persons to the end
             mainLayout.removeView(personsLayout);
             mainLayout.addView(personsLayout);
         }
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            btnAddPerson.setEnabled(false);
-            btnNext.setText(backStr);
+        if (readOnly) {
+            btnAddPerson.setVisibility(View.GONE);
+            btnNext.setText(getResources().getString(R.string.back));
             spinnerResident.setEnabled(false);
         }
 
@@ -152,7 +149,7 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
         btnNext.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (roleId == User.ROLE_ADJUDICATOR) {
+                if (readOnly) {
                     finish();
                     return;
                 }
@@ -220,7 +217,7 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
             property.getRight().getNaturalPersons().addAll(persons);
         }
         firstRun = false;
-        personsFragment.setPersons(property.getRight().getNaturalPersons());
+        personsFragment.setPersons(property.getRight().getNaturalPersons(), readOnly);
     }
 
     public boolean validate() {

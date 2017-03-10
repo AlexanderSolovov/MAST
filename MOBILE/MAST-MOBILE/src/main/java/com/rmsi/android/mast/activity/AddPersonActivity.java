@@ -58,6 +58,7 @@ public class AddPersonActivity extends ActionBarActivity {
     private Spinner spinnerResident;
     private Person person = null;
     private ShareType shareType;
+    private boolean readOnly = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +70,20 @@ public class AddPersonActivity extends ActionBarActivity {
         }
         cf.loadLocale(getApplicationContext());
 
+        Long personId = 0L;
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            personId = extras.getLong("groupid");
+            featureId = extras.getLong("featureid");
+            readOnly = extras.getBoolean("readOnly", false);
+            rightId = extras.getLong("rightId");
+            subTypeId = extras.getInt("subTypeId");
+            disputeId = extras.getLong("disputeId");
+        }
+
         setContentView(R.layout.activity_add_person);
 
-        int roleId = CommonFunctions.getRoleID();
         Button btnSave = (Button) findViewById(R.id.btn_savePerson);
         Button btnCancel = (Button) findViewById(R.id.btn_cancelPerson);
         spinnerResident = (Spinner) findViewById(R.id.spinnerResident);
@@ -92,17 +104,6 @@ public class AddPersonActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         DbController db = DbController.getInstance(context);
-
-        Long personId = 0L;
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            personId = extras.getLong("groupid");
-            featureId = extras.getLong("featureid");
-            rightId = extras.getLong("rightId");
-            subTypeId = extras.getInt("subTypeId");
-            disputeId = extras.getLong("disputeId");
-        }
 
         // Init fields
         List<AcquisitionType> acquisitionTypes = null;
@@ -176,7 +177,7 @@ public class AddPersonActivity extends ActionBarActivity {
         }
 
         if (person.getAttributes() != null) {
-            GuiUtility.appendLayoutWithAttributes(mainLayout, person.getAttributes());
+            GuiUtility.appendLayoutWithAttributes(mainLayout, person.getAttributes(), readOnly);
             // Move photo to the end
             mainLayout.removeView(gridView);
             mainLayout.addView(gridView);
@@ -220,8 +221,8 @@ public class AddPersonActivity extends ActionBarActivity {
             }
         });
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            btnSave.setEnabled(false);
+        if (readOnly) {
+            btnSave.setVisibility(View.GONE);
             spinnerResident.setEnabled(false);
             spinnerAcquisition.setEnabled(false);
         }

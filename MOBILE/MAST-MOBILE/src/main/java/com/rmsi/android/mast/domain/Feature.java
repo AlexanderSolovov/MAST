@@ -40,6 +40,7 @@ public class Feature implements Serializable {
     public static String CLIENT_STATUS_VERIFIED_AND_SYNCHED = "verified&synced";
     public static String CLIENT_STATUS_REJECTED = "rejected";
     public static String CLIENT_STATUS_DOWNLOADED = "downloaded";
+    public static String CLIENT_STATUS_SYNCED = "synced";
 
     public Long getId() {
         return id;

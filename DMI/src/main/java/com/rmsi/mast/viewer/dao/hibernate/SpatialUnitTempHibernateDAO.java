@@ -61,7 +61,7 @@ implements SpatialUnitTempDao {
 	@Override
 	public List<SpatialUnitTemp> findSpatialUnitforUKAGeneration(String project) {
 		try {
-			Query query = getEntityManager().createQuery("Select st from SpatialUnitTemp st where st.project = :project_name and (st.active=true and st.propertyno is null) order by st.usin asc");
+			Query query = getEntityManager().createQuery("Select st from SpatialUnitTemp st where st.project = :project_name and (st.active=true and st.propertyno is null) and st.claimType in 'newClaim,existingClaim' order by st.usin asc");
 			List<SpatialUnitTemp> spatialUnitlst = query.setParameter("project_name", project).getResultList();		
 
 			if(spatialUnitlst.size() > 0){

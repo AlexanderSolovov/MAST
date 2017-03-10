@@ -322,7 +322,7 @@ public class MobileDataController {
         try {
             SourceDocument sourceDocument = new SourceDocument();
             Iterator<String> files = request.getFileNames();
-            String filename = request.getParameter("fileattribs");
+            String attributes = request.getParameter("fileattribs");
             String mediaId = null;
 
             while (files.hasNext()) {
@@ -331,7 +331,7 @@ public class MobileDataController {
                 MultipartFile mpFile = request.getFile(fileName);
                 String originalFileName = mpFile.getOriginalFilename();
                 sourceDocument.setActive(true);
-                mediaId = setDocumentAttributes(sourceDocument, filename);
+                mediaId = setDocumentAttributes(sourceDocument, attributes);
 
                 if (!"".equals(originalFileName) && mobileUserService.findMultimedia(originalFileName, sourceDocument.getUsin()) == null) {
 

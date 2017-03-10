@@ -1,7 +1,26 @@
-﻿ALTER TABLE public.project_hamlets
+﻿-- land use
+ALTER TABLE public.land_use_type
+ ADD COLUMN active boolean NOT NULL DEFAULT true;
+COMMENT ON COLUMN public.land_use_type.active IS 'Boolean flag indicating whether the record is active and should be displayed on the forms.';
+
+update public.land_use_type set land_use_type = 'Forestry', land_use_type_sw = 'Misitu na hifadhi' where use_type_id = 2;
+update public.land_use_type set land_use_type = 'Residential', land_use_type_sw = 'Makazi' where use_type_id = 3;
+update public.land_use_type set land_use_type = 'Grazing', land_use_type_sw = 'Malisho' where use_type_id = 4;
+insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) values (15, 'Residential and agricultural', 'Makazi na kilimo');
+insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) values (16, 'Wildlife/Tourism', 'Hifadhi za wanyama na Utaliio');
+insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) values (17, 'Social services', 'Huduma za jamii');
+insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) values (18, 'Mining', 'Maeneo ya madini');
+update public.land_use_type set active = 'f' where use_type_id in (5,6,7,13);
+
+-- spatial unit status
+update public.sunit_status set workflow_status = 'Denied' where workflow_status_id = 5;
+
+-- hamlet
+ALTER TABLE public.project_hamlets
   ADD COLUMN hamlet_leader_name character varying(500);
 COMMENT ON COLUMN public.project_hamlets.hamlet_leader_name IS 'Hamlet leader name(s)';
 
+-- ref data
 CREATE TABLE public.claim_type
 (
    code character varying(20) NOT NULL, 
@@ -22,7 +41,7 @@ COMMENT ON TABLE public.claim_type
   IS 'Reference data table for claim types';
 
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('newClaim', 'New claim', 'Madai new', 't');
-INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('existingClaim', 'Existing claim', 'Madai zilizopo', 't');
+INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('existingClaim', 'Existing right', 'Haki zilizopo', 't');
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('unclaimed', 'Unclaimed', 'Unclaimed', 't');
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('dispute', 'Disputed claim', 'Madai mgogoro', 't');
 
@@ -78,6 +97,31 @@ ALTER TABLE public.spatial_unit_tmp ADD CONSTRAINT fk_claim_type_code FOREIGN KE
 COMMENT ON COLUMN public.spatial_unit_tmp.claim_type IS 'Claim type code';
 COMMENT ON COLUMN public.spatial_unit_tmp.polygon_number IS 'Polygon number assigned in the field manually. This value is supposed to be unique per village.';
 
+-- spatial_unit trigger to control modifications
+CREATE OR REPLACE FUNCTION public.f_for_trg_change_spatial_unit()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+   IF (OLD.current_workflow_status_id not in (1,3,4)) THEN
+      RAISE EXCEPTION 'You cannot modify this record, because of its status';
+   END IF; 
+   RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.f_for_trg_change_spatial_unit()
+  OWNER TO postgres;
+COMMENT ON FUNCTION public.f_for_trg_change_spatial_unit() IS 'This function controls spatial_unit table modifications, allowing modifications only on records with new status.';
+
+
+CREATE TRIGGER trg_change_spatial_unit
+  BEFORE UPDATE OR DELETE
+  ON public.spatial_unit
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.f_for_trg_change_spatial_unit();
+
+ 
 CREATE TABLE public.id_type
 (
    code integer NOT NULL, 
@@ -134,7 +178,7 @@ INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES
 INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (8, 'Grandfather', 'Babu', 't');
 INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (9, 'Grandson', 'Mjukuu', 't');
 INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (10, 'Granddaughter', 'Mjukuu', 't');
-INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (11, 'Ankle', 'Kifundo cha mguu', 't');
+INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (11, 'Uncle', 'Mjomba', 't');
 INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (12, 'Aunt', 'Shangazi', 't');
 INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (13, 'Niece', 'Mpwa', 't');
 INSERT INTO public.relationship_type(code, name, name_other_lang, active) VALUES (14, 'Nephew', 'Mpwa', 't');
@@ -234,9 +278,10 @@ COMMENT ON TABLE public.dispute_type
   IS 'Reference data table for Dispute types';
 
 INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (1, 'Boundary', 'Mpaka', 't');
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (2, 'Inter-family', 'Baina ya familia', 't');
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (3, 'Intra-family', 'Ndani ya familia', 't');
-INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (4, 'Other interests', 'Maslahi mengine', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (2, 'Counter-claim (Inter-family)', 'Mgogoro baina ya familia', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (3, 'Counter-claim (Intra-family)', 'Mgogoro ndani ya familia', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (4, 'Counter-claim (Others)', 'Mgogoro baina ya watu tofauti', 't');
+INSERT INTO public.dispute_type (code, name, name_other_lang, active) VALUES (5, 'Other interests', 'Maslahi mengine', 't');
 
 CREATE TABLE public.dispute
 (
@@ -329,7 +374,7 @@ COMMENT ON COLUMN public.source_document.document_type IS 'Document type code.';
 COMMENT ON COLUMN public.source_document.dispute_id IS 'Dispute id.';
 
 -- Master attributes
-UPDATE public.attribute_master SET alias = 'Length of occupancy', alias_second_language = 'Urefu wa kumiliki ardhi' WHERE id = 13;
+UPDATE public.attribute_master SET alias = 'Length of occupancy (years)', alias_second_language = 'Urefu wa kumiliki ardhi (miaka)' WHERE id = 13;
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
 VALUES (300, 'Acquisition Type', 'Upatikanaji aina', 'acquisition_type', 5, 4, 'social_tenure_relationship', 20, true, 3, true, true);
@@ -415,5 +460,41 @@ VALUES ((select max(id)+1 from public.attribute_options), 'Probate Document', 34
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
 VALUES ((select max(id)+1 from public.attribute_options), 'Other', 340, 'Nyingine', 5);
+
+-- land use
+delete from public.attribute_options where attribute_id = 9 and parent_id not in (1,2,3,4,14);
+delete from public.attribute_options where attribute_id = 16 and parent_id not in (1,2,3,4,14);
+
+update public.attribute_options set optiontext = 'Forestry', optiontext_second_language = 'Misitu na hifadhi' where attribute_id = 9 and parent_id = 2;
+update public.attribute_options set optiontext = 'Residential', optiontext_second_language = 'Makazi' where attribute_id = 9 and parent_id = 3;
+update public.attribute_options set optiontext = 'Grazing', optiontext_second_language = 'Malisho' where attribute_id = 9 and parent_id = 4;
+
+update public.attribute_options set optiontext = 'Forestry', optiontext_second_language = 'Misitu na hifadhi' where attribute_id = 16 and parent_id = 2;
+update public.attribute_options set optiontext = 'Residential', optiontext_second_language = 'Makazi' where attribute_id = 16 and parent_id = 3;
+update public.attribute_options set optiontext = 'Grazing', optiontext_second_language = 'Malisho' where attribute_id = 16 and parent_id = 4;
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Residential and agricultural', 9, 'Makazi na kilimo', 15);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Wildlife/Tourism', 9, 'Hifadhi za wanyama na Utaliio', 16);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Social services', 9, 'Huduma za jamii', 17);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Mining', 9, 'Maeneo ya madini', 18);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Residential and agricultural', 16, 'Makazi na kilimo', 15);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Wildlife/Tourism', 16, 'Hifadhi za wanyama na Utaliio', 16);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Social services', 16, 'Huduma za jamii', 17);
+
+INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
+VALUES ((select max(id)+1 from public.attribute_options), 'Mining', 16, 'Maeneo ya madini', 18);
 
 

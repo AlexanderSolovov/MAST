@@ -54,7 +54,6 @@ public class PersonListWithDPActivity extends ActionBarActivity {
     CommonFunctions cf = CommonFunctions.getInstance();
     String msg, info, warning;
     int position;
-    int roleId = 0;
     String warningStr, infoTenancyInProbateStr, personStr, person_of_InterestStr, deceasedPersonStr, personPhotoStr, saveStr, backStr;
     private Property property;
     private PersonListFragment personsFragment;
@@ -62,6 +61,7 @@ public class PersonListWithDPActivity extends ActionBarActivity {
     private int personSubType;
     private List<DeceasedPerson> deceasedPersons = new ArrayList<>();
     private boolean firstRun = true;
+    private boolean readOnly = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,25 +72,6 @@ public class PersonListWithDPActivity extends ActionBarActivity {
         } catch (Exception e) {
         }
         cf.loadLocale(getApplicationContext());
-
-        setContentView(R.layout.activity_list_with_dp);
-
-        roleId = CommonFunctions.getRoleID();
-        TextView lblShareType = (TextView) findViewById(R.id.tenureType_lbl);
-        addnewPerson = (Button) findViewById(R.id.btn_addNewPerson);
-        btnNext = (Button) findViewById(R.id.btnNext);
-        addPOI = (Button) findViewById(R.id.btn_addNextKin);
-        addDeceased = (Button) findViewById(R.id.btn_addDP);
-        listOfDeceasedPerson = (ListView) findViewById(R.id.list_of_deceased_person);
-        personsFragment = (PersonListFragment) getFragmentManager().findFragmentById(R.id.compPersonsList);
-        poiFragment = (PoiListFragment) getFragmentManager().findFragmentById(R.id.compPoiList);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.title_person);
-        if (toolbar != null)
-            setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         context = this;
 
@@ -108,6 +89,25 @@ public class PersonListWithDPActivity extends ActionBarActivity {
         if (extras != null) {
             featureId = extras.getLong("featureid");
         }
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+
+        setContentView(R.layout.activity_list_with_dp);
+
+        TextView lblShareType = (TextView) findViewById(R.id.tenureType_lbl);
+        addnewPerson = (Button) findViewById(R.id.btn_addNewPerson);
+        btnNext = (Button) findViewById(R.id.btnNext);
+        addPOI = (Button) findViewById(R.id.btn_addNextKin);
+        addDeceased = (Button) findViewById(R.id.btn_addDP);
+        listOfDeceasedPerson = (ListView) findViewById(R.id.list_of_deceased_person);
+        personsFragment = (PersonListFragment) getFragmentManager().findFragmentById(R.id.compPersonsList);
+        poiFragment = (PoiListFragment) getFragmentManager().findFragmentById(R.id.compPoiList);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.title_person);
+        if (toolbar != null)
+            setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         property = db.getProperty(featureId);
 
@@ -122,8 +122,8 @@ public class PersonListWithDPActivity extends ActionBarActivity {
                 lblShareType.setText(getResources().getString(R.string.shareType) + ": " + shareType.getName());
         }
 
-        personsFragment.setPersons(property.getRight().getNaturalPersons());
-        poiFragment.setPersons(property.getPersonOfInterests());
+        personsFragment.setPersons(property.getRight().getNaturalPersons(), readOnly);
+        poiFragment.setPersons(property.getPersonOfInterests(), readOnly);
 
         if (property.getDeceasedPerson() != null) {
             deceasedPersons.add(property.getDeceasedPerson());
@@ -132,10 +132,10 @@ public class PersonListWithDPActivity extends ActionBarActivity {
         dpAdapter = new DeceasedPersonListAdapter(context, this, deceasedPersons);
         listOfDeceasedPerson.setAdapter(dpAdapter);
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            addnewPerson.setEnabled(false);
-            addPOI.setEnabled(false);
-            addDeceased.setEnabled(false);
+        if (readOnly) {
+            addnewPerson.setVisibility(View.GONE);
+            addPOI.setVisibility(View.GONE);
+            addDeceased.setVisibility(View.GONE);
             btnNext.setText(backStr);
         }
 
@@ -212,7 +212,7 @@ public class PersonListWithDPActivity extends ActionBarActivity {
         btnNext.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (roleId == User.ROLE_TRUSTED_INTERMEDIARY) {
+                if (!readOnly) {
                     if(property.validatePersonsList(context, true)){
                         Intent myIntent = new Intent(context, MediaListActivity.class);
                         myIntent.putExtra("featureid", featureId);
@@ -406,7 +406,7 @@ public class PersonListWithDPActivity extends ActionBarActivity {
                 }
             }
         });
-        if (roleId == User.ROLE_TRUSTED_INTERMEDIARY) {
+        if (!readOnly) {
             popup.show();
         }
     }
@@ -437,7 +437,7 @@ public class PersonListWithDPActivity extends ActionBarActivity {
             property.getRight().getNaturalPersons().addAll(persons);
         }
         firstRun = false;
-        personsFragment.setPersons(property.getRight().getNaturalPersons());
+        personsFragment.setPersons(property.getRight().getNaturalPersons(), readOnly);
     }
 
     public void edit_DP(final DeceasedPerson person) {

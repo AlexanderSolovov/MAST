@@ -20,6 +20,7 @@ public class Property implements Serializable {
     private String adjudicator2;
     private String claimTypeCode;
     private int userId;
+    private String ukaNumber;
     
     private Right right;
     private DeceasedPerson deceasedPerson;
@@ -38,6 +39,14 @@ public class Property implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUkaNumber() {
+        return ukaNumber;
+    }
+
+    public void setUkaNumber(String ukaNumber) {
+        this.ukaNumber = ukaNumber;
     }
 
     public int getUserId() {

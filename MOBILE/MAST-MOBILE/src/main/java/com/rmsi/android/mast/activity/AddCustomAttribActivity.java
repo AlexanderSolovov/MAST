@@ -35,7 +35,7 @@ public class AddCustomAttribActivity extends ActionBarActivity {
     Button btnSave, btnBack;
     String FieldValue;
     CommonFunctions cf = CommonFunctions.getInstance();
-    int roleId = 0;
+    private boolean readOnly = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,7 @@ public class AddCustomAttribActivity extends ActionBarActivity {
 
         setContentView(R.layout.activity_add_property_info);
 
-        roleId = CommonFunctions.getRoleID();
+
         ListView listView = (ListView) findViewById(android.R.id.list);
         TextView emptyText = (TextView) findViewById(android.R.id.empty);
         listView.setEmptyView(emptyText);
@@ -80,8 +80,10 @@ public class AddCustomAttribActivity extends ActionBarActivity {
             }
         }
 
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+
         try {
-            adapterList = new AttributeAdapter(context, attributes);
+            adapterList = new AttributeAdapter(context, attributes, readOnly);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,8 +93,8 @@ public class AddCustomAttribActivity extends ActionBarActivity {
         // Change next button caption to finish label since it's a last screen
         btnSave.setText(getResources().getString(R.string.Finish));
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            btnSave.setEnabled(false);
+        if (readOnly) {
+            btnSave.setVisibility(View.GONE);
         }
 
         btnSave.setOnClickListener(new OnClickListener() {

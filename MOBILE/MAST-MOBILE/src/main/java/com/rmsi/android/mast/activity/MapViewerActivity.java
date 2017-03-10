@@ -124,10 +124,8 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
 
         setContentView(R.layout.activity_map_viewer);
 
-
         capturFeatureStr = getResources().getString(R.string.capture_features);
         satelliteMapStr = getResources().getString(R.string.satellite_map);
-
 
         Bundle extra = getIntent().getExtras();
         if (extra != null) {
@@ -166,7 +164,6 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.list_layer_manager);
         drawerlayout = (LinearLayout) findViewById(R.id.left_drawer);
-
 
         // Set the dpAdapter for the list view
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
@@ -716,11 +713,11 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
             featuresAdded = true;
             for (MapFeature mapFeature : mapFeatures) {
                 if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
-                    googleMap.addPolygon(mapFeature.getPolygon());
+                    mapFeature.setMapPolygon(googleMap.addPolygon(mapFeature.getPolygon()));
                 } else if (mapFeature.getFeatureType() == MapFeature.TYPE.LINE) {
-                    googleMap.addPolyline(mapFeature.getLine());
+                    mapFeature.setMapLine(googleMap.addPolyline(mapFeature.getLine()));
                 } else if (mapFeature.getFeatureType() == MapFeature.TYPE.POINT) {
-                    googleMap.addCircle(mapFeature.getPoint());
+                    mapFeature.setMapPoint(googleMap.addCircle(mapFeature.getPoint()));
                 }
             }
         }
@@ -754,79 +751,19 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
 
     private void processFeaturesInfo(LatLng pointFromMap) {
         try {
-            boolean result = false;
-            long featureid = 0L;
-            String featurestatus = "";
-            DbController dbObj = DbController.getInstance(context);
-            List<Feature> features = dbObj.fetchFeatures();
-            dbObj.close();
+            com.vividsolutions.jts.geom.Point pointClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
 
-            for (Feature feature : features) {
-                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
-                    com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
-                    Geometry geom = new WKTReader().read("POLYGON ((" + feature.getCoordinates() + "))");
-
-                    com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geom;
-
-                    result = GisUtility.IsPointInPolygon(ptClicked, poly);
-
-                    if (result) {
-                        featureid = feature.getId();
-                        featurestatus = feature.getStatus();
-                        //Toast.makeText(context, "Poly Result "+feature.getId()+": "+result, Toast.LENGTH_SHORT).show();
-                    }
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
-                    com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
-
-                    Geometry geom = new WKTReader().read("LINESTRING (" + feature.getCoordinates() + ")");
-
-                    com.vividsolutions.jts.geom.LineString line = (com.vividsolutions.jts.geom.LineString) geom;
-
-                    result = GisUtility.IsPointIntersectsLine(ptClicked, line);
-
-                    if (result) {
-                        featureid = feature.getId();
-                        featurestatus = feature.getStatus();
-                        //Toast.makeText(context, "Line Result "+feature.getId()+": "+result, Toast.LENGTH_SHORT).show();
-                    }
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
-                    com.vividsolutions.jts.geom.Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
-
-                    Geometry geom = new WKTReader().read("POINT (" + feature.getCoordinates() + ")");
-
-                    com.vividsolutions.jts.geom.Point point = (com.vividsolutions.jts.geom.Point) geom;
-
-                    result = GisUtility.IsPointIntersectsPoint(ptClicked, point);
-
-                    if (result) {
-                        featureid = feature.getId();
-                        featurestatus = feature.getStatus();
-                        //Toast.makeText(context, "Point Result "+feature.getId()+": "+result, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                if (result)
-                    break;
-            }
-
-            if (result) {
-                //Open attributes form to view --------------
-                if (MAP_MODE == FEATURE_INFO_MODE) {
-                    if (featurestatus.equalsIgnoreCase("draft")) {
-                        //Open attributes form to view --------------
-                        Intent myIntent = new Intent(context, CaptureAttributesActivity.class);
-                        myIntent.putExtra("featureid", featureid);
-                        startActivity(myIntent);
-                    } else {
-                        Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
-                    }
-                } else {
+            for(MapFeature mapFeature : mapFeatures){
+                if (mapFeature.containsPoint(pointClicked)) {
                     Intent myIntent = new Intent(context, CaptureAttributesActivity.class);
-                    myIntent.putExtra("featureid", featureid);
+                    myIntent.putExtra("featureid", mapFeature.getFeature().getId());
                     startActivity(myIntent);
+                    return;
                 }
-            } else {
-                Toast.makeText(context, R.string.noLocationFound, Toast.LENGTH_SHORT).show();
             }
+
+            Toast.makeText(context, R.string.noLocationFound, Toast.LENGTH_SHORT).show();
+
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();

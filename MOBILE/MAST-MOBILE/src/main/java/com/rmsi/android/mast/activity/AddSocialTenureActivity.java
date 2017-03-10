@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.ClaimType;
+import com.rmsi.android.mast.domain.Feature;
 import com.rmsi.android.mast.domain.Option;
 import com.rmsi.android.mast.domain.RelationshipType;
 import com.rmsi.android.mast.domain.Right;
@@ -42,9 +43,8 @@ public class AddSocialTenureActivity extends ActionBarActivity {
     private Button btnSave, btnCancel;
     private CommonFunctions cf = CommonFunctions.getInstance();
     private long featureId = 0;
-    private int roleId = 0;
+    private boolean readOnly = false;
     private String infoSingleOccupantStr, infoMultipleJointStr, infoMultipleTeneancyStr, infoTenancyInProbateStr, infoGuardianMinorStr, infoStr;
-    private String You_have_selected, yesStr, noStr;
     private Right right = null;
     private EditText txtCertNumber;
     private TextView txtCertDate;
@@ -63,7 +63,21 @@ public class AddSocialTenureActivity extends ActionBarActivity {
         } catch (Exception e) {
         }
         cf.loadLocale(getApplicationContext());
-        roleId = CommonFunctions.getRoleID();
+
+        infoStr = getResources().getString(R.string.info);
+        infoSingleOccupantStr = getResources().getString(R.string.infoSingleOccupantStr);
+        infoMultipleJointStr = getResources().getString(R.string.infoMultipleJointStr);
+        infoMultipleTeneancyStr = getResources().getString(R.string.infoMultipleTeneancyStr);
+        infoTenancyInProbateStr = getResources().getString(R.string.infoTenancyInProbateStr);
+        infoGuardianMinorStr = getResources().getString(R.string.infoGuardianMinorStr);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+        }
+
+        final DbController db = DbController.getInstance(context);
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
 
         setContentView(R.layout.activity_social_tenure_information);
 
@@ -86,23 +100,6 @@ public class AddSocialTenureActivity extends ActionBarActivity {
         txtCertNumber = (EditText) findViewById(R.id.txtCertNumber);
         txtCertDate = (TextView) findViewById(R.id.txtCertDate);
         txtJuridicatlArea = (EditText) findViewById(R.id.txtJuridicalArea);
-
-        infoStr = getResources().getString(R.string.info);
-        infoSingleOccupantStr = getResources().getString(R.string.infoSingleOccupantStr);
-        infoMultipleJointStr = getResources().getString(R.string.infoMultipleJointStr);
-        infoMultipleTeneancyStr = getResources().getString(R.string.infoMultipleTeneancyStr);
-        infoTenancyInProbateStr = getResources().getString(R.string.infoTenancyInProbateStr);
-        infoGuardianMinorStr = getResources().getString(R.string.infoGuardianMinorStr);
-        You_have_selected = getResources().getString(R.string.You_have_selected);
-        yesStr = getResources().getString(R.string.yes);
-        noStr = getResources().getString(R.string.no);
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            featureId = extras.getLong("featureid");
-        }
-
-        final DbController db = DbController.getInstance(context);
 
         // Get right
         if (featureId > 0) {
@@ -248,12 +245,12 @@ public class AddSocialTenureActivity extends ActionBarActivity {
         }
 
         if (right.getAttributes() != null) {
-            GuiUtility.appendLayoutWithAttributes(mainLayout, right.getAttributes());
+            GuiUtility.appendLayoutWithAttributes(mainLayout, right.getAttributes(), readOnly);
         }
 
         // Disable fields and buttons for adjudicator
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            btnSave.setEnabled(false);
+        if (readOnly) {
+            btnSave.setVisibility(View.GONE);
             spinnerRightType.setEnabled(false);
             spinnerShareType.setEnabled(false);
             spinnerRelationshipType.setEnabled(false);
@@ -278,7 +275,7 @@ public class AddSocialTenureActivity extends ActionBarActivity {
 
 
     public void saveData() {
-        if (roleId == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             return;
         }
 
@@ -394,7 +391,7 @@ public class AddSocialTenureActivity extends ActionBarActivity {
         Right rightTmp = DbController.getInstance(context).getRightByProp(featureId);
         if (rightTmp != null && (rightTmp.getNaturalPersons().size() > 0 || rightTmp.getNonNaturalPerson() != null))
             spinnerShareType.setEnabled(false);
-        else if (User.ROLE_TRUSTED_INTERMEDIARY == roleId)
+        else if (!readOnly)
             spinnerShareType.setEnabled(true);
     }
 }

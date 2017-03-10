@@ -56,7 +56,7 @@ public class MediaListActivity extends ActionBarActivity implements ListActivity
     private String timeStamp = new SimpleDateFormat("MMdd_HHmmss").format(new Date().getTime());
     private static File file;
     private FileOutputStream fo;
-    private int roleId = 0;
+    private boolean readOnly = false;
     private List<Media> mediaList;
     private boolean hasCustomAttributes = false;
 
@@ -69,10 +69,17 @@ public class MediaListActivity extends ActionBarActivity implements ListActivity
         } catch (Exception e) {
         }
         cf.loadLocale(getApplicationContext());
+        context = this;
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+            disputeId = extras.getLong("disputeId");
+        }
 
         setContentView(R.layout.activity_media_list);
 
-        roleId = CommonFunctions.getRoleID();
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
         addNew = (Button) findViewById(R.id.btn_addNew);
         btnNext = (Button) findViewById(R.id.btnNext);
         listView = (ListView) findViewById(R.id.list_view);
@@ -83,14 +90,6 @@ public class MediaListActivity extends ActionBarActivity implements ListActivity
         if (toolbar != null)
             setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        context = this;
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            featureId = extras.getLong("featureid");
-            disputeId = extras.getLong("disputeId");
-        }
 
         if(disputeId > 0)
             mediaList = DbController.getInstance(context).getMediaByDispute(disputeId);
@@ -106,8 +105,8 @@ public class MediaListActivity extends ActionBarActivity implements ListActivity
         if(!hasCustomAttributes || disputeId > 0)
             btnNext.setText(getResources().getString(R.string.Finish));
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            addNew.setEnabled(false);
+        if (readOnly) {
+            addNew.setVisibility(View.GONE);
             btnNext.setText(getResources().getString(R.string.back));
         }
 
@@ -120,7 +119,7 @@ public class MediaListActivity extends ActionBarActivity implements ListActivity
         btnNext.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (roleId == User.ROLE_ADJUDICATOR) {
+                if (readOnly) {
                     finish();
                 } else {
                     if(disputeId < 1 && hasCustomAttributes){
@@ -143,7 +142,7 @@ public class MediaListActivity extends ActionBarActivity implements ListActivity
         PopupMenu popup = new PopupMenu(context, v);
         MenuInflater inflater = popup.getMenuInflater();
 
-        if (roleId == User.ROLE_TRUSTED_INTERMEDIARY) {
+        if (!readOnly) {
             inflater.inflate(R.menu.media_attribute_listing_options, popup.getMenu());
         } else {
             inflater.inflate(R.menu.media_attribute_listing_options_for_adjudicator, popup.getMenu());

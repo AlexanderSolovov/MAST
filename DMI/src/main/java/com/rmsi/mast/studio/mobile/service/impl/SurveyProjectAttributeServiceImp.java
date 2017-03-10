@@ -168,6 +168,7 @@ public class SurveyProjectAttributeServiceImp implements
                 prop.setHamletId(su.getHamletId());
                 prop.setId(usin);
                 prop.setImei(StringUtils.empty(su.getImeiNumber()));
+                prop.setUkaNumber(StringUtils.empty(su.getPropertyno()));
                 prop.setPolygonNumber(StringUtils.empty(su.getPolygonNumber()));
                 prop.setServerId(usin);
                 prop.setStatus(su.getStatus().getWorkflowStatusId().toString());

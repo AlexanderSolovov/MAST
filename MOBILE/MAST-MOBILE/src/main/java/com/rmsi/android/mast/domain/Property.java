@@ -23,6 +23,7 @@ public class Property extends Feature implements Serializable {
     private String adjudicator1;
     private String adjudicator2;
     private String claimTypeCode;
+    private String ukaNumber;
 
     private Right right;
     private DeceasedPerson deceasedPerson;
@@ -38,6 +39,7 @@ public class Property extends Feature implements Serializable {
     public static String COL_ADJUDICATOR1 = "WITNESS_1";
     public static String COL_ADJUDICATOR2 = "WITNESS_2";
     public static String COL_CLAIM_TYPE_CODE = "CLAIM_TYPE";
+    public static String COL_UKA_NUMBER = "UKA_NUMBER";
 
     public String getCreationDate() {
         return creationDate;
@@ -117,6 +119,14 @@ public class Property extends Feature implements Serializable {
 
     public void setMedia(List<Media> media) {
         this.media = media;
+    }
+
+    public String getUkaNumber() {
+        return ukaNumber;
+    }
+
+    public void setUkaNumber(String ukaNumber) {
+        this.ukaNumber = ukaNumber;
     }
 
     public DeceasedPerson getDeceasedPerson() {

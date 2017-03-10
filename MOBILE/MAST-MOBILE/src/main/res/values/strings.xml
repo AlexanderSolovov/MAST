@@ -106,7 +106,7 @@
     <string name="menu_gps">GPS</string>
     <string name="menu_xy">Get location co-ordinates</string>
     <string name="menu_measure">Measure</string>
-    <string name="menu_map_info">Map Info</string>
+    <string name="menu_map_info">Parcel Info</string>
     <string name="title_person">Person List</string>
     <string name="save">Save</string>
     <string name="person_photo">Photo</string>
@@ -478,13 +478,13 @@
     <string name="selectPersonType">Select person type</string>
     <string name="rightType">Tenancy type</string>
     <string name="shareType">Occupation type</string>
-    <string name="certNumber">Certificate number</string>
-    <string name="certDate">Certificate date</string>
-    <string name="juridicalArea">Juridical area</string>
+    <string name="certNumber">CCRO/Title number</string>
+    <string name="certDate">CCRO/Title date</string>
+    <string name="juridicalArea">Juridical area (acres)</string>
     <string name="SelectRightType">Select tenancy type</string>
     <string name="SelectShareType">Select occupancy type</string>
-    <string name="FillCertNumber">Fill in certificate number</string>
-    <string name="SelectCertDate">Select certificate date</string>
+    <string name="FillCertNumber">Fill in CCRO/Title number</string>
+    <string name="SelectCertDate">Select CCRO/Title date</string>
     <string name="FillJuridicalArea">Fill in juridical area</string>
     <string name="SelectResidency">Select residency</string>
     <string name="administrator">Administrator</string>
@@ -541,4 +541,6 @@
     <string name="DataDownloadSuccessful">Data has been downloaded successfully</string>
     <string name="ConfigDonwloadFailed">Failed to download configuration</string>
     <string name="DataDownloadFailed">Failed to download data</string>
+    <string name="ukaNumber">UKA/Farm/Plot Number</string>
+    <string name="EnterUkaNumber">Enter UKA/Farm/Plot Number</string>
 </resources>

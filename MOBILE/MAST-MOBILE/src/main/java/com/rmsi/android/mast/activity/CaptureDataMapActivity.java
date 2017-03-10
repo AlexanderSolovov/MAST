@@ -175,10 +175,8 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         setContentView(R.layout.activity_capture_data_map);
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null) // this feature ID is send when spatial feature is to be edited
-        {
+        if (extras != null) {
             featureId = extras.getLong("featureid");
-
         }
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -662,7 +660,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         } else if (MAP_MODE == FEATURE_DELETE_MODE) {
             processFeaturesInfo(pointFromMap);
             MAP_MODE = CLEAR_MODE;
-        } else if (MAP_MODE == FEATURE_EDIT_MODE) {
+        } else if (MAP_MODE == FEATURE_EDIT_MODE && featureId <= 0) {
             processFeaturesInfo(pointFromMap);
             //MAP_MODE = CLEAR_MODE;
         } else if (MAP_MODE == MEASURE_FEATURE_AREA_MODE) {
@@ -1052,7 +1050,6 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                 String imei = cf.getIMEI();
                 DbController db = DbController.getInstance(context);
                 Long featureId = db.createFeature(geomtype, WKTStr, imei);
-                db.close();
                 if (featureId != 0) {
                     Toast.makeText(context, R.string.successFeatureSave, Toast.LENGTH_SHORT).show();
 
@@ -1063,10 +1060,10 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                     } else if (geomtype.equalsIgnoreCase(Feature.GEOM_POLYGON)) {
                         cf.updatePolygonCount();
                     }
-                    //refresh features from db
-                    refreshCapturedFeaturesFromDB();
 
-                    //Open attributes form to fill --------------
+                    refreshCapturedFeature(featureId);
+
+                    // Open attributes form
                     Intent myIntent = new Intent(context, CaptureAttributesActivity.class);
                     myIntent.putExtra("featureid", featureId);
                     startActivity(myIntent);
@@ -1087,7 +1084,6 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         try {
             if (drawnFeature instanceof Polyline) {
                 Polyline tmp = (Polyline) drawnFeature;
-
                 pointslist = tmp.getPoints();
                 geomtype = Feature.GEOM_LINE;
             } else if (drawnFeature instanceof Marker) {
@@ -1104,12 +1100,11 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                 String WKTStr = GisUtility.getWKTfromPoints(geomtype, pointslist);
                 DbController db = DbController.getInstance(context);
                 boolean result = db.updateFeature(WKTStr, featureId);
-                db.close();
 
                 if (result) {
                     //refresh features from db
-                    currMarkers = new ArrayList<Marker>();
-                    refreshCapturedFeaturesFromDB();
+                    cleanDrawingMarkers();
+                    refreshCapturedFeature(featureId);
                     featureId = 0L;
                     Toast.makeText(context, R.string.updateFeatureMsg, Toast.LENGTH_SHORT).show();
                 } else {
@@ -1121,6 +1116,28 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
+        }
+    }
+
+    private void cleanDrawingMarkers(){
+        if(currMarkers != null){
+            for(Marker marker : currMarkers){
+                marker.remove();
+            }
+        }
+        currMarkers = new ArrayList<Marker>();
+    }
+    private void refreshCapturedFeature(long featureId){
+        Feature updatedFeature = DbController.getInstance(context).fetchFeaturebyID(featureId);
+        if(mapFeatures != null && featureId > 0 && updatedFeature != null){
+            for(MapFeature mapFeature : mapFeatures){
+                if(mapFeature.getFeature().getId() == featureId){
+                    mapFeature.removeFromMap();
+                    mapFeature.setFeature(updatedFeature);
+                    addMapFeature(mapFeature);
+                    break;
+                }
+            }
         }
     }
 
@@ -1254,13 +1271,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         if(zoom >= 10 && !featuresAdded){
             featuresAdded = true;
             for (MapFeature mapFeature : mapFeatures) {
-                if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
-                    googleMap.addPolygon(mapFeature.getPolygon());
-                } else if (mapFeature.getFeatureType() == MapFeature.TYPE.LINE) {
-                    googleMap.addPolyline(mapFeature.getLine());
-                } else if (mapFeature.getFeatureType() == MapFeature.TYPE.POINT) {
-                    googleMap.addCircle(mapFeature.getPoint());
-                }
+                addMapFeature(mapFeature);
             }
         }
 
@@ -1317,6 +1328,16 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         }
 
         lastZoom = zoom;
+    }
+
+    private void addMapFeature(MapFeature mapFeature){
+        if (mapFeature.getFeatureType() == MapFeature.TYPE.POLYGON) {
+            mapFeature.setMapPolygon(googleMap.addPolygon(mapFeature.getPolygon()));
+        } else if (mapFeature.getFeatureType() == MapFeature.TYPE.LINE) {
+            mapFeature.setMapLine(googleMap.addPolyline(mapFeature.getLine()));
+        } else if (mapFeature.getFeatureType() == MapFeature.TYPE.POINT) {
+            mapFeature.setMapPoint(googleMap.addCircle(mapFeature.getPoint()));
+        }
     }
 
     private void calculatePointsForSnapping(){
@@ -1426,7 +1447,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                     LatLng mapPoint = null;
                     for (int i = 0; i < wktpoints.length - 1; i++) {
                         //  wktpoints.length-1 to remove same first and last points in WKT
-                        String point = wktpoints[i];
+                        String point = wktpoints[i].trim();
 
                         String[] tmpPoint = point.split(" ");
                         mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
@@ -1440,11 +1461,10 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                         Marker mark = googleMap.addMarker(marker);
                         currMarkers.add(mark);
                     }
-                    rectOptions.zIndex(4);
+                    rectOptions.zIndex(5);
                     rectOptions.fillColor(colorTransparent);
                     rectOptions.strokeColor(colorNewBoundary);
-                    Polygon polygon = googleMap.addPolygon(rectOptions);
-                    drawnFeature = polygon;
+                    drawnFeature = googleMap.addPolygon(rectOptions);
                     if (mapPoint != null) {
                         GisUtility.zoomToPolygon(googleMap, rectOptions);
                     }
@@ -1456,7 +1476,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                     PolylineOptions rectOptions = new PolylineOptions();
                     LatLng mapPoint = null;
                     for (String point : wktpoints) {
-                        String[] tmpPoint = point.split(" ");
+                        String[] tmpPoint = point.trim().split(" ");
                         mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
                         rectOptions.add(mapPoint);
 
@@ -1468,7 +1488,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                         Marker mark = googleMap.addMarker(marker);
                         currMarkers.add(mark);
                     }
-                    rectOptions.zIndex(4);
+                    rectOptions.zIndex(5);
                     Polyline polyline = googleMap.addPolyline(rectOptions);
                     drawnFeature = polyline;
                     if (mapPoint != null) {
@@ -1477,7 +1497,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                 } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
                     String coordinates = feature.getCoordinates();
                     //googleMap.clear();
-                    String[] tmpPoint = coordinates.split(" ");
+                    String[] tmpPoint = coordinates.trim().split(" ");
                     LatLng mapPoint = new LatLng(Double.parseDouble(tmpPoint[1]), Double.parseDouble(tmpPoint[0]));
                     MarkerOptions marker = new MarkerOptions().position(mapPoint);
                     marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -1553,7 +1573,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                         for (LatLng p : points) {
                             rectOptions.add(p);
                         }
-                        rectOptions.fillColor(Color.argb(100, 0, 0, 255));
+                        //rectOptions.fillColor(Color.argb(100, 0, 0, 255));
                         rectOptions.zIndex(4);
                         Polygon polygon = googleMap.addPolygon(rectOptions);
                         drawnFeature = polygon;
@@ -1625,93 +1645,51 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
 
     private void processFeaturesInfo(LatLng pointFromMap) {
         try {
-            boolean result = false;
-            long featureid = 0L;
-            String featurestatus = "";
-            DbController dbObj = DbController.getInstance(context);
-            List<Feature> features = dbObj.fetchFeatures();
-            dbObj.close();
+            Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
+            long featureid = 0;
 
-            for (Feature feature : features) {
-                if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POLYGON)) {
-                    Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
-                    Geometry geom = new WKTReader().read("POLYGON ((" + feature.getCoordinates() + "))");
+            if(mapFeatures != null){
+                for(MapFeature mapFeature : mapFeatures){
+                    if(mapFeature.containsPoint(ptClicked)){
+                        featureid = mapFeature.getFeature().getId();
 
-                    com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geom;
-
-                    result = GisUtility.IsPointInPolygon(ptClicked, poly);
-
-                    if (result) {
-                        featureid = feature.getId();
-                        featurestatus = feature.getStatus();
-                    }
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_LINE)) {
-                    Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
-
-                    Geometry geom = new WKTReader().read("LINESTRING (" + feature.getCoordinates() + ")");
-
-                    LineString line = (LineString) geom;
-
-                    result = GisUtility.IsPointIntersectsLine(ptClicked, line);
-
-                    if (result) {
-                        featureid = feature.getId();
-                        featurestatus = feature.getStatus();
-                    }
-                } else if (feature.getGeomType().equalsIgnoreCase(Feature.GEOM_POINT)) {
-                    Point ptClicked = new GeometryFactory().createPoint(new Coordinate(pointFromMap.longitude, pointFromMap.latitude));
-
-                    Geometry geom = new WKTReader().read("POINT (" + feature.getCoordinates() + ")");
-
-                    Point point = (Point) geom;
-
-                    result = GisUtility.IsPointIntersectsPoint(ptClicked, point);
-
-                    if (result) {
-                        featureid = feature.getId();
-                        featurestatus = feature.getStatus();
+                        if (MAP_MODE == FEATURE_INFO_MODE) {
+                            if (mapFeature.getFeature().getStatus().equalsIgnoreCase("draft")) {
+                                //Open attributes form to view --------------
+                                Intent myIntent = new Intent(context, CaptureAttributesActivity.class);
+                                myIntent.putExtra("featureid", featureid);
+                                startActivity(myIntent);
+                            } else {
+                                Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
+                            }
+                        } else if (MAP_MODE == FEATURE_DELETE_MODE) {
+                            if (mapFeature.getFeature().getStatus().equalsIgnoreCase("draft")) {
+                                deleteSpatialFeature(mapFeature);
+                            } else {
+                                Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
+                            }
+                        } else if (MAP_MODE == FEATURE_EDIT_MODE) {
+                            if (mapFeature.getFeature().getStatus().equalsIgnoreCase("draft")) {
+                                this.featureId = featureid;
+                                loadFeatureforEdit();
+                            } else {
+                                Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                        return;
                     }
                 }
-                if (result)
-                    break;
             }
 
-            if (result) {
-                Log.i("CaptureDataMapActivity", "Feature found with feature ID:" + featureid);
-                if (MAP_MODE == FEATURE_INFO_MODE) {
-                    if (featurestatus.equalsIgnoreCase("draft")) {
-                        //Open attributes form to view --------------
-                        Intent myIntent = new Intent(context, CaptureAttributesActivity.class);
-                        myIntent.putExtra("featureid", featureid);
-                        startActivity(myIntent);
-                    } else {
-                        Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
-                    }
-                } else if (MAP_MODE == FEATURE_DELETE_MODE) {
-                    if (featurestatus.equalsIgnoreCase("draft")) {
-                        deleteSpatialFeature(featureid);
-                    } else {
-                        Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
-                    }
-                } else if (MAP_MODE == FEATURE_EDIT_MODE) {
-                    if (featurestatus.equalsIgnoreCase("draft")) {
-                        this.featureId = featureid;
-                        loadFeatureforEdit();
-                    } else {
-                        Toast.makeText(context, R.string.featurenotdraft, Toast.LENGTH_LONG).show();
-                    }
-                }
-            } else {
-                Toast.makeText(context, R.string.noFeatureFoundMsg, Toast.LENGTH_SHORT).show();
-            }
-            //resetMapMode();
+            Toast.makeText(context, R.string.noFeatureFoundMsg, Toast.LENGTH_SHORT).show();
+
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
         }
     }
 
-    private void deleteSpatialFeature(final Long featureId) {
+    private void deleteSpatialFeature(final MapFeature mapFeature) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
         alertDialogBuilder.setMessage(R.string.deleteFeatureEntryMsg);
         alertDialogBuilder.setPositiveButton(R.string.btn_ok,
@@ -1719,11 +1697,9 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
                         DbController db = DbController.getInstance(context);
-                        boolean result = db.deleteFeature(featureId);
-                        db.close();
+                        boolean result = db.deleteFeature(mapFeature.getFeature().getId());
                         if (result) {
-                            googleMap.clear();
-                            loadFeaturesFromDB();
+                            mapFeature.removeFromMap();
                         } else {
                             Toast.makeText(context, R.string.errorDeleteFeatureMsg, Toast.LENGTH_SHORT).show();
                         }
@@ -1782,10 +1758,6 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                 }
             }
         }
-    }
-
-    private void refreshCapturedFeaturesFromDB() {
-        loadUserSelectedLayers();
     }
 
     private void processFeaturesForMeasurement(LatLng pointFromMap) {

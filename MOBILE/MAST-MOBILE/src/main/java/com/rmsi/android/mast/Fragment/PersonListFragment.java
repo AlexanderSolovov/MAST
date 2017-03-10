@@ -49,6 +49,7 @@ public class PersonListFragment extends ListFragment implements ListActivity {
     private File file;
     private String timeStamp = new SimpleDateFormat("MMdd_HHmmss").format(new Date().getTime());
     private int position = 0;
+    private boolean readOnly = false;
 
     public PersonListFragment() {
     }
@@ -68,8 +69,9 @@ public class PersonListFragment extends ListFragment implements ListActivity {
     /**
      * Sets persons list
      */
-    public void setPersons(List<Person> persons) {
+    public void setPersons(List<Person> persons, boolean readOnly) {
         this.persons = persons;
+        this.readOnly = readOnly;
         adapter = new PersonListAdapter(context, this, persons);
         setListAdapter(adapter);
         refresh();
@@ -79,7 +81,7 @@ public class PersonListFragment extends ListFragment implements ListActivity {
     public void showPopup(View v, int position) {
         PopupMenu popup = new PopupMenu(context, v);
         MenuInflater inflater = popup.getMenuInflater();
-        if (CommonFunctions.getInstance().getRoleID() == User.ROLE_TRUSTED_INTERMEDIARY) {
+        if (!readOnly) {
             inflater.inflate(R.menu.attribute_listing_options_for_person, popup.getMenu());
         } else {
             inflater.inflate(R.menu.attribute_listing_options_to_view_details, popup.getMenu());
@@ -136,6 +138,7 @@ public class PersonListFragment extends ListFragment implements ListActivity {
                         intent.putExtra("featureid", person.getFeatureId());
                         intent.putExtra("personSubType", person.getSubTypeId());
                         intent.putExtra("rightId", person.getRightId());
+                        intent.putExtra("readOnly", true);
                         startActivity(intent);
                         return true;
                     default:

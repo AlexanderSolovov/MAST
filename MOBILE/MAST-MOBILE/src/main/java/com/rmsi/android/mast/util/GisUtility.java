@@ -359,7 +359,7 @@ public class GisUtility {
 
         LatLngBounds extent = new LatLngBounds(new LatLng(minY, minX), new LatLng(maxY, maxX));
         if(extent != null) {
-            com.google.android.gms.maps.CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(extent, 20);
+            com.google.android.gms.maps.CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(extent, 30);
             googleMap.moveCamera(cu);
             googleMap.animateCamera(cu);
         }

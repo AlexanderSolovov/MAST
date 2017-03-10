@@ -1,4 +1,5 @@
 package com.rmsi.mast.studio.domain.fetch;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -19,158 +20,133 @@ import com.rmsi.mast.studio.util.JsonDateSerializer;
 
 public class SpatialUnitTemp implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Id
-	private long usin;
+    @Id
+    private long usin;
 
-	
-	@Column(name = "project_name")
-	private String project;
+    @Column(name = "project_name")
+    private String project;
 
+    @Column(name = "uka_propertyno", nullable = false)
+    private String propertyno;
 
-	@Column(name = "uka_propertyno", nullable = false)
-	private String propertyno;
+    @ManyToOne
+    @JoinColumn(name = "current_workflow_status_id", nullable = false)
+    private Status status;
 
+    @Column(name = "workflow_status_update_time", nullable = false)
+    private Date statusUpdateTime;
 
-	@ManyToOne
-	@JoinColumn(name = "current_workflow_status_id", nullable = false)	
-	private Status status;
+    @Column(nullable = false)
+    private int userid;
 
-	@Column(name = "workflow_status_update_time", nullable = false)
-	private Date statusUpdateTime;
+    @ManyToOne
+    @JoinColumn(name = "userid", insertable = false, updatable = false)
+    private Usertable user;
 
-	@Column(nullable = false)
-	private int userid;
+    @Column(name = "survey_date", nullable = false)
+    private Date surveyDate;
 
-	@ManyToOne
-	@JoinColumn(name = "userid", insertable = false, updatable = false)
-	private Usertable user;
-	
-	
-	@Column(name = "survey_date", nullable = false)
-	private Date surveyDate;
+    @Column(name = "usin_str")
+    private String usinStr;
 
+    private Boolean active;
 
-	@Column(name = "usin_str")
-	private String usinStr;
-	
-	private Boolean active;
-	
-	
-	@ManyToOne
-	@JoinColumn(name="hamlet_id")
-	private ProjectHamlet hamlet_Id;
+    @ManyToOne
+    @JoinColumn(name = "hamlet_id")
+    private ProjectHamlet hamlet_Id;
+    
+    @Column(name="claim_type")
+    private String claimType;
 
+    public long getUsin() {
+        return usin;
+    }
 
-	public long getUsin() {
-		return usin;
-	}
+    public void setUsin(long usin) {
+        this.usin = usin;
+    }
 
+    public String getProject() {
+        return project;
+    }
 
-	public void setUsin(long usin) {
-		this.usin = usin;
-	}
+    public void setProject(String project) {
+        this.project = project;
+    }
 
+    public String getPropertyno() {
+        return propertyno;
+    }
 
-	public String getProject() {
-		return project;
-	}
+    public void setPropertyno(String propertyno) {
+        this.propertyno = propertyno;
+    }
 
+    public Status getStatus() {
+        return status;
+    }
 
-	public void setProject(String project) {
-		this.project = project;
-	}
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
+    public Date getStatusUpdateTime() {
+        return statusUpdateTime;
+    }
 
-	public String getPropertyno() {
-		return propertyno;
-	}
+    public void setStatusUpdateTime(Date statusUpdateTime) {
+        this.statusUpdateTime = statusUpdateTime;
+    }
 
+    public int getUserid() {
+        return userid;
+    }
 
-	public void setPropertyno(String propertyno) {
-		this.propertyno = propertyno;
-	}
+    public void setUserid(int userid) {
+        this.userid = userid;
+    }
 
+    public Usertable getUser() {
+        return user;
+    }
 
-	public Status getStatus() {
-		return status;
-	}
+    public void setUser(Usertable user) {
+        this.user = user;
+    }
 
+    @JsonSerialize(using = JsonDateSerializer.class)
+    public Date getSurveyDate() {
+        return surveyDate;
+    }
 
-	public void setStatus(Status status) {
-		this.status = status;
-	}
+    public void setSurveyDate(Date surveyDate) {
+        this.surveyDate = surveyDate;
+    }
 
+    public String getUsinStr() {
+        return usinStr;
+    }
 
-	public Date getStatusUpdateTime() {
-		return statusUpdateTime;
-	}
+    public void setUsinStr(String usinStr) {
+        this.usinStr = usinStr;
+    }
 
+    public Boolean getactive() {
+        return active;
+    }
 
-	public void setStatusUpdateTime(Date statusUpdateTime) {
-		this.statusUpdateTime = statusUpdateTime;
-	}
+    public void setactive(Boolean active) {
+        this.active = active;
+    }
 
+    public ProjectHamlet getHamlet_Id() {
+        return hamlet_Id;
+    }
 
-	public int getUserid() {
-		return userid;
-	}
-
-
-	public void setUserid(int userid) {
-		this.userid = userid;
-	}
-
-
-	public Usertable getUser() {
-		return user;
-	}
-
-
-	public void setUser(Usertable user) {
-		this.user = user;
-	}
-
-	@JsonSerialize(using = JsonDateSerializer.class)
-	public Date getSurveyDate() {
-		return surveyDate;
-	}
-
-
-	public void setSurveyDate(Date surveyDate) {
-		this.surveyDate = surveyDate;
-	}
-
-
-	public String getUsinStr() {
-		return usinStr;
-	}
-
-
-	public void setUsinStr(String usinStr) {
-		this.usinStr = usinStr;
-	}
-	
-
-	public Boolean getactive() {
-		return active;
-	}
-
-
-	public void setactive(Boolean active) {
-		this.active = active;
-	}
-
-
-	public ProjectHamlet getHamlet_Id() {
-		return hamlet_Id;
-	}
-
-
-	public void setHamlet_Id(ProjectHamlet hamlet_Id) {
-		this.hamlet_Id = hamlet_Id;
-	}
-	
+    public void setHamlet_Id(ProjectHamlet hamlet_Id) {
+        this.hamlet_Id = hamlet_Id;
+    }
 
 }

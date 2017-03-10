@@ -28,6 +28,7 @@ import com.rmsi.android.mast.adapter.SpinnerAdapter;
 import com.rmsi.android.mast.db.DbController;
 import com.rmsi.android.mast.domain.Attribute;
 import com.rmsi.android.mast.domain.ClaimType;
+import com.rmsi.android.mast.domain.Feature;
 import com.rmsi.android.mast.domain.Option;
 import com.rmsi.android.mast.domain.Property;
 import com.rmsi.android.mast.domain.ShareType;
@@ -43,7 +44,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
     private CommonFunctions cf = CommonFunctions.getInstance();
     private Long featureId = 0L;
     private DbController db = DbController.getInstance(context);
-    private int roleId = 0;
+    private boolean readOnly = false;
     private Property property = null;
     private LinearLayout bottomToolbar;
     private Spinner spinnerClaimType;
@@ -55,15 +56,14 @@ public class CaptureAttributesActivity extends ActionBarActivity {
     private RelativeLayout layoutPersons;
     private RelativeLayout layoutDispute;
     private RelativeLayout layoutMedia;
+    private LinearLayout layoutUkaNumber;
+    EditText txtUkaNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CommonFunctions.getInstance().Initialize(getApplicationContext());
         cf.loadLocale(getApplicationContext());
-
-        setContentView(R.layout.activity_capture_attributes);
-        roleId = CommonFunctions.getRoleID();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -77,6 +77,12 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         if (property == null) {
             property = new Property();
         }
+
+        if(CommonFunctions.getRoleID() == User.ROLE_ADJUDICATOR ||
+                !StringUtility.empty(property.getStatus()).equalsIgnoreCase(Feature.CLIENT_STATUS_DRAFT))
+            readOnly = true;
+
+        setContentView(R.layout.activity_capture_attributes);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.title_activity_capture_attributes);
@@ -97,6 +103,8 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         Spinner spinnerWitness2 = (Spinner) findViewById(R.id.spinner_witness2);
         final TextView txtClaimDate = (TextView) findViewById(R.id.txtClaimDate);
         final EditText txtClaimNumber = (EditText) findViewById(R.id.txtPolygonNumber);
+        txtUkaNumber = (EditText) findViewById(R.id.txtUkaNumber);
+        layoutUkaNumber = (LinearLayout) findViewById(R.id.layoutUkaNumber);
         txtPersonCount = (TextView) findViewById(R.id.personCount);
         txtMediaCount = (TextView) findViewById(R.id.multimediaCount);
         spinnerClaimType = (Spinner) findViewById(R.id.spinnerClaimType);
@@ -127,6 +135,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 property.setClaimTypeCode(((ClaimType) parent.getItemAtPosition(position)).getCode());
+                showHideUkaNumber();
             }
 
             @Override
@@ -183,6 +192,13 @@ public class CaptureAttributesActivity extends ActionBarActivity {
             }
         });
 
+        GuiUtility.bindActionOnFieldChange(txtUkaNumber, new Runnable() {
+            @Override
+            public void run() {
+                property.setUkaNumber(txtUkaNumber.getText().toString());
+            }
+        });
+
         GuiUtility.bindActionOnLabelChange(txtClaimDate, new Runnable() {
             @Override
             public void run() {
@@ -201,14 +217,16 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         String claimStr = context.getResources().getString(R.string.Claim);
 
         if (!StringUtility.isEmpty(property.getPolygonNumber())) {
-            if (property.getServerId() != null && property.getServerId() > 0) {
-                spatialunitValue.setText(claimStr + ": " + property.getPolygonNumber() + ", USIN: " + property.getServerId().toString());
-            } else {
-                spatialunitValue.setText(claimStr + ": " + property.getPolygonNumber());
-            }
+            claimStr = claimStr + ": " + property.getPolygonNumber();
         } else {
-            spatialunitValue.setText(claimStr + ": " + featureId.toString());
+            claimStr = claimStr + ": " + featureId.toString();
         }
+
+        if (property.getServerId() != null && property.getServerId() > 0) {
+            claimStr = claimStr + ", USIN: " + property.getServerId().toString();
+        }
+
+        spatialunitValue.setText(claimStr);
 
         // Populate fields
         if (property.getId() > 0) {
@@ -220,6 +238,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
 
             txtClaimDate.setText(DateUtility.formatDateString(property.getSurveyDate()));
             txtClaimNumber.setText(StringUtility.empty(property.getPolygonNumber()));
+            txtUkaNumber.setText(StringUtility.empty(property.getUkaNumber()));
 
             for (int i = 0; i < claimTypes.size(); i++) {
                 if (!StringUtility.isEmpty(claimTypes.get(i).getCode()) &&
@@ -247,13 +266,16 @@ public class CaptureAttributesActivity extends ActionBarActivity {
             txtClaimDate.setText(DateUtility.getCurrentStringDate());
         }
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
+        showHideUkaNumber();
+
+        if (readOnly) {
             spinnerHamlet.setEnabled(false);
             spinnerWitness1.setEnabled(false);
             spinnerWitness2.setEnabled(false);
             spinnerClaimType.setEnabled(false);
             txtClaimDate.setEnabled(false);
             txtClaimNumber.setEnabled(false);
+            txtUkaNumber.setEnabled(false);
         }
 
         personInfo = (ImageView) findViewById(R.id.btn_personlist);
@@ -420,9 +442,20 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         });
     }
 
+    private void showHideUkaNumber(){
+        if(StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_EXISTING_CLAIM))
+            layoutUkaNumber.setVisibility(View.VISIBLE);
+        else {
+            layoutUkaNumber.setVisibility(View.GONE);
+            txtUkaNumber.setText("");
+            property.setUkaNumber(null);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.save, menu);
+        if(!readOnly)
+            getMenuInflater().inflate(R.menu.save, menu);
         return true;
     }
 
@@ -439,7 +472,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
     }
 
     public boolean saveData(boolean goToNextScreen) {
-        if (roleId == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             return true;
         }
 
@@ -510,6 +543,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
         super.onResume();
         if (property != null && !StringUtility.isEmpty(property.getClaimTypeCode())) {
             spinnerClaimType.setEnabled(false);
+            txtUkaNumber.setEnabled(false);
 
             // Don't show toolbar for unclaimed parcels
             if (StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_UNCLAIMED))

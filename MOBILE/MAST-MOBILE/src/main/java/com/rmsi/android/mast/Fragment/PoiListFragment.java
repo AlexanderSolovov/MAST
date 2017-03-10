@@ -38,7 +38,7 @@ public class PoiListFragment extends ListFragment implements ListActivity {
     private Context context;
     private PersonOfInterestListAdapter adapter;
     private List<PersonOfInterest> persons;
-
+    private boolean readOnly = false;
     public PoiListFragment() {
     }
 
@@ -57,8 +57,9 @@ public class PoiListFragment extends ListFragment implements ListActivity {
     /**
      * Sets persons list
      */
-    public void setPersons(List<PersonOfInterest> persons) {
+    public void setPersons(List<PersonOfInterest> persons, boolean readOnly) {
         this.persons = persons;
+        this.readOnly = readOnly;
         adapter = new PersonOfInterestListAdapter(context, this, persons);
         setListAdapter(adapter);
         refresh();
@@ -89,7 +90,7 @@ public class PoiListFragment extends ListFragment implements ListActivity {
             }
         });
 
-        if (CommonFunctions.getInstance().getRoleID() == User.ROLE_TRUSTED_INTERMEDIARY) {
+        if (!readOnly) {
             popup.show();
         }
     }

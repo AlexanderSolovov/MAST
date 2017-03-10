@@ -25,7 +25,7 @@ public class AddMediaActivity extends ActionBarActivity {
     private CommonFunctions cf = CommonFunctions.getInstance();
     private Long mediaId = 0L;
     private Long featureId = 0L;
-    private int roleId = 0;
+    private boolean readOnly = false;
     private Media media = null;
     private Long disputeId = 0L;
 
@@ -38,9 +38,19 @@ public class AddMediaActivity extends ActionBarActivity {
         }
         cf.loadLocale(getApplicationContext());
 
+        DbController db = DbController.getInstance(context);
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null) {
+            mediaId = extras.getLong("groupid");
+            featureId = extras.getLong("featureid");
+            disputeId = extras.getLong("disputeId");
+        }
+
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+
         setContentView(R.layout.activity_add_media);
         listView = (ListView) findViewById(R.id.list_view);
-        roleId = CommonFunctions.getRoleID();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.title_activity_add_media);
@@ -51,17 +61,8 @@ public class AddMediaActivity extends ActionBarActivity {
 
         Button btnSave = (Button) findViewById(R.id.btn_save);
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             btnSave.setEnabled(false);
-        }
-
-        DbController db = DbController.getInstance(context);
-        Bundle extras = getIntent().getExtras();
-
-        if (extras != null) {
-            mediaId = extras.getLong("groupid");
-            featureId = extras.getLong("featureid");
-            disputeId = extras.getLong("disputeId");
         }
 
         if(mediaId != null && mediaId > 0){
@@ -81,7 +82,7 @@ public class AddMediaActivity extends ActionBarActivity {
         }
 
         try {
-            listView.setAdapter(new AttributeAdapter(context, media.getAttributes()));
+            listView.setAdapter(new AttributeAdapter(context, media.getAttributes(), readOnly));
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -124,7 +125,7 @@ public class AddMediaActivity extends ActionBarActivity {
 
     @Override
     public void onBackPressed() {
-        if (roleId == User.ROLE_ADJUDICATOR) {
+        if (readOnly) {
             finish();
         }
     }

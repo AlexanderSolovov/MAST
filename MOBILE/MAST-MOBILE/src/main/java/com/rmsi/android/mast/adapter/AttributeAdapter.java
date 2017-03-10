@@ -15,9 +15,11 @@ public class AttributeAdapter extends BaseAdapter {
     private List<Attribute> attrList;
     private Context context;
     private LayoutInflater inflater;
+    private boolean readOnly;
 
-    public AttributeAdapter(Context contextAct, List<Attribute> attrList) {
+    public AttributeAdapter(Context contextAct, List<Attribute> attrList, boolean readOnly) {
         this.context = contextAct;
+        this.readOnly = readOnly;
         this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.attrList = attrList;
     }
@@ -39,6 +41,6 @@ public class AttributeAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return GuiUtility.createViewFromAttribute((Attribute) getItem(position), inflater, false);
+        return GuiUtility.createViewFromAttribute((Attribute) getItem(position), inflater, false, readOnly);
     }
 }

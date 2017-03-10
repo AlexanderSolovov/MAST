@@ -22,7 +22,6 @@ public class PersonListAdapter extends BaseAdapter {
     Context context;
     ListActivity activityObj;
 
-
     public PersonListAdapter(Context context, ListActivity activityObj, List<Person> persons) {
         this.context = context;
         this.persons = persons;

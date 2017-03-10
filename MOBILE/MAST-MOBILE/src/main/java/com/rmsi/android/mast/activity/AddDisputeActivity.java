@@ -32,7 +32,7 @@ public class AddDisputeActivity extends AppCompatActivity {
 
     private final Context context = this;
     private CommonFunctions cf = CommonFunctions.getInstance();
-    private int roleId = 0;
+    private boolean readOnly = false;
     private Long featureId = 0L;
     private Dispute dispute;
     private boolean firstRun = true;
@@ -44,6 +44,13 @@ public class AddDisputeActivity extends AppCompatActivity {
         CommonFunctions.getInstance().Initialize(getApplicationContext());
         cf.loadLocale(getApplicationContext());
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            featureId = extras.getLong("featureid");
+        }
+
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+
         setContentView(R.layout.activity_add_dispute);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -51,11 +58,6 @@ public class AddDisputeActivity extends AppCompatActivity {
         if (toolbar != null)
             setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            featureId = extras.getLong("featureid");
-        }
 
         // Find fields
         final Spinner spinnerDisputeType = (Spinner) findViewById(R.id.spinnerDisputeType);
@@ -70,11 +72,9 @@ public class AddDisputeActivity extends AppCompatActivity {
         ((ArrayAdapter) spinnerDisputeType.getAdapter()).setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         // Customize fields
-        roleId = CommonFunctions.getRoleID();
-
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            btnAddPerson.setEnabled(false);
+        if (readOnly) {
             btnNext.setText(getResources().getString(R.string.back));
+            btnAddPerson.setVisibility(View.GONE);
             spinnerDisputeType.setEnabled(false);
             txtDisputeDescription.setEnabled(false);
         }
@@ -114,7 +114,7 @@ public class AddDisputeActivity extends AppCompatActivity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (roleId == User.ROLE_ADJUDICATOR) {
+                if (readOnly){
                     finish();
                     return;
                 }
@@ -132,7 +132,11 @@ public class AddDisputeActivity extends AppCompatActivity {
         btnAddPerson.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveData();
+                if (readOnly){
+                    finish();
+                } else {
+                    saveData();
+                }
             }
         });
     }
@@ -172,7 +176,7 @@ public class AddDisputeActivity extends AppCompatActivity {
             dispute.getDisputingPersons().addAll(persons);
         }
         firstRun = false;
-        personsList.setPersons(dispute.getDisputingPersons());
+        personsList.setPersons(dispute.getDisputingPersons(), readOnly);
     }
 
     @Override

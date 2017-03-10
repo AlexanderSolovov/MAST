@@ -91,10 +91,13 @@ public class DownloadService extends IntentService {
         // First check for config being downloaded
         DbController db = DbController.getInstance(getApplicationContext());
         if (db.getClaimTypes(false).size() < 1) {
-            startConfigDownloading(receiver, userid);
+            if(!startConfigDownloading(null, userid)){
+                receiver.send(STATUS_ERROR, Bundle.EMPTY);
+                return;
+            }
         }
 
-        updateNotification("MAST", getResources().getString(R.string.DownloadingData),
+        displayNotification("MAST", getResources().getString(R.string.DownloadingData),
                 getResources().getString(R.string.Downloading));
         if(downloadProperties(userid)){
             updateNotification("MAST", getResources().getString(R.string.DataDownloadSuccessful),
@@ -107,17 +110,21 @@ public class DownloadService extends IntentService {
         }
     }
 
-    private void startConfigDownloading(ResultReceiver receiver, String userid) throws IOException {
-        updateNotification("MAST", getResources().getString(R.string.DownloadingConfig),
+    private boolean startConfigDownloading(ResultReceiver receiver, String userid) throws IOException {
+        displayNotification("MAST", getResources().getString(R.string.DownloadingConfig),
                 getResources().getString(R.string.Downloading));
         if(downloadConfiguration(userid) && downloadMBtiles()){
             updateNotification("MAST", getResources().getString(R.string.ConfigDownloadSuccessful),
                     getResources().getString(R.string.DownloadFinished));
-            receiver.send(STATUS_FINISHED, Bundle.EMPTY);
+            if(receiver != null)
+                receiver.send(STATUS_FINISHED, Bundle.EMPTY);
+            return true;
         } else {
             updateNotification("MAST", getResources().getString(R.string.ConfigDonwloadFailed),
                     getResources().getString(R.string.DownloadError));
-            receiver.send(STATUS_ERROR, Bundle.EMPTY);
+            if(receiver != null)
+                receiver.send(STATUS_ERROR, Bundle.EMPTY);
+            return false;
         }
     }
 

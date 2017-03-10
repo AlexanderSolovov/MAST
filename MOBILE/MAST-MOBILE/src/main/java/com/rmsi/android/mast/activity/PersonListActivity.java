@@ -43,9 +43,9 @@ public class PersonListActivity extends ActionBarActivity {
     CommonFunctions cf = CommonFunctions.getInstance();
     String msg, warning;
     int position;
-    int roleId = 0;
-    String warningStr, infoMultipleJointStr, infoMultipleTeneancyStr, infoTenancyInProbateStr, infoGuardianMinorStr, infoStr, shareTypeStr;
-    String personPhotoStr, saveStr, backStr;
+    private boolean readOnly = false;
+    String warningStr, infoStr, shareTypeStr;
+    String saveStr, backStr;
     private Property property;
     private PersonListFragment personsFragment;
     private PoiListFragment poiFragment;
@@ -61,22 +61,6 @@ public class PersonListActivity extends ActionBarActivity {
         }
         cf.loadLocale(getApplicationContext());
 
-        setContentView(R.layout.activity_list);
-
-        roleId = CommonFunctions.getRoleID();
-        lblShareType = (TextView) findViewById(R.id.tenureType_lbl);
-        addnewPerson = (Button) findViewById(R.id.btn_addNewPerson);
-        btnNext = (Button) findViewById(R.id.btnNext);
-        addPOI = (Button) findViewById(R.id.btn_addNextKin);
-        personsFragment = (PersonListFragment) getFragmentManager().findFragmentById(R.id.compPersonsList);
-        poiFragment = (PoiListFragment) getFragmentManager().findFragmentById(R.id.compPoiList);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.title_person);
-        if (toolbar != null)
-            setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         context = this;
 
         warningStr = getResources().getString(R.string.warning);
@@ -90,9 +74,25 @@ public class PersonListActivity extends ActionBarActivity {
             featureId = extras.getLong("featureid");
         }
 
-        if (roleId == User.ROLE_ADJUDICATOR) {
-            addnewPerson.setEnabled(false);
-            addPOI.setEnabled(false);
+        readOnly = CommonFunctions.isFeatureReadOnly(featureId);
+        setContentView(R.layout.activity_list);
+
+        lblShareType = (TextView) findViewById(R.id.tenureType_lbl);
+        addnewPerson = (Button) findViewById(R.id.btn_addNewPerson);
+        btnNext = (Button) findViewById(R.id.btnNext);
+        addPOI = (Button) findViewById(R.id.btn_addNextKin);
+        personsFragment = (PersonListFragment) getFragmentManager().findFragmentById(R.id.compPersonsList);
+        poiFragment = (PoiListFragment) getFragmentManager().findFragmentById(R.id.compPoiList);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.title_person);
+        if (toolbar != null)
+            setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (readOnly) {
+            addnewPerson.setVisibility(View.GONE);
+            addPOI.setVisibility(View.GONE);
             btnNext.setText(backStr);
         }
 
@@ -202,7 +202,7 @@ public class PersonListActivity extends ActionBarActivity {
         btnNext.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (roleId == User.ROLE_TRUSTED_INTERMEDIARY) {
+                if (!readOnly) {
                     if(property.validatePersonsList(context, true)){
                         Intent myIntent = new Intent(context, MediaListActivity.class);
                         myIntent.putExtra("featureid", featureId);
@@ -331,8 +331,8 @@ public class PersonListActivity extends ActionBarActivity {
                 lblShareType.setText(shareTypeStr + ": " + shareType.getName());
         }
 
-        personsFragment.setPersons(property.getRight().getNaturalPersons());
-        poiFragment.setPersons(property.getPersonOfInterests());
+        personsFragment.setPersons(property.getRight().getNaturalPersons(), readOnly);
+        poiFragment.setPersons(property.getPersonOfInterests(), readOnly);
     }
 
     public boolean checkSingleOccupancyType(int personSubType, int ownerCount) {

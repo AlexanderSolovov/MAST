@@ -122,7 +122,8 @@ public class DataSummaryActivity extends ActionBarActivity {
             rowAdministrators.setVisibility(View.GONE);
             rowGuardians.setVisibility(View.GONE);
             rowPoi.setVisibility(View.GONE);
-
+            rowDisputeType.setVisibility(View.GONE);
+            rowDisputingPersons.setVisibility(View.GONE);
         } else if (StringUtility.empty(property.getClaimTypeCode()).equalsIgnoreCase(ClaimType.TYPE_DISPUTE)) {
             rowOccupation.setVisibility(View.GONE);
             rowNaturalPersons.setVisibility(View.GONE);

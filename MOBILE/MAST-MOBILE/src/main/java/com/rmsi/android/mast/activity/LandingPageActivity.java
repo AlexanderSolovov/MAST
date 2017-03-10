@@ -59,12 +59,10 @@ public class LandingPageActivity extends ActionBarActivity implements Receiver {
         mReceiver = new ServiceResultReceiver(new Handler());
         mReceiver.setReceiver(this);
 
-
-        if (roleId == 1)  // Hardcoded Id for Role (1=Trusted Intermediary, 2=Adjudicator)
-        {
+        if (roleId == User.ROLE_TRUSTED_INTERMEDIARY) {
             findViewById(R.id.ad_menu1).setVisibility(View.GONE);
             findViewById(R.id.ad_view1).setVisibility(View.GONE);
-        } else if (roleId == 2) {
+        } else if (roleId == User.ROLE_ADJUDICATOR) {
             findViewById(R.id.ti_menu1).setVisibility(View.GONE);
             findViewById(R.id.ti_menu2).setVisibility(View.GONE);
             findViewById(R.id.ti_view1).setVisibility(View.GONE);

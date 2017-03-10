@@ -101,7 +101,7 @@
     <string name="menu_gps">GPS</string>
     <string name="menu_xy">Pata Alama za eneo</string>
     <string name="menu_measure">Pima</string>
-    <string name="menu_map_info">Taarifa ya Ramani</string>
+    <string name="menu_map_info">Maelezo Njama</string>
     <string name="title_person">Orodha ya Watu</string>
     <string name="save">Hifadhi</string>
     <string name="person_photo">Picha</string>
@@ -481,12 +481,12 @@
     <string name="AddNewPropertyDetails">Kuongeza Mali Maelezo</string>
     <string name="rightType">Aina ya upangaji</string>
     <string name="shareType">Kazi aina</string>
-    <string name="certDate">Tarehe cheti</string>
-    <string name="juridicalArea">Eneo la kisheria</string>
-    <string name="certNumber">Idadi cheti</string>
-    <string name="FillCertNumber">Kujaza idadi cheti</string>
+    <string name="certDate">CCRO/Title date</string>
+    <string name="juridicalArea">Eneo la kisheria (ekari)</string>
+    <string name="certNumber">CCRO/Title number</string>
+    <string name="FillCertNumber">Fill in CCRO/Title number</string>
     <string name="FillJuridicalArea">Kujaza katika eneo juridical</string>
-    <string name="SelectCertDate">Tarehe cheti kuchagua</string>
+    <string name="SelectCertDate">Select CCRO/Title date</string>
     <string name="SelectRightType">Chagua aina ya upangaji</string>
     <string name="SelectShareType">Chagua aina ya kumiliki ardhi</string>
     <string name="SelectResidency">Kuchagua ukaazi</string>
@@ -543,5 +543,7 @@
     <string name="DataDownloadSuccessful">Data has been downloaded successfully</string>
     <string name="DownloadingConfig">Downloading configuration data</string>
     <string name="DownloadingData">Downloading data. It may take few minutes.</string>
+    <string name="ukaNumber">UKA/Farm/Plot Number</string>
+    <string name="EnterUkaNumber">Enter UKA/Farm/Plot Number</string>
 
 </resources>

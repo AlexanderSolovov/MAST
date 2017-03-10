@@ -53,7 +53,7 @@
             android:contentDescription="@string/mapOptions"
             android:gravity="center"
             android:padding="10dp"
-            android:text="@string/cancel"
+            android:text="@string/back"
             android:textColor="@color/white" />
 
         <Button

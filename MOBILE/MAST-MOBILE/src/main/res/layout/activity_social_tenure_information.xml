@@ -8,78 +8,35 @@
         android:id="@+id/toolbar"
         layout="@layout/layout_toolbar" />
 
-    <LinearLayout
-        android:id="@+id/mainLayout"
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="15"
-        android:orientation="vertical">
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
-
-        <TextView
-            android:id="@+id/lblRightType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/rightType"
-            android:textColor="@color/color_primary_dark"
-            android:textSize="@dimen/textSize" />
-
-        <Spinner
-            android:id="@+id/spinnerRightType"
-            style="@style/Widget.AppCompat.Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
-
-        <TextView
-            android:id="@+id/lblShareType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:padding="5dp"
-            android:text="@string/shareType"
-            android:textColor="@color/color_primary_dark"
-            android:textSize="@dimen/textSize" />
-
-        <Spinner
-            android:id="@+id/spinnerShareType"
-            style="@style/Widget.AppCompat.Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
 
         <LinearLayout
-            android:id="@+id/relationshipLayout"
+            android:id="@+id/mainLayout"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="15"
             android:orientation="vertical">
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
             <TextView
-                android:id="@+id/lblRelationshipType"
+                android:id="@+id/lblRightType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:padding="5dp"
-                android:text="@string/RelationshipType"
+                android:text="@string/rightType"
                 android:textColor="@color/color_primary_dark"
                 android:textSize="@dimen/textSize" />
 
             <Spinner
-                android:id="@+id/spinnerRelationshipType"
+                android:id="@+id/spinnerRightType"
                 style="@style/Widget.AppCompat.Spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -88,88 +45,137 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#CCCCCC" />
+
+            <TextView
+                android:id="@+id/lblShareType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="5dp"
+                android:text="@string/shareType"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="@dimen/textSize" />
+
+            <Spinner
+                android:id="@+id/spinnerShareType"
+                style="@style/Widget.AppCompat.Spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC" />
+
+            <LinearLayout
+                android:id="@+id/relationshipLayout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/lblRelationshipType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:padding="5dp"
+                    android:text="@string/RelationshipType"
+                    android:textColor="@color/color_primary_dark"
+                    android:textSize="@dimen/textSize" />
+
+                <Spinner
+                    android:id="@+id/spinnerRelationshipType"
+                    style="@style/Widget.AppCompat.Spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#CCCCCC" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/certLayout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/lblCertNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:padding="5dp"
+                    android:text="@string/certNumber"
+                    android:textColor="@color/color_primary_dark"
+                    android:textSize="@dimen/textSize" />
+
+                <EditText
+                    android:id="@+id/txtCertNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:padding="5dp" />
+
+                <View
+                    android:id="@+id/lineCertNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#CCCCCC" />
+
+                <TextView
+                    android:id="@+id/lblCertDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:padding="5dp"
+                    android:text="@string/certDate"
+                    android:textColor="@color/color_primary_dark"
+                    android:textSize="@dimen/textSize" />
+
+                <TextView
+                    android:id="@+id/txtCertDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:padding="5dp"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/textSize" />
+
+                <View
+                    android:id="@+id/lineCertDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#CCCCCC" />
+
+                <TextView
+                    android:id="@+id/lblJuridicalArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:padding="5dp"
+                    android:text="@string/juridicalArea"
+                    android:textColor="@color/color_primary_dark"
+                    android:textSize="@dimen/textSize" />
+
+                <EditText
+                    android:id="@+id/txtJuridicalArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:padding="5dp" />
+
+                <View
+                    android:id="@+id/lineJuridicalArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#CCCCCC" />
+
+            </LinearLayout>
+
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/certLayout"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/lblCertNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:text="@string/certNumber"
-                android:textColor="@color/color_primary_dark"
-                android:textSize="@dimen/textSize" />
-
-            <EditText
-                android:id="@+id/txtCertNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:padding="5dp" />
-
-            <View
-                android:id="@+id/lineCertNumber"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#CCCCCC" />
-
-            <TextView
-                android:id="@+id/lblCertDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:text="@string/certDate"
-                android:textColor="@color/color_primary_dark"
-                android:textSize="@dimen/textSize" />
-
-            <TextView
-                android:id="@+id/txtCertDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:textColor="@color/black"
-                android:textSize="@dimen/textSize" />
-
-            <View
-                android:id="@+id/lineCertDate"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#CCCCCC" />
-
-            <TextView
-                android:id="@+id/lblJuridicalArea"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:padding="5dp"
-                android:text="@string/juridicalArea"
-                android:textColor="@color/color_primary_dark"
-                android:textSize="@dimen/textSize" />
-
-            <EditText
-                android:id="@+id/txtJuridicalArea"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:padding="5dp" />
-
-            <View
-                android:id="@+id/lineJuridicalArea"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#CCCCCC" />
-
-        </LinearLayout>
-
-    </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"
@@ -190,7 +196,7 @@
             android:contentDescription="@string/mapOptions"
             android:gravity="center"
             android:padding="10dp"
-            android:text="@string/cancel"
+            android:text="@string/back"
             android:textColor="@color/white" />
 
         <Button
