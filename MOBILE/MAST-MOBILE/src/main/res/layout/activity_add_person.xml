@@ -132,6 +132,19 @@
         android:weightSum="2">
 
         <Button
+            android:id="@+id/btn_cancelPerson"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/mapOptions"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/back"
+            android:textColor="@color/white" />
+
+        <Button
             android:id="@+id/btn_savePerson"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
@@ -144,18 +157,6 @@
             android:text="@string/save"
             android:textColor="@color/white" />
 
-        <Button
-            android:id="@+id/btn_cancelPerson"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:layout_weight="1"
-            android:contentDescription="@string/mapOptions"
-            android:gravity="center"
-            android:padding="10dp"
-            android:text="@string/back"
-            android:textColor="@color/white" />
     </LinearLayout>
 
 </LinearLayout>

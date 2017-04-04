@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.rmsi.mast.studio.dao.RelationshipTypeDao;
 import com.rmsi.mast.studio.dao.UserDAO;
 import com.rmsi.mast.studio.domain.AttributeValues;
+import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.Dispute;
 import com.rmsi.mast.studio.domain.NaturalPerson;
 import com.rmsi.mast.studio.domain.NonNaturalPerson;
@@ -254,7 +255,14 @@ public class UserDataServiceImpl implements UserDataService {
 
                 spatialUnit = new SpatialUnit();
                 spatialUnit.setClaimType(claimTypeDAO.findById(prop.getClaimTypeCode(), false));
-                if(prop.getClaimTypeCode().equalsIgnoreCase("existingClaim") && !StringUtils.isEmpty(prop.getUkaNumber())){
+                if(spatialUnit.getClaimType() != null && spatialUnit.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_DISPUTED)){
+                    // Set referred status
+                    spatialUnit.setStatus(status.getStatusById(4));
+                } else {
+                    // Set default new status
+                    spatialUnit.setStatus(status.getStatusById(1));
+                }
+                if (prop.getClaimTypeCode().equalsIgnoreCase("existingClaim") && !StringUtils.isEmpty(prop.getUkaNumber())) {
                     spatialUnit.setPropertyno(prop.getUkaNumber());
                 }
                 spatialUnit.setPolygonNumber(prop.getPolygonNumber());
@@ -290,8 +298,7 @@ public class UserDataServiceImpl implements UserDataService {
 
                 spatialUnit.getTheGeom().setSRID(4326);
                 spatialUnit.setActive(true);
-                spatialUnit.setStatus(status.getStatusById(1));
-
+                
                 setPropAttibutes(spatialUnit, prop);
 
                 serverPropId = spatialUnitDao.addSpatialUnit(spatialUnit).getUsin();
@@ -313,7 +320,7 @@ public class UserDataServiceImpl implements UserDataService {
 
                         // Save right
                         SocialTenureRelationship right = new SocialTenureRelationship();
-                        setRightAttributes(right, prop.getRight(), spatialUnit);
+                        setRightAttributes(right, prop.getRight());
                         right.setUsin(serverPropId);
                         right.setPerson_gid(person);
                         long rightId = socialTenureDao.addSocialTenure(right).getGid();
@@ -345,7 +352,7 @@ public class UserDataServiceImpl implements UserDataService {
 
                         // Save right
                         SocialTenureRelationship right = new SocialTenureRelationship();
-                        setRightAttributes(right, prop.getRight(), spatialUnit);
+                        setRightAttributes(right, prop.getRight());
                         right.setUsin(serverPropId);
                         right.setPerson_gid(nonPerson);
                         long rightId = socialTenureDao.addSocialTenure(right).getGid();
@@ -438,7 +445,7 @@ public class UserDataServiceImpl implements UserDataService {
         }
     }
 
-    private void setRightAttributes(SocialTenureRelationship right, Right propRight, SpatialUnit parcel) throws ParseException {
+    private void setRightAttributes(SocialTenureRelationship right, Right propRight) throws ParseException {
         if (right == null || propRight == null || propRight.getAttributes() == null || propRight.getAttributes().size() < 1) {
             return;
         }
@@ -463,9 +470,7 @@ public class UserDataServiceImpl implements UserDataService {
             String value = attribute.getValue();
             Long id = attribute.getId();
 
-            if (id == 9) {
-                parcel.setProposedUse(landUseTypeDao.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
-            } else if (id == 31) {
+            if (id == 31) {
                 right.setShare_type(shareTypeDao.getTenureRelationshipTypeById(Integer.parseInt(value)));
             } else if (id == 24) {
                 right.setOccupancyTypeId(occupancyTypeDao.getOccupancyTypeById(Integer.parseInt(value)));
@@ -494,7 +499,7 @@ public class UserDataServiceImpl implements UserDataService {
             return;
         }
 
-        person.setPerson_type_gid(personTypeDao.getPersonTypeById(1));
+        person.setPerson_type_gid(personTypeDao.getPersonTypeById(2));
         person.setMobileGroupId(propPerson.getId().toString());
         person.setResident(propPerson.getResident() == 1);
         person.setMobileGroupId(propPerson.getId().toString());
@@ -616,6 +621,16 @@ public class UserDataServiceImpl implements UserDataService {
     private void setPropAttibutes(SpatialUnit parcel, Property prop) {
         if (parcel == null || prop == null || prop.getAttributes() == null || prop.getAttributes().size() < 1) {
             return;
+        }
+
+        // Set proposed land use from right
+        if (prop.getRight() != null) {
+            for (Attribute attribute : prop.getRight().getAttributes()) {
+                if (attribute.getId() == 9) {
+                    parcel.setProposedUse(landUseTypeDao.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
+                    break;
+                }
+            }
         }
 
         for (Attribute attribute : prop.getAttributes()) {
@@ -775,239 +790,86 @@ public class UserDataServiceImpl implements UserDataService {
     }
 
     @Override
-    public boolean updateNaturalPersonAttribValues(NaturalPerson naturalPerson,
-            String project) {
+    public boolean updateNaturalPersonAttribValues(NaturalPerson naturalPerson, String project) {
         try {
-            List<AttributeValues> attribsList = new ArrayList<AttributeValues>();
-            AttributeValues attributeValues = new AttributeValues();
+            List<AttributeValues> attribsList = new ArrayList<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            long parentUid = naturalPerson.getPerson_gid();
 
             if (StringUtils.isNotEmpty(naturalPerson.getFirstName())) {
-                long attributeId = 1;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getFirstName());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(1, project, parentUid, naturalPerson.getFirstName(), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getLastName())) {
-                long attributeId = 2;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getLastName());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(2, project, parentUid, naturalPerson.getLastName(), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getMiddleName())) {
-                long attributeId = 3;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getMiddleName());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
-            }
-            if (StringUtils.isNotEmpty(naturalPerson.getAlias())) {
-                long attributeId = 29;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getAlias());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(3, project, parentUid, naturalPerson.getMiddleName(), attribsList);
             }
             if (naturalPerson.getGender() != null) {
-                Long attributeId = 4L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) naturalPerson.getGender()
-                        .getGenderId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(4, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(4, (int) naturalPerson.getGender().getGenderId()),
+                        attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getMobile())) {
-                long attributeId = 5;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getMobile());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(5, project, parentUid, naturalPerson.getMobile(), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getIdentity())) {
-                long attributeId = 30;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getIdentity());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(30, project, parentUid, naturalPerson.getIdentity(), attribsList);
             }
             if (naturalPerson.getAge() != 0) {
-                long attributeId = 21;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getAge() + "");
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(21, project, parentUid, Integer.toString(naturalPerson.getAge()), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getOccupation())) {
-                long attributeId = 19;
-                attributeValues.setValue(naturalPerson.getOccupation());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(19, project, parentUid, naturalPerson.getOccupation(), attribsList);
             }
             if (naturalPerson.getEducation() != null) {
-                Long attributeId = 20L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) naturalPerson
-                        .getEducation().getLevelId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(20, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(20, (int) naturalPerson.getEducation().getLevelId()),
+                        attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getTenure_Relation())) {
-                long attributeId = 25;
-                attributeValues.setValue(naturalPerson.getTenure_Relation());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(25, project, parentUid, naturalPerson.getTenure_Relation(), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getHouseholdRelation())) {
-                long attributeId = 26;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getHouseholdRelation());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(26, project, parentUid, naturalPerson.getHouseholdRelation(), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getWitness())) {
-                long attributeId = 27;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getWitness());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(27, project, parentUid, naturalPerson.getWitness(), attribsList);
             }
             if (naturalPerson.getMarital_status() != null) {
-                Long attributeId = 22L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) naturalPerson
-                        .getMarital_status().getMaritalStatusId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(22, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(22, (int) naturalPerson.getMarital_status().getMaritalStatusId()),
+                        attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getOwner().toString())) {
-                long attributeId = 40;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getOwner().toString());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+            if (naturalPerson.getOwner() != null) {
+                addAttribute(40, project, parentUid, naturalPerson.getOwner().toString(), attribsList);
             }
             if (StringUtils.isNotEmpty(naturalPerson.getAdministator())) {
-                long attributeId = 41;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getAdministator());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(41, project, parentUid, naturalPerson.getAdministator(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getCitizenship_id().toString())) {
-                Long attributeId = 42L;
-
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) naturalPerson
-                        .getCitizenship_id().getId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(value);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+            if (naturalPerson.getCitizenship_id() != null) {
+                addAttribute(42, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(42, (int) naturalPerson.getCitizenship_id().getId()),
+                        attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getResident_of_village()
-                    .toString())) {
-                long attributeId = 43;
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(naturalPerson.getResident_of_village()
-                        .toString());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+            if (naturalPerson.getResident_of_village() != null) {
+                addAttribute(43, project, parentUid, naturalPerson.getResident_of_village().toString(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getPersonSubType()
-                    .toString())) {
-                Long attributeId = 54L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) naturalPerson
-                        .getPersonSubType().getPerson_type_gid());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(naturalPerson.getPerson_gid());
-                attributeValues.setValue(value);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+            if (naturalPerson.getPersonSubType() != null) {
+                addAttribute(54, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(54, (int) naturalPerson.getPersonSubType().getPerson_type_gid()),
+                        attribsList);
+            }
+            if (StringUtils.isNotEmpty(naturalPerson.getIdNumber())) {
+                addAttribute(310, project, parentUid, naturalPerson.getIdNumber(), attribsList);
+            }
+            if (naturalPerson.getDob() != null) {
+                addAttribute(330, project, parentUid, dateFormat.format(naturalPerson.getDob()), attribsList);
+            }
+            if (naturalPerson.getIdType() != null) {
+                addAttribute(320, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(320, (int) naturalPerson.getIdType().getCode()),
+                        attribsList);
             }
 
             attributeValuesDao.updateAttributeValues(attribsList);
@@ -1019,112 +881,53 @@ public class UserDataServiceImpl implements UserDataService {
         return true;
     }
 
+    private void addAttribute(long attributeId, String project, Long parentUid, String value, List<AttributeValues> list) {
+        Long attributeProjectId = surveyProjectAttribute.getSurveyProjectAttributeId(attributeId, project);
+        if (attributeProjectId != null && parentUid != null) {
+            AttributeValues attributeValues = new AttributeValues();
+            attributeValues.setParentuid(parentUid);
+            attributeValues.setValue(value);
+            attributeValues.setUid(attributeProjectId);
+            list.add(attributeValues);
+        }
+    }
+
     @Override
-    public boolean updateTenureAttribValues(
-            SocialTenureRelationship socialTenure, String project) {
+    public boolean updateTenureAttribValues(SocialTenureRelationship socialTenure, String project) {
         try {
             List<AttributeValues> attribsList = new ArrayList<AttributeValues>();
-            AttributeValues attributeValues = new AttributeValues();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            long parentUid = socialTenure.getGid();
 
             if (socialTenure.getSocial_tenure_startdate() != null) {
-                long attributeId = 32;
-                attributeValues.setParentuid(Long.parseLong(socialTenure
-                        .getGid() + ""));
-                attributeValues.setValue(dateFormat.format(socialTenure
-                        .getSocial_tenure_startdate()));
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(32, project, parentUid, dateFormat.format(socialTenure.getSocial_tenure_startdate()), attribsList);
             }
             if (socialTenure.getSocial_tenure_enddate() != null) {
-                long attributeId = 33;
-                attributeValues.setParentuid(Long.parseLong(socialTenure
-                        .getGid() + ""));
-                attributeValues.setValue(dateFormat.format(socialTenure
-                        .getSocial_tenure_enddate()));
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(33, project, parentUid, dateFormat.format(socialTenure.getSocial_tenure_enddate()), attribsList);
             }
             if (socialTenure.getTenureDuration() != 0) {
-                long attributeId = 13;
-                attributeValues.setParentuid(Long.parseLong(socialTenure
-                        .getGid() + ""));
-                attributeValues
-                        .setValue(socialTenure.getTenureDuration() + "");
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(13, project, parentUid, socialTenure.getTenureDuration() + "", attribsList);
             }
             if (socialTenure.getShare_type() != null) {
-                Long attributeId = 31L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), socialTenure.getShare_type().getGid());
-                /*
-				 * String value = attributeOptionsDao.getAttributeOptionsId(
-				 * attributeId.intValue(), 1);
-                 */
-
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(Long.parseLong(socialTenure
-                        .getGid() + ""));
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(31, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(31, socialTenure.getShare_type().getGid()),
+                        attribsList);
             }
             if (socialTenure.getOccupancyTypeId() != null) {
-                Long attributeId = 24L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), socialTenure
-                        .getOccupancyTypeId().getOccId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(Long.parseLong(socialTenure
-                        .getGid() + ""));
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(24, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(24, socialTenure.getOccupancyTypeId().getOccId()),
+                        attribsList);
             }
             if (socialTenure.getTenureclassId() != null) {
-                Long attributeId = 23L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), socialTenure
-                        .getTenureclassId().getTenureId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(Long.parseLong(socialTenure
-                        .getGid() + ""));
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(23, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(23, socialTenure.getTenureclassId().getTenureId()),
+                        attribsList);
             }
-
+            if (socialTenure.getAcquisitionType() != null) {
+                addAttribute(300, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(300, socialTenure.getAcquisitionType().getCode()),
+                        attribsList);
+            }
             attributeValuesDao.updateAttributeValues(attribsList);
         } catch (Exception e) {
             logger.error("Exception", e);
@@ -1138,55 +941,22 @@ public class UserDataServiceImpl implements UserDataService {
     public boolean updateNonNaturalPersonAttribValues(
             NonNaturalPerson nonnaturalPerson, String project) {
         try {
-            List<AttributeValues> attribsList = new ArrayList<AttributeValues>();
-            AttributeValues attributeValues = new AttributeValues();
+            List<AttributeValues> attribsList = new ArrayList<>();
+            long parentUid = nonnaturalPerson.getPerson_gid();
 
             if (StringUtils.isNotEmpty(nonnaturalPerson.getAddress())) {
-                long attributeId = 7;
-                attributeValues.setParentuid(nonnaturalPerson.getPerson_gid());
-                attributeValues.setValue(nonnaturalPerson.getAddress());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(7, project, parentUid, nonnaturalPerson.getAddress(), attribsList);
             }
             if (StringUtils.isNotEmpty(nonnaturalPerson.getInstitutionName())) {
-                long attributeId = 6;
-                attributeValues.setParentuid(nonnaturalPerson.getPerson_gid());
-                attributeValues.setValue(nonnaturalPerson.getInstitutionName());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(6, project, parentUid, nonnaturalPerson.getInstitutionName(), attribsList);
             }
             if (StringUtils.isNotEmpty(nonnaturalPerson.getPhoneNumber())) {
-                long attributeId = 8;
-                attributeValues.setParentuid(nonnaturalPerson.getPerson_gid());
-                attributeValues.setValue(nonnaturalPerson.getPhoneNumber());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(8, project, parentUid, nonnaturalPerson.getPhoneNumber(), attribsList);
             }
             if (nonnaturalPerson.getGroupType() != null) {
-                Long attributeId = 52L;
-                attributeValues.setParentuid(nonnaturalPerson.getPerson_gid());
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) nonnaturalPerson
-                        .getGroupType().getGroupId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setValue(value);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(52, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(52, (int) nonnaturalPerson.getGroupType().getGroupId()), 
+                        attribsList);
             }
             attributeValuesDao.updateAttributeValues(attribsList);
         } catch (Exception e) {
@@ -1198,234 +968,67 @@ public class UserDataServiceImpl implements UserDataService {
     }
 
     @Override
-    public boolean updateGeneralAttribValues(SpatialUnitTable spatialunit,
-            String project) {
+    public boolean updateGeneralAttribValues(SpatialUnitTable spatialunit, String project) {
         try {
+            List<SocialTenureRelationship> rights = socialTenureDao.findSocailTenureByUsin(spatialunit.getUsin());
             List<AttributeValues> attribsList = new ArrayList<AttributeValues>();
-            AttributeValues attributeValues = new AttributeValues();
+            long parentUid = spatialunit.getUsin();
 
-
-            /*			if (StringUtils.isNotEmpty(spatialunit.getTypeName())) {
-				long attributeId = 14;
-
-			if (spatialunit.getLandType() != null) {
-				Long attributeId = 37L;
-
-				attributeValues.setParentuid(spatialunit.getUsin());
-				String value = attributeOptionsDao.getAttributeOptionsId(
-						attributeId.intValue(), (int) spatialunit.getLandType()
-								.getLandTypeId());
-				if (value == null) {
-					System.out.println("Null value for AttributeID:"
-							+ attributeId);
-					throw new NullPointerException();
-				}
-				attributeValues.setValue(value);
-				attributeValues.setUid(surveyProjectAttribute
-						.getSurveyProjectAttributeId(attributeId, project));
-				attribsList.add(attributeValues);
-				attributeValues = new AttributeValues();
-			}*/
             if (spatialunit.getHousehidno() != 0) {
-                long attributeId = 15;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getHousehidno() + "");
-                // //attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(15, project, parentUid, spatialunit.getHousehidno() + "", attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getComments())) {
-                long attributeId = 17;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getComments());
-                // //attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(17, project, parentUid, spatialunit.getComments(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getAddress1())) {
-                long attributeId = 34;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getAddress1());
-                // //attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(34, project, parentUid, spatialunit.getAddress1(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getAddress2())) {
-                long attributeId = 35;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getAddress2());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(35, project, parentUid, spatialunit.getAddress2(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getPostal_code())) {
-                long attributeId = 36;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getPostal_code());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(36, project, parentUid, spatialunit.getPostal_code(), attribsList);
             }
             if (spatialunit.getProposedUse() != null) {
-                Long attributeId = 9L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) spatialunit
-                        .getProposedUse().getLandUseTypeId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
+                String value = attributeOptionsDao.getAttributeOptionsId(9, (int) spatialunit.getProposedUse().getLandUseTypeId());
+                addAttribute(9, project, parentUid, value, attribsList);
+
+                if (rights != null) {
+                    for (SocialTenureRelationship right : rights) {
+                        addAttribute(9, project, (long) right.getGid(), value, attribsList);
+                    }
                 }
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
             }
             if (spatialunit.getExistingUse() != null) {
-                Long attributeId = 16L;
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) spatialunit
-                        .getExistingUse().getLandUseTypeId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(value);
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                String value = attributeOptionsDao.getAttributeOptionsId(16, (int) spatialunit.getExistingUse().getLandUseTypeId());
+                addAttribute(16, project, parentUid, value, attribsList);
+            }
+            if (spatialunit.getLandType() != null) {
+                String value = attributeOptionsDao.getAttributeOptionsId(37, (int) spatialunit.getLandType().getLandTypeId());
+                addAttribute(37, project, parentUid, value, attribsList);
             }
             if (spatialunit.getSoilQualityValues() != null) {
-                Long attributeId = 38L;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) spatialunit
-                        .getSlopeValues().getId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setValue(value);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                String value = attributeOptionsDao.getAttributeOptionsId(38, (int) spatialunit.getSoilQualityValues().getId());
+                addAttribute(38, project, parentUid, value, attribsList);
             }
             if (spatialunit.getSlopeValues() != null) {
-                Long attributeId = 39L;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                String value = attributeOptionsDao.getAttributeOptionsId(
-                        attributeId.intValue(), (int) spatialunit
-                        .getSlopeValues().getId());
-                if (value == null) {
-                    System.out.println("Null value for AttributeID:"
-                            + attributeId);
-                    throw new NullPointerException();
-                }
-                attributeValues.setValue(value);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                String value = attributeOptionsDao.getAttributeOptionsId(39, (int) spatialunit.getSlopeValues().getId());
+                addAttribute(39, project, parentUid, value, attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getNeighbor_north())) {
-                long attributeId = 44;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getNeighbor_north());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(44, project, parentUid, spatialunit.getNeighbor_north(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getNeighbor_south())) {
-                long attributeId = 45;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getNeighbor_south());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(45, project, parentUid, spatialunit.getNeighbor_south(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getNeighbor_east())) {
-                long attributeId = 46;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getNeighbor_east());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(46, project, parentUid, spatialunit.getNeighbor_east(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getNeighbor_west())) {
-                long attributeId = 47;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getNeighbor_west());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
-            }
-            if (StringUtils.isNotEmpty(spatialunit.getWitness_1())) {
-                long attributeId = 48;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getWitness_1());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
-            }
-            if (StringUtils.isNotEmpty(spatialunit.getWitness_2())) {
-                long attributeId = 49;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getWitness_2());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
-            }
-            if (StringUtils.isNotEmpty(spatialunit.getWitness_3())) {
-                long attributeId = 50;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getWitness_3());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
-            }
-            if (StringUtils.isNotEmpty(spatialunit.getWitness_4())) {
-                long attributeId = 51;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getWitness_4());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(47, project, parentUid, spatialunit.getNeighbor_west(), attribsList);
             }
             if (StringUtils.isNotEmpty(spatialunit.getOtherUseType())) {
-                long attributeId = 53;
-                attributeValues.setParentuid(spatialunit.getUsin());
-                attributeValues.setValue(spatialunit.getOtherUseType());
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(53, project, parentUid, spatialunit.getOtherUseType(), attribsList);
             }
             attributeValuesDao.updateAttributeValues(attribsList);
         } catch (Exception e) {
@@ -1440,30 +1043,20 @@ public class UserDataServiceImpl implements UserDataService {
     public boolean updateMultimediaAttribValues(SourceDocument sourcedocument,
             String project) {
         try {
-            List<AttributeValues> attribsList = new ArrayList<AttributeValues>();
-            AttributeValues attributeValues = new AttributeValues();
+            List<AttributeValues> attribsList = new ArrayList<>();
+            long parentUid = Long.parseLong(sourcedocument.getGid() + "");
 
             if (StringUtils.isNotEmpty(sourcedocument.getScanedSourceDoc())) {
-                long attributeId = 10;
-                attributeValues.setParentuid(Long.parseLong(sourcedocument
-                        .getGid() + ""));
-                attributeValues.setValue(sourcedocument.getScanedSourceDoc());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(10, project, parentUid, sourcedocument.getScanedSourceDoc(), attribsList);
             }
             if (StringUtils.isNotEmpty(sourcedocument.getComments())) {
-                long attributeId = 11;
-                attributeValues.setParentuid(Long.parseLong(sourcedocument
-                        .getGid() + ""));
-                attributeValues.setValue(sourcedocument.getComments());
-                // attributeValues.setAttributevalueid(attributeId);
-                attributeValues.setUid(surveyProjectAttribute
-                        .getSurveyProjectAttributeId(attributeId, project));
-                attribsList.add(attributeValues);
-                attributeValues = new AttributeValues();
+                addAttribute(11, project, parentUid, sourcedocument.getComments(), attribsList);
+            }
+
+            if (sourcedocument.getDocumentType() != null) {
+                addAttribute(340, project, parentUid,
+                        attributeOptionsDao.getAttributeOptionsId(340, sourcedocument.getDocumentType().getCode().intValue()),
+                        attribsList);
             }
 
             attributeValuesDao.updateAttributeValues(attribsList);

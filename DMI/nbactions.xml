@@ -12,4 +12,11 @@
                 <skipTests>true</skipTests>
             </properties>
         </action>
+        <action>
+            <actionName>CUSTOM-WAR Exploded</actionName>
+            <displayName>WAR Exploded</displayName>
+            <goals>
+                <goal>war:exploded</goal>
+            </goals>
+        </action>
     </actions>

@@ -529,8 +529,8 @@ var windowResize = function () {
     var headerHeight = $("#header").height();
     var toolbarHeight = $("#toolbar").height();
     var adjustedWinHeight = windowHeight - (headerHeight + toolbarHeight);
-    $("#map").height(adjustedWinHeight - 120);
-    $("#sidebar").height(adjustedWinHeight - 120);
+    $("#map").height(adjustedWinHeight - 160);
+    $("#sidebar").height(adjustedWinHeight - 180);
 };
 
 

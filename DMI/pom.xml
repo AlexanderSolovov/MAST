@@ -25,9 +25,6 @@
             <version>2.3.1</version>
         </dependency>
       
-        <!-- <dependency> <groupId>com.googlecode.ehcache-spring-annotations</groupId> 
-        <artifactId>ehcache-spring-annotations</artifactId> <version>1.2.0</version> 
-        </dependency> -->
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -39,16 +36,12 @@
             <artifactId>spring-aspects</artifactId>
             <version>${org.springframework.version}</version>
         </dependency>
-        <!-- dependency> <groupId>org.springframework.security</groupId> <artifactId>spring-security-config</artifactId> 
-        <version>${org.springframework.version}</version> </dependency -->
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
             <version>${org.springframework.security.version}</version>
         </dependency>
-
-        <!-- dependency> <groupId>org.springframework.security</groupId> <artifactId>spring-security-taglibs</artifactId> 
-        <version>${org.springframework.version}</version> </dependency -->
 
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -56,16 +49,11 @@
             <version>${org.springframework.security.version}</version>
         </dependency>
 
-        <!-- dependency> <groupId>org.springframework.security</groupId> <artifactId>spring-security-web</artifactId> 
-        <version>3.0.5.RELEASE</version> </dependency -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
             <version>${org.springframework.security.version}</version>
         </dependency>
-
-        <!-- dependency> <groupId>org.springframework.security</groupId> <artifactId>spring-security-acl</artifactId> 
-        <version>${org.springframework.version}</version> </dependency -->
 
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -78,37 +66,37 @@
             <artifactId>aspectjrt</artifactId>
             <version>1.8.3</version>
         </dependency>
+        
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk16</artifactId>
             <version>1.46</version>
         </dependency>
+        
         <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
             <version>1.8</version>
         </dependency>
 
-        <!-- Jackson JSON Mapper -->
-        <!-- <dependency> <groupId>org.codehaus.jackson</groupId> <artifactId>jackson-mapper-asl</artifactId> 
-        <version>1.9.13</version> </dependency> -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.5.0</version>
         </dependency>
+        
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.5.0</version>
         </dependency>
+        
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.5.0</version>
         </dependency>
 
-        <!-- Json Object -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -154,7 +142,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
-            <version>${hibernate.version}</version> <!-- //version 4.3 -->
+            <version>${hibernate.version}</version> 
             <exclusions>
                 <exclusion>
                     <artifactId>postgresql</artifactId>
@@ -166,24 +154,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
-                
-        <!-- vivid solutions -->
+        
         <dependency>
             <groupId>com.vividsolutions</groupId>
             <artifactId>jts</artifactId>
             <version>1.13</version> <!-- //version 1.13 -->
         </dependency>
 
-        <!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-ehcache</artifactId> 
-        <version>${hibernate.version}</version> <exclusions> <exclusion> <groupId>net.sf.ehcache</groupId> 
-        <artifactId>ehcache-core</artifactId> </exclusion> </exclusions> </dependency> -->
-    
         <dependency>
             <groupId>org.opensymphony.quartz</groupId>
             <artifactId>quartz</artifactId>
             <version>1.6.1</version>
         </dependency>
-        <!-- Spring -->
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
@@ -201,7 +184,6 @@
             <artifactId>spring-context</artifactId>
             <version>${org.springframework.version}</version>
             <exclusions>
-                <!-- Exclude Commons Logging in favor of SLF4j -->
                 <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
@@ -215,29 +197,32 @@
             <version>${org.springframework.version}</version>
         </dependency>
 
-        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${org.slf4j.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>runtime</scope>
         </dependency>
+        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>runtime</scope>
         </dependency>
+        
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
+        
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
@@ -245,35 +230,32 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JSR 303 with Hibernate Validator -->
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <version>1.1.0.Final</version>
         </dependency>
+        
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>5.1.3.Final</version>
         </dependency>
 
-        <!-- Joda Time <dependency> <groupId>joda-time</groupId> <artifactId>joda-time</artifactId> 
-        <version>1.6.2</version> <scope>runtime</scope> </dependency> <dependency> 
-        <groupId>joda-time</groupId> <artifactId>joda-time-jsptags</artifactId> <version>1.0.2</version> 
-        <scope>runtime</scope> </dependency> -->
-        <!-- Servlet -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
             <groupId>javax.servlet.jsp</groupId>
             <artifactId>jsp-api</artifactId>
             <version>2.1</version>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
@@ -304,7 +286,6 @@
             <version>3.1</version>
         </dependency>
 
-        <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -341,7 +322,6 @@
             <version>${org.springframework.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-expression</artifactId>
@@ -356,9 +336,7 @@
 
     </dependencies>
 
-
     <repositories>
-
         <repository>
             <id>org.jboss.repository.release</id>
             <name>JBoss Maven Release Repository</name>
@@ -385,10 +363,6 @@
             </snapshots>
         </repository>
 
-        <!-- <repository> <id>sonatype-nexus-snapshots</id> <name>Sonatype Nexus 
-        Snapshots</name> <url>https://oss.sonatype.org/content/repositories/snapshots/</url> 
-        </repository> -->
-
         <repository>
             <id>MavenCentral</id>
             <name>Maven repository</name>
@@ -407,7 +381,6 @@
             <id>OSGEO GeoTools repo</id>
             <url>http://download.osgeo.org/webdav/geotools</url>
         </repository>
-
     </repositories>
 
     <build>
@@ -422,16 +395,29 @@
                     <showWarnings>true</showWarnings>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
-                <configuration>
-                    <warName>mast</warName>
-                    <outputDirectory>C:\Tomcat\webapps</outputDirectory>
-                    <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/org.apache.xerces-2.9.0.jar,WEB-INF/lib/org.apache.xerces-2.9.0-SNAPSHOT.jar</packagingExcludes>
-                </configuration>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>default-war</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>war-exploded</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+                    
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -447,4 +433,47 @@
             </plugin>
         </plugins>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>WAR</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>2.3.2</version>
+                        <configuration>
+                            <source>1.7</source>
+                            <target>1.7</target>
+                            <showWarnings>true</showWarnings>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.1.1</version>
+                        <configuration>
+                            <warName>mast</warName>
+                            <!--outputDirectory>C:\Tomcat\webapps</outputDirectory-->
+                            <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/org.apache.xerces-2.9.0.jar,WEB-INF/lib/org.apache.xerces-2.9.0-SNAPSHOT.jar</packagingExcludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>install</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sources</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

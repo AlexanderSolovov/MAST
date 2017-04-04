@@ -14,6 +14,7 @@ var checkHamletEdit = false;
 var HamletName = null;
 var HamletAlias = null;
 var HamletCode = null;
+var hamletLeaderName = null;
 var checkeditHam = false;
 
 
@@ -213,17 +214,16 @@ var createEditProject = function (_name) {
                     sortedLyrGroup[_i] = proj_layerGroup[_k];
                 }
 
-                jQuery("#ProjectTemplateForm").tmpl(data,{}).appendTo("#projectGeneralBody");
-                jQuery("#ProjectTemplateLayergroup").tmpl(data,{}).appendTo("#projectLayergroupBody");
-                jQuery("#projectConfigurationTemplate").tmpl(data,{}).appendTo("#projectConfigurationBody");
+                jQuery("#ProjectTemplateForm").tmpl(data, {}).appendTo("#projectGeneralBody");
+                jQuery("#ProjectTemplateLayergroup").tmpl(data, {}).appendTo("#projectLayergroupBody");
+                jQuery("#projectConfigurationTemplate").tmpl(data, {}).appendTo("#projectConfigurationBody");
                 jQuery.each(proj_country, function (i, value) {
                     jQuery("#countryId").append(jQuery("<option></option>").attr("value", value).text(value));
                 });
 
                 jQuery("#hid_idseq").val(data.id);
 
-                if (data.projectAreas.length > 0)
-                {
+                if (data.projectAreas.length > 0) {
                     jQuery("#countryId").val(data.projectAreas[0].countryName);
                     jQuery("#hid_id").val(data.projectAreas[0].areaId);
                     getRegionOnCountryChange(data.projectAreas[0].countryName);
@@ -235,17 +235,16 @@ var createEditProject = function (_name) {
                     jQuery("#villagechairmanId").val(data.projectAreas[0].villageChairman);
                     jQuery("#executiveofficerId").val(data.projectAreas[0].approvingExecutive);
                     jQuery("#districtofficerId").val(data.projectAreas[0].districtOfficer);
-
-                    //Added Village Code and Village Postal Code
                     jQuery("#villagecode").val(data.projectAreas[0].village_code);
                     jQuery("#villagepostalcode").val(data.projectAreas[0].address);
+                    jQuery("#vcmeetingdate").val(data.projectAreas[0].vcMeetingDate);
                 }
 
-                jQuery("#ProjectTemplateDisclaimer").tmpl(data,{}).appendTo("#projectDisclaimerBody");
+                jQuery("#ProjectTemplateDisclaimer").tmpl(data, {}).appendTo("#projectDisclaimerBody");
                 jQuery("#projectLayergroupBody").empty();
                 jQuery("#ProjectTemplateLayergroup").tmpl(sortedLyrGroup, {}).appendTo("#projectLayergroupBody");
                 jQuery("#projectBaselayerBody").empty();
-                jQuery("#ProjectTemplateBaselayer").tmpl(proj_baselayer,{}).appendTo("#projectBaselayerBody");
+                jQuery("#ProjectTemplateBaselayer").tmpl(proj_baselayer, {}).appendTo("#projectBaselayerBody");
                 jQuery("#projectUserList").empty();
                 jQuery("#ProjectTemplateUser").tmpl(userroledata).appendTo("#projectUserList");
 
@@ -267,9 +266,11 @@ var createEditProject = function (_name) {
                         HamletName = hamletList[i].hamletName;
                         HamletAlias = hamletList[i].hamletNameSecondLanguage;
                         HamletCode = hamletList[i].hamletCode;
+                        hamletLeaderName = hamletList[i].hamletLeaderName;
                         hamletDetails.push(HamletName);
                         hamletDetails.push(HamletAlias);
                         hamletDetails.push(HamletCode);
+                        hamletDetails.push(hamletLeaderName);
                     }
                     addHamlet('new');
                 }
@@ -353,16 +354,16 @@ var createEditProject = function (_name) {
             cache: false
         });
     } else {
-        jQuery("#ProjectTemplateForm").tmpl(null,{}).appendTo("#projectGeneralBody");
-        jQuery("#ProjectTemplateLayergroup").tmpl(null,{}).appendTo("#projectLayergroupBody");
-        jQuery("#projectConfigurationTemplate").tmpl(null,{}).appendTo("#projectConfigurationBody");
-        jQuery("#ProjectTemplateDisclaimer").tmpl(null,{}).appendTo("#projectDisclaimerBody");
+        jQuery("#ProjectTemplateForm").tmpl(null, {}).appendTo("#projectGeneralBody");
+        jQuery("#ProjectTemplateLayergroup").tmpl(null, {}).appendTo("#projectLayergroupBody");
+        jQuery("#projectConfigurationTemplate").tmpl(null, {}).appendTo("#projectConfigurationBody");
+        jQuery("#ProjectTemplateDisclaimer").tmpl(null, {}).appendTo("#projectDisclaimerBody");
 
         // add value for project configuration end 
         jQuery("#projectLayergroupBody").empty();
-        jQuery("#ProjectTemplateLayergroup").tmpl(proj_layerGroup,{}).appendTo("#projectLayergroupBody");
+        jQuery("#ProjectTemplateLayergroup").tmpl(proj_layerGroup, {}).appendTo("#projectLayergroupBody");
         jQuery("#projectBaselayerBody").empty();
-        jQuery("#ProjectTemplateBaselayer").tmpl(proj_baselayer,{}).appendTo("#projectBaselayerBody");
+        jQuery("#ProjectTemplateBaselayer").tmpl(proj_baselayer, {}).appendTo("#projectBaselayerBody");
 
         //hide all base layer
         jQuery("#projectBaselayerBody tr").hide();
@@ -387,6 +388,10 @@ var createEditProject = function (_name) {
         jQuery("#temporaryAdjDiv").empty();
         jQuery("#temporaryHamletDiv").empty();
     }
+
+    $("#vcmeetingdate").live('click', function () {
+        $(this).datepicker('destroy').datepicker({dateFormat: 'yy-mm-dd'}).focus();
+    });
     jQuery("#project_accordion").show();
     jQuery("#project_accordion").accordion({fillSpace: true});
     jQuery("#project_btnSave").show();
@@ -754,7 +759,7 @@ function getRegionOnCountryChange(countryname) {
             success: function (regiondata) {
                 var proj_region = regiondata;
                 jQuery("#regionId").empty();
-                jQuery.each(proj_region, function (i, value) { 
+                jQuery.each(proj_region, function (i, value) {
                     jQuery("#regionId").append(jQuery("<option></option>").attr("value", value).text(value));
                 });
             }
@@ -894,19 +899,19 @@ function validateAdjudicator(title) {
     }
 }
 
-function newHamlet(title) {
-    if (title == 'new')
+function newHamlet(hamlet) {
+    if (hamlet == 'new')
         checkeditHam = false;
     hamletDialog = $("#hamlet-dialog-form").dialog({
         autoOpen: false,
-        height: 350,
+        height: 390,
         width: 300,
         resizable: false,
         modal: true,
         buttons: {
             "Save": function ()
             {
-                validateHamlet(title);
+                validateHamlet(hamlet);
             },
             "Cancel": function ()
             {
@@ -919,16 +924,22 @@ function newHamlet(title) {
             hamletDialog.dialog("close");
         }
     });
-    if (title != 'new') {
-        $('#hamlet_name').val(title.name);
-        $('#hamlet_alias').val(title.type);
-        $('#hamlet_code').val(title.title);
+    if (hamlet != 'new') {
+        $('#hamlet_name').val(hamlet.name);
+        $('#hamlet_alias').val(hamlet.alias);
+        $('#hamlet_code').val(hamlet.code);
+        $('#hamlet_leader_name').val(hamlet.leader);
+    } else {
+        $("#hamlet_name").val("");
+        $("#hamlet_alias").val("");
+        $("#hamlet_code").val("");
+        $("#hamlet_leader_name").val("");
     }
 
     hamletDialog.dialog("open");
 }
 
-function addHamlet(title) {
+function addHamlet(hamlet) {
     if (!checkHamletEdit) {
         checkHamletEdit = true;
         hamletDetails = [];
@@ -937,59 +948,65 @@ function addHamlet(title) {
     hamlet_name = document.getElementById("hamlet_name").value;
     hamlet_alias = document.getElementById("hamlet_alias").value;
     hamlet_code = document.getElementById("hamlet_code").value;
+    hamlet_leader = document.getElementById("hamlet_leader_name").value;
 
     jQuery("#hamlet_name").val("");
     jQuery("#hamlet_alias").val("");
     jQuery("#hamlet_code").val("");
+    $("#hamlet_leader_name").val("");
 
     if (checkeditHam) {
-        var k = parseInt(title.id);
+        var k = parseInt(hamlet.id);
         hamletDetails[k] = hamlet_name;
         hamletDetails[k + 1] = hamlet_alias;
         hamletDetails[k + 2] = hamlet_code;
+        hamletDetails[k + 3] = hamlet_leader;
     } else if (hamlet_name != "" && hamletDetails.indexOf(hamlet_name) == -1) {
         hamletDetails.push(hamlet_name);
         hamletDetails.push(hamlet_alias);
         hamletDetails.push(hamlet_code);
+        hamletDetails.push(hamlet_leader);
     } else if (hamlet_name != "" && hamletDetails.indexOf(hamlet_name) > -1) {
         jAlert("Name already exists");
     }
 
     jQuery("#temporaryHamletDiv").empty();
     var content1 = "";
-    var flag = 0;
     for (var i = 0; i < (hamletDetails.length); i++) {
         HamletName = hamletDetails[i];
         HamletAlias = hamletDetails[i + 1];
         HamletCode = hamletDetails[i + 2];
-
+        hamletLeaderName = hamletDetails[i + 3];
+        hamletLeaderName = hamletLeaderName.replace(/"/g, "&quot;");
+        hamletLeaderNameEsc = hamletLeaderName.replace(/'/g, "\\'");
+                
         content = '<tr><td>' + '<label id="hamlet_name' + "" + i + "" + '">' + "" + HamletName + "" + '</label><input type="hidden" name="hamletName" value=' + "" + HamletName + "" + '> ' + '</td>';
         content += '<td>' + '<label id="hamlet_alias' + "" + i + "" + '">' + "" + HamletAlias + "" + '</label><input type="hidden" name="hamletAlias" value=' + "" + HamletAlias + "" + '> ' + '</td>';
         content += '<td>' + '<label id="hamlet_code' + "" + i + "" + '">' + "" + HamletCode + "" + '</label><input type="hidden" name="hamletCode" value=' + "" + HamletCode + "" + '> ' + '</td>';
-        content += '<td align="center">' + '<div><a href ="#" title= ' + HamletCode + ' name= ' + HamletName + ' type= ' + HamletAlias + '  id= ' + i + ' onclick="javascript:editHamlet(this);"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
-        content += '<td align="center">' + '<div><a href ="#" title= ' + HamletCode + ' id= ' + i + ' onclick="javascript:deleteHamet(this);"><img src="resources/images/studio/delete.png" title="Delete"/></a></div>' + '</td></tr>';
+        content += '<td>' + '<label id="hamlet_leader' + "" + i + "" + '">' + "" + hamletLeaderName + "" + '</label><input type="hidden" name="hamletLeaderName" value="' + hamletLeaderName + '"> ' + '</td>';
+        content += '<td align="center">' + '<div><a href ="#" id= ' + i + ' onclick="javascript:editHamlet({code: \'' + HamletCode + '\', name: \'' + HamletName + '\', alias: \'' + HamletAlias + '\', leader: \'' + hamletLeaderNameEsc + '\', id: \'' + i + '\'});"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
+        content += '<td align="center">' + '<div><a href ="#" id= ' + i + ' onclick="javascript:deleteHamet({code: \'' + HamletCode + '\', id: \'' + i + '\'});"><img src="resources/images/studio/delete.png" title="Delete"/></a></div>' + '</td></tr>';
 
         content1 = content1 + content;
-        i = i + 2;
-        flag++;
+        i = i + 3;
     }
-    
+
     if (hamletDetails.length > 0)
-        jQuery("#temporaryHamletDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Hamlet Name</th><th class='tableHeader'>Hamlet Name(Second Language)</th><th class='tableHeader'>Hamlet Code</th><th class='tableHeader'>Edit</th><th class='tableHeader'>Delete</th>" + content1 + "</table>");
-    if (title != 'new')
+        jQuery("#temporaryHamletDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Hamlet Name</th><th class='tableHeader'>Hamlet Name(Second Language)</th><th class='tableHeader'>Hamlet Code</th><th class='tableHeader'>Leader Name</th><th class='tableHeader'>Edit</th><th class='tableHeader'>Delete</th>" + content1 + "</table>");
+    if (hamlet != 'new')
         jAlert("Data successfully saved", "Hamlet Info");
 }
 
-function deleteHamet(dH) {
+function deleteHamet(hamlet) {
     var checkdelete = true;
-    jConfirm('Are You Sure You Want To Delete : <strong>' + dH.title + '</strong>', 'Delete Confirmation', function (response) {
+    jConfirm('Are You Sure You Want To Delete : <strong>' + hamlet.code + '</strong>', 'Delete Confirmation', function (response) {
 
         if (response) {
             if (editableProject != undefined) {
                 jQuery.ajax({
                     type: 'GET',
                     async: false,
-                    url: "project/delethamlet/" + dH.title + "/" + editableProject,
+                    url: "project/delethamlet/" + hamlet.code + "/" + editableProject,
                     success: function (result)
                     {
                         checkdelete = result;
@@ -997,7 +1014,7 @@ function deleteHamet(dH) {
                 });
             }
             if (checkdelete) {
-                hamletDetails.splice(dH.id, 3);
+                hamletDetails.splice(hamlet.id, 4);
                 jQuery("#temporaryHamletDiv").empty();
                 var content1 = "";
                 for (var i = 0; i < (hamletDetails.length); i++) {
@@ -1005,18 +1022,22 @@ function deleteHamet(dH) {
                     HamletName = hamletDetails[i];
                     HamletAlias = hamletDetails[i + 1];
                     HamletCode = hamletDetails[i + 2];
+                    hamletLeaderName = hamletDetails[i + 3];
+                    hamletLeaderName = hamletLeaderName.replace(/"/g, "&quot;");
+                    hamletLeaderNameEsc = hamletLeaderName.replace(/'/g, "\\'");
 
                     content = '<tr><td>' + '<label id="hamlet_name' + "" + i + "" + '">' + "" + HamletName + "" + '</label><input type="hidden" name="hamletName" value=' + "" + HamletName + "" + '> ' + '</td>';
                     content += '<td>' + '<label id="hamlet_alias' + "" + i + "" + '">' + "" + HamletAlias + "" + '</label><input type="hidden" name="hamletAlias" value=' + "" + HamletAlias + "" + '> ' + '</td>';
                     content += '<td>' + '<label id="hamlet_code' + "" + i + "" + '">' + "" + HamletCode + "" + '</label><input type="hidden" name="hamletCode" value=' + "" + HamletCode + "" + '> ' + '</td>';
-                    content += '<td align="center">' + '<div><a href ="#" title= ' + HamletCode + ' name= ' + HamletName + ' type= ' + HamletAlias + '  id= ' + i + ' onclick="javascript:editHamlet(this);"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
-                    content += '<td align="center">' + '<div><a href ="#" title= ' + HamletCode + ' id= ' + i + ' onclick="javascript:deleteHamet(this);"><img src="resources/images/studio/delete.png" title="Delete"/></a></div>' + '</td></tr>';
+                    content += '<td>' + '<label id="hamlet_leader' + "" + i + "" + '">' + "" + hamletLeaderName + "" + '</label><input type="hidden" name="hamletLeaderName" value=' + "" + hamletLeaderName + "" + '> ' + '</td>';
+                    content += '<td align="center">' + '<div><a href ="#" id= ' + i + ' onclick="javascript:editHamlet({code: \'' + HamletCode + '\', name: \'' + HamletName + '\', alias: \'' + HamletAlias + '\', leader: \'' + hamletLeaderNameEsc + '\', id: \'' + i + '\'});"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
+                    content += '<td align="center">' + '<div><a href ="#" id= ' + i + ' onclick="javascript:deleteHamet({code: \'' + HamletCode + '\', id: \'' + i + '\'});"><img src="resources/images/studio/delete.png" title="Delete"/></a></div>' + '</td></tr>';
 
                     content1 = content1 + content;
-                    i = i + 2;
+                    i = i + 3;
                 }
                 if (hamletDetails.length > 0)
-                    jQuery("#temporaryHamletDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Hamlet Name</th><th class='tableHeader'>Hamlet Name(Second Language)</th><th class='tableHeader'>Hamlet Code</th><th class='tableHeader'>Delete</th><th class='tableHeader'>Edit</th>" + content1 + "</table>");
+                    jQuery("#temporaryHamletDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Hamlet Name</th><th class='tableHeader'>Hamlet Name(Second Language)</th><th class='tableHeader'>Hamlet Code</th><th class='tableHeader'>Leader Name</th><th class='tableHeader'>Delete</th><th class='tableHeader'>Edit</th>" + content1 + "</table>");
                 jAlert("Data deleted successfully", "Delete");
             } else {
                 jAlert("Hamlet is mapped with spatial unit", "Delete Hamlet");
@@ -1025,35 +1046,37 @@ function deleteHamet(dH) {
     });
 }
 
-function validateHamlet(title) {
+function validateHamlet(hamlet) {
     $("#hamletformID").validate({
         rules: {
             hamlet_name: "required",
             hamlet_alias: "required",
             hamlet_code: "required",
+            hamlet_leader_name: "required"
         },
         messages: {
             hamlet_name: "Enter Hamlet Name",
             hamlet_alias: "Enter Hamlet Alias",
             hamlet_code: "Enter Hamlet Code",
+            hamlet_leader_name: "Enter leader name"
         }
     });
 
     if ($("#hamletformID").valid()) {
-        addHamlet(title);
+        addHamlet(hamlet);
         hamletDialog.dialog("destroy");
         hamletDialog.dialog("close");
     }
 }
 
-function editHamlet(dH) {
+function editHamlet(hamlet) {
     checkeditHam = true;
 
     if (editableProject != undefined) {
         jQuery.ajax({
             type: 'GET',
             async: false,
-            url: "project/delethamlet/" + dH.title + "/" + editableProject,
+            url: "project/delethamlet/" + hamlet.code + "/" + editableProject,
             success: function (result)
             {
                 checkeditHam = result;
@@ -1062,7 +1085,7 @@ function editHamlet(dH) {
     }
 
     if (checkeditHam) {
-        newHamlet(dH);
+        newHamlet(hamlet);
     } else {
         jAlert("Hamlet is mapped with spatial unit", "Edit Hamlet");
     }

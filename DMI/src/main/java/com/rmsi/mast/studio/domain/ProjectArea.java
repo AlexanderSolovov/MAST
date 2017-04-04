@@ -78,7 +78,6 @@ public class ProjectArea implements Serializable {
     @Column(name = "state_name")
     private String stateName;
 
-    //@Column(name="village")
     private String village;
 
     private String wards;
@@ -96,6 +95,19 @@ public class ProjectArea implements Serializable {
     @Column(name = "region_code")
     private String regionCode;
 
+    @Column(name = "vc_meeting_date")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date vcMeetingDate;
+    
+    @Column(name = "village_chairman_signature")
+    String villageChairmanSignaturePath;
+    
+    @Column(name = "village_executive_signature")
+    String villageExecutiveSignaturePath;
+    
+    @Column(name = "district_officer_signature")
+    String districtOfficerSignaturePath;
+    
     public ProjectArea() {
     }
 
@@ -331,4 +343,35 @@ public class ProjectArea implements Serializable {
         this.address = address;
     }
 
+    public Date getVcMeetingDate() {
+        return vcMeetingDate;
+    }
+
+    public void setVcMeetingDate(Date vcMeetingDate) {
+        this.vcMeetingDate = vcMeetingDate;
+    }
+
+    public String getVillageChairmanSignaturePath() {
+        return villageChairmanSignaturePath;
+    }
+
+    public void setVillageChairmanSignaturePath(String villageChairmanSignaturePath) {
+        this.villageChairmanSignaturePath = villageChairmanSignaturePath;
+    }
+
+    public String getVillageExecutiveSignaturePath() {
+        return villageExecutiveSignaturePath;
+    }
+
+    public void setVillageExecutiveSignaturePath(String villageExecutiveSignaturePath) {
+        this.villageExecutiveSignaturePath = villageExecutiveSignaturePath;
+    }
+
+    public String getDistrictOfficerSignaturePath() {
+        return districtOfficerSignaturePath;
+    }
+
+    public void setDistrictOfficerSignaturePath(String districtOfficerSignaturePath) {
+        this.districtOfficerSignaturePath = districtOfficerSignaturePath;
+    }
 }

@@ -96,7 +96,7 @@
             <h3>
                 <a href="#">Layer Group</a>
             </h3>
-            
+
             <div style="height: 250px; overflow: hidden;" class="styleForm">
                 <div id="project_select_op">
                     <select name="lyr_type" id="lyr_type"
@@ -409,7 +409,7 @@
             </td>
 
             </tr-->
-    
+
             <tr>
             <!--td>&nbsp;</td-->
 
@@ -497,7 +497,7 @@
             </td>
             </tr>
         </script>
-        
+
         <script id="projectConfigurationTemplate" type="text/x-jquery-tmpl">
             <tr>
             <td>
@@ -547,7 +547,7 @@
                 </select>  
             </td>
             <td>
-                <label class="lblint">Village Code</label> 
+                <label class="lblint">Village Number</label> 
             </td>
             <td>
                 <input type="textbox" name="villagecode" id="villagecode" value="" />
@@ -562,25 +562,40 @@
                 <input type="textbox" name="villagepostalcode" id="villagepostalcode" value="" />
             </td>
             <td>
+                <label class="lblint">VC meeting date</label> 
+            </td>
+            <td>
+                <input type="textbox" name="vcmeetingdate" id="vcmeetingdate" class="datepicker" readonly="readonly" value="" />
+            </td>
+            </tr>
+    
+            <tr>
+            <td>
                 <label class="lblint">Village Chairman</label> 
             </td>
             <td>
                 <input type="textbox" name="villagechairman" id="villagechairmanId" value="" />
             </td>
-            </tr>
-    
-            <tr>
             <td>
                 <label class="lblint">Executive Officer</label>
             </td>
             <td>
                 <input type="textbox" name="executiveofficer" id="executiveofficerId" value="" />
             </td>
+            </tr>
+    
+            <tr>
             <td>
                 <label class="lblint">District Land Officer</label>
             </td>
             <td>
                 <input type="textbox" name="districtofficer" id="districtofficerId" value="" />
+            </td>
+            <td>
+                
+            </td>
+            <td>
+                
             </td>
             </tr>
         </script>
@@ -630,11 +645,17 @@
 <div id="hamlet-dialog-form" title="Hamlet" style="display: none;">
     <form  id="hamletformID" action="" onsubmit="return false;">
         <fieldset>
-            <label for="email">Name</label> <input name="hamlet_name"
-                                                   id="hamlet_name" value="" class="text ui-widget-content ui-corner-all"/> <br><label for="email">Alias
-                Other Language</label> <input name="hamlet_alias" id="hamlet_alias"
-                                          value="" class="text ui-widget-content ui-corner-all" /><br> <label for="email">Hamlet Code</label> <input
-                                          name="hamlet_code" id="hamlet_code" value="" class="text ui-widget-content ui-corner-all"/>
+            <label for="email">Name</label> 
+            <input name="hamlet_name" id="hamlet_name" value="" class="text ui-widget-content ui-corner-all"/> 
+            <br>
+            <label for="email">Alias Other Language</label> 
+            <input name="hamlet_alias" id="hamlet_alias" value="" class="text ui-widget-content ui-corner-all" />
+            <br> 
+            <label for="email">Hamlet Code</label> 
+            <input name="hamlet_code" id="hamlet_code" value="" class="text ui-widget-content ui-corner-all"/>
+            <br>
+            <label for="email">Leader Name</label> 
+            <input name="hamlet_leader_name" id="hamlet_leader_name" value="" class="text ui-widget-content ui-corner-all"/> 
         </fieldset>
     </form>
 </div>

@@ -110,7 +110,7 @@ border:0px;
 }
 
 .loader {
-	left: 30px;
+	left: 200px;
 	position: absolute;
 	top: 104px;
 	z-index: 111;
@@ -153,7 +153,7 @@ padding:0;
 	margin: 0;
 	height:100%;
 	overflow: hidden;	
-	/*background: #98BCDA;*/
+        background: #FFFFFF;
 	float:left;
 	width:100%;
 	whitespace: nowrap;
@@ -181,7 +181,7 @@ padding:0;
 	overflow: auto;
 	left: 0px;
 	margin-top: 0px;
-	z-index: 1111;
+	z-index: 951;
 }
 
 #bottombar {
@@ -196,11 +196,10 @@ padding:0;
 	bottom: 0px;
 	*bottom: -8px;
 	width: 890px;
-	z-index: 1010;
+	z-index: 950;
 	margin-bottom:0.49em;
 	overflow-y:hidden;
 	width:100%;
-	left:-3px;
 }
 
 .collapse_left {
@@ -213,7 +212,7 @@ padding:0;
 	margin-top: 250px;
 	padding: 2px;
 	position: absolute;
-	z-index: 1111;
+	z-index: 952;
 	
 }
 
@@ -227,41 +226,8 @@ padding:0;
 	margin-top: 250px;
 	padding: 2px;
 	position: absolute;
-	z-index: 1111;
+	z-index: 952;
 }
-
-
-
-
-
-.poweredBy
-{
-	background-image: url("../../images/viewer/RMSI_logo.png");
-	width: 84px;
-	height: 34px;
-	background-repeat: no-repeat;
-	float: right;
-	/*left: 800px;		By Aparesh*/
-	right: 14px;
-	padding: 0px;
-	position: absolute;
-	text-align: center;
-	bottom: -7px;
-	z-index: 1009;
-	*z-index: 801;
-	*background-image: url("../../images/viewer/RMSI_logo.png");
-	*height: 19px;
-	*width: 138px;
-	*bottom: 0px;
-}
-
-
-
-
-
-
-
-
 
 .bottom_collapse {
 	background-image: url("../../images/viewer/slide-up.png");
@@ -277,8 +243,7 @@ padding:0;
 	position: absolute;
 	text-align: center;
 	bottom: 0px;
-	z-index: 1111;
-	*z-index:99999;	
+	z-index: 952;
 }
 
 .bottom_collapse_down {
@@ -288,14 +253,12 @@ padding:0;
 	background-repeat: no-repeat;
 	float: right;
 	font-weight: bold;
-	/*left: 800px;		By Aparesh*/
-	left: 410px;
 	margin-top: 306px;
 	padding: 0px;
 	position: absolute;
 	text-align: center;
 	bottom: 0px;
-	z-index: 1111;
+	z-index: 952;
 }
 
 #shadowVer div {
@@ -641,7 +604,6 @@ a.fg-button {
 }
 
 .ui-dialog {
-        z-index: 2000 !important;
 	-webkit-box-shadow: 4px 4px 2px #E6E6E6; /* Safari and Chrome */
 	box-shadow: 4px 4px 2px #E6E6E6;
 }
@@ -793,14 +755,10 @@ select.int {
 .olControlOverviewMapMaximizeButton {
 	bottom: 15px;
 	position:relative;
-	z-index:1005;
-	*z-index:1090;
 }
 
 .olControlOverviewMapMinimizeButton {
 	bottom: 15px;
-	z-index:1005;
-	*z-index:9999999;
 }
 
 .olControlOverviewMapElement {
@@ -1446,7 +1404,7 @@ th img {
 }
 
 .celladjust_one {
-	color:##00254F;
+	color:#00254F;
 	padding-top: 5px;
 	padding-left: 5px;
 	font-weight: bold;
@@ -2132,14 +2090,10 @@ overflow:hidden;
 line-height:1.3em;
 }
 
-
-
 #header .widthheader {
 	width: 100%;
 	height:69px;
-	overflow:hidden;
-	//background:url('../../images/viewer/bg-picture.jpg') no-repeat top right; 
-	
+	overflow:hidden;	
 }
 
 .olControlScaleLine {
@@ -2306,10 +2260,6 @@ div.olControlMousePosition {
 	padding: 0;
 }
 
-.ui-widget-header {
-/* 	background: none repeat scroll 0 0 /*#FFFFFF*/   #aaaaaa; */
-}
-
 .ui-tabs .ui-tabs-panel {
 	background: none repeat scroll 0 0 transparent;
 	border: 0px solid #EEEEEE;
@@ -2353,23 +2303,6 @@ div.olControlMousePosition {
 .layer-td-one {
 	padding-right: 0px;
 }
-/*Commented by Amitabh for generic cursors
-.olControlDragPanActive {
-	cursor: url(../cursors/pan.cur) 16 16, url(../cursors/pan.cur), auto;
-}
-
-.olControlDragPanActive.olDragDown {
-	cursor: url(../cursors/pandown.cur) 16 16, url(../cursors/pandown.cur),
-		auto;
-}
-
-.olControlZoomBoxActive {
-	cursor: crosshair;
-}
-
-.zoomoutActive {
-	cursor: crosshair;
-}*/
 
 .bottom_statusbar {
 	
@@ -2383,6 +2316,15 @@ div.olControlMousePosition {
 	z-index: 950;
 }
 
+.olControlPanZoomBar, 
+.olControlScaleLine,
+.olControlScale,
+.olControlMousePosition,
+.olControlOverviewMapMaximizeButton,
+.olControlOverviewMapMinimizeButton,
+.olControlOverviewMap {
+    z-index: 999 !important;
+}
 .ui-widget-content a {
 	color: #1491FF;
 }
@@ -2538,7 +2480,7 @@ ul.menuBar li ul li a {
 	margin: 0;
 	padding: 0 0 0 5%;
 	width: 100%;
-	width: 105% %;
+	width: 105%;
 	color: #000;
 }
 
@@ -2553,7 +2495,7 @@ ul.menuBar li.submenu:hover ul {
 
 ul.menuBar li.submenu:hover ul li {
 	color: #c00;
-	margin: 5;
+	margin: 5px;
 }
 
 ul.menuBar li.submenu:hover ul li:hover {
@@ -3676,8 +3618,6 @@ background: transparent url('../../images/viewer/existing_issue_24.png') no-repe
  
 }
 
-
-
 .modal {
     display:    none;
     position:   fixed;
@@ -3692,8 +3632,6 @@ background: transparent url('../../images/viewer/existing_issue_24.png') no-repe
                 no-repeat;
 }
 
-/* When the body has the loading class, we turn
-   the scrollbar off with overflow:hidden */
 body.loading {
     overflow: hidden;   
 }

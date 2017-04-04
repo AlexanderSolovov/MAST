@@ -45,11 +45,10 @@ import com.rmsi.mast.studio.service.UnitService;
 import com.rmsi.mast.studio.service.UserService;
 import com.rmsi.mast.studio.util.SaveProject;
 import com.rmsi.mast.viewer.service.LandRecordsService;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import org.apache.commons.lang.StringUtils;
 
-/**
- * @author Aparesh.Chakraborty
- *
- */
 @Controller
 public class ProjectController {
 
@@ -127,7 +126,7 @@ public class ProjectController {
         String[] hamlet_name = null;
         String[] hamlet_alias = null;
         String[] hamlet_code = null;
-        //int hamlet_length=0;
+        String[] hamlet_leader = null;
 
         try {
             projectName = ServletRequestUtils.getRequiredStringParameter(request, "name");
@@ -137,25 +136,23 @@ public class ProjectController {
             } catch (Exception e) {
                 logger.error(e);
             }
-            //hamlet_length=ServletRequestUtils.getRequiredIntParameter(request, "hamlets_length");
+
             try {
                 hamlet_name = ServletRequestUtils.getRequiredStringParameters(request, "hamletName");
                 hamlet_alias = ServletRequestUtils.getRequiredStringParameters(request, "hamletAlias");
                 hamlet_code = ServletRequestUtils.getRequiredStringParameters(request, "hamletCode");
-
+                hamlet_leader = ServletRequestUtils.getRequiredStringParameters(request, "hamletLeaderName");
             } catch (Exception e1) {
                 logger.error(e1);
             }
 
             String idseq = ServletRequestUtils.getRequiredStringParameter(request, "hid_idseq");
-            if (idseq == "") {
+            if ("".equals(idseq)) {
                 if (projectService.checkduplicatename(projectName)) {
-
                     return "DuplicateName";
                 }
 
-                if (projectName == "") {
-
+                if ("".equals(projectName)) {
                     return "EnterName";
                 }
 
@@ -163,75 +160,33 @@ public class ProjectController {
             project = getProjectById(projectName);
 
             if (project == null) {
-
                 project = new Project();
             }
-            System.out.println("-----------------" + request.getParameter("emailid"));
+
             project.setName(projectName);
-            /*project.setActive(Boolean.parseBoolean(ServletRequestUtils
-					.getRequiredStringParameter(request, "active")));*/
             project.setActive(true);
-
-            project.setActivelayer(ServletRequestUtils
-                    .getRequiredStringParameter(request, "activelayer"));
-
-            project.setCopyright(ServletRequestUtils
-                    .getRequiredStringParameter(request, "copyright"));
-            project.setCosmetic(Boolean.parseBoolean(ServletRequestUtils
-                    .getRequiredStringParameter(request, "cosmetic")));
-            project.setDescription(ServletRequestUtils
-                    .getRequiredStringParameter(request, "description"));
-            project.setDisclaimer(ServletRequestUtils
-                    .getRequiredStringParameter(request, "disclaimer"));
-
-            // project.setWidth(Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request,"width")));
-            // project.setHeight(Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request,"height")));
-            project.setMinextent(ServletRequestUtils
-                    .getRequiredStringParameter(request, "minextent"));
-            project.setMaxextent(ServletRequestUtils
-                    .getRequiredStringParameter(request, "maxextent"));
-            // project.setMaxresolutions(Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request,"maxresolutions")));
-            // project.setMinresolutions(Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request,"minresolutions")));
-            project.setNumzoomlevels(Integer.parseInt(ServletRequestUtils
-                    .getRequiredStringParameter(request, "numzoomlevels")));
-
-            project.setOverlaymap(ServletRequestUtils
-                    .getRequiredStringParameter(request, "overlaymap"));
-
-            project.setRestrictedextent(ServletRequestUtils
-                    .getRequiredStringParameter(request, "restrictedextent"));
-            // project.setThumbnail(ServletRequestUtils.getRequiredStringParameter(request,"thumbnail"));
-            project.setWatermask(ServletRequestUtils
-                    .getRequiredStringParameter(request, "watermask"));
-
-            project.setUnit(unitService.findUnitByName(ServletRequestUtils
-                    .getRequiredStringParameter(request, "unit.name")));
-
-            /*project.setActivelayer(ActivelayerService.findActivelayerByName(ServletRequestUtils
-					.getRequiredStringParameter(request, "activelayer.name")));*/
- /*	
-			project.setUnit(unitService.findUnitByName(ServletRequestUtils
-					.getRequiredStringParameter(request, "overlaymap.name")));*/
-            project.setProjection(projectionService.findProjectionByName(ServletRequestUtils
-                    .getRequiredStringParameter(request, "projection.code")));
-
-            project.setDisplayProjection(projectionService.findProjectionByName(ServletRequestUtils
-                    .getRequiredStringParameter(request, "displayProjection.code")));
-
-            project.setOutputformat(outputformatService.findOutputformatByName(ServletRequestUtils
-                    .getRequiredStringParameter(request, "outputFormat.name")));
-
-            //by Aparesh/
+            project.setActivelayer(ServletRequestUtils.getRequiredStringParameter(request, "activelayer"));
+            project.setCopyright(ServletRequestUtils.getRequiredStringParameter(request, "copyright"));
+            project.setCosmetic(Boolean.parseBoolean(ServletRequestUtils.getRequiredStringParameter(request, "cosmetic")));
+            project.setDescription(ServletRequestUtils.getRequiredStringParameter(request, "description"));
+            project.setDisclaimer(ServletRequestUtils.getRequiredStringParameter(request, "disclaimer"));
+            project.setMinextent(ServletRequestUtils.getRequiredStringParameter(request, "minextent"));
+            project.setMaxextent(ServletRequestUtils.getRequiredStringParameter(request, "maxextent"));
+            project.setNumzoomlevels(Integer.parseInt(ServletRequestUtils.getRequiredStringParameter(request, "numzoomlevels")));
+            project.setOverlaymap(ServletRequestUtils.getRequiredStringParameter(request, "overlaymap"));
+            project.setRestrictedextent(ServletRequestUtils.getRequiredStringParameter(request, "restrictedextent"));
+            project.setWatermask(ServletRequestUtils.getRequiredStringParameter(request, "watermask"));
+            project.setUnit(unitService.findUnitByName(ServletRequestUtils.getRequiredStringParameter(request, "unit.name")));
+            project.setProjection(projectionService.findProjectionByName(ServletRequestUtils.getRequiredStringParameter(request, "projection.code")));
+            project.setDisplayProjection(projectionService.findProjectionByName(ServletRequestUtils.getRequiredStringParameter(request, "displayProjection.code")));
+            project.setOutputformat(outputformatService.findOutputformatByName(ServletRequestUtils.getRequiredStringParameter(request, "outputFormat.name")));
             project.setAdmincreated(true);
             project.setOwner(request.getParameter("emailid"));
             project.setCopyright("custom");
             project.setWatermask("custom");
 
-            String layerGroup[] = request
-                    .getParameterValues("selectedLayergroups");
-
+            String layerGroup[] = request.getParameterValues("selectedLayergroups");
             String users[] = request.getParameterValues("project_user");
-
             String baselayers[] = null;
 
             try {
@@ -245,8 +200,6 @@ public class ProjectController {
             List<ProjectArea> projectAreaList = new ArrayList<ProjectArea>();
 
             ProjectArea projectArea = new ProjectArea();
-            //SET PRoject Area
-
             String countryname = "";
             String region = "";
             String districtname = "";
@@ -254,85 +207,68 @@ public class ProjectController {
             String hamlet = "";
             String name = "";
             String id = "";
-
-            //add for save 
             String districtOfficer = "";
             String villageChairman = "";
             String approvingExecutive = "";
             String villagecode = "";
             String regionCode = "";
             String villagepostalcode = "";
+            String vcmeetingdate = "";
 
-            //districtOfficer,villageChairman,approvingExecutive
             try {
                 try {
                     countryname = ServletRequestUtils.getRequiredStringParameter(request, "countryId");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     region = ServletRequestUtils.getRequiredStringParameter(request, "regionId");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     districtname = ServletRequestUtils.getRequiredStringParameter(request, "districtId");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     village = ServletRequestUtils.getRequiredStringParameter(request, "villageId");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     hamlet = ServletRequestUtils.getRequiredStringParameter(request, "hamletId");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     name = ServletRequestUtils.getRequiredStringParameter(request, "name");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     id = ServletRequestUtils.getRequiredStringParameter(request, "hid_id");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
-
-                //add for save VillageChairman By RM
                 try {
                     villageChairman = ServletRequestUtils.getRequiredStringParameter(request, "villagechairman");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
-
                 try {
                     approvingExecutive = ServletRequestUtils.getRequiredStringParameter(request, "executiveofficer");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
-
                 try {
                     districtOfficer = ServletRequestUtils.getRequiredStringParameter(request, "districtofficer");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
                     villagecode = ServletRequestUtils.getRequiredStringParameter(request, "villagecode");
                 } catch (Exception e) {
-
                     logger.error(e);
                 }
                 try {
@@ -343,14 +279,16 @@ public class ProjectController {
                 try {
                     villagepostalcode = ServletRequestUtils.getRequiredStringParameter(request, "villagepostalcode");
                 } catch (Exception e) {
-
+                    logger.error(e);
+                }
+                try {
+                    vcmeetingdate = ServletRequestUtils.getRequiredStringParameter(request, "vcmeetingdate");
+                } catch (Exception e) {
                     logger.error(e);
                 }
 
-                //
                 if (id != "") {
                     projectArea.setAreaId(Long.parseLong(id));
-
                 }
 
                 projectArea.setCountryName(countryname);
@@ -358,28 +296,27 @@ public class ProjectController {
                 projectArea.setRegionCode(regionCode);
                 projectArea.setDistrictName(districtname);
                 projectArea.setVillage(village);
-
-                /*projectArea.setHamlet(hamlet);*/
                 projectArea.setInitiationDate(new Date());
                 projectArea.setProjectName(projectName);
-
                 projectArea.setVillageChairman(villageChairman);
                 projectArea.setApprovingExecutive(approvingExecutive);
                 projectArea.setDistrictOfficer(districtOfficer);
                 projectArea.setVillage_code(villagecode);
                 projectArea.setAddress(villagepostalcode);
-
+                if(StringUtils.isEmpty(vcmeetingdate)){
+                    projectArea.setVcMeetingDate(null);
+                } else {
+                    projectArea.setVcMeetingDate(new SimpleDateFormat("yyyy-MM-dd").parse(vcmeetingdate));
+                }
                 projectAreaList.add(projectArea);
-
             } catch (Exception e) {
-
                 logger.error(e);
             }
 
-            //SET user
-            for (int i = 0; i < users.length; i++) {
+            //SET users
+            for (String user : users) {
                 UserProject userProject = new UserProject();
-                User obuser = userService.findUserByUserId(Integer.parseInt(users[i]));
+                User obuser = userService.findUserByUserId(Integer.parseInt(user));
                 userProject.setUser(obuser);
                 userProject.setProjectBean(project);
                 userProjectList.add(userProject);
@@ -391,56 +328,31 @@ public class ProjectController {
                     ProjectBaselayer projectBaselayer = new ProjectBaselayer();
                     Baselayer baselayer = new Baselayer();
                     baselayer.setName(baselayers[j]);
-
                     projectBaselayer.setBaselayerBean(baselayer);
                     projectBaselayer.setProjectBean(project);
                     projectBaselayer.setBaselayerorder(j + 1);
-
-                    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + baselayer.getName());
                     projectBaselayerList.add(projectBaselayer);
                 }
             }
 
             Set<ProjectLayergroup> plgList = new HashSet<ProjectLayergroup>();
-            //Set<ProjectLayergroup> plgList = project.getProjectLayergroups();
 
             for (int i = 0; i < layerGroup.length; i++) {
                 ProjectLayergroup plg = new ProjectLayergroup();
                 Layergroup lg = new Layergroup();
-                //Project proj = new Project();
-
                 lg.setName(layerGroup[i]);
-                //proj.setName(projName);
-
                 plg.setLayergroupBean(lg);
                 plg.setProjectBean(project);
                 plg.setGrouporder(i + 1);
                 plgList.add(plg);
             }
 
-            // add for project configuration
-            /*	if(baselayers!=null){
-				for(int j = 0; j < baselayers.length; j++){
-					ProjectBaselayer projectBaselayer=new ProjectBaselayer();
-		            Baselayer baselayer=new Baselayer();
-		            baselayer.setName(baselayers[j]);
-		            
-		            projectBaselayer.setBaselayerBean(baselayer);
-		            projectBaselayer.setProjectBean(project);
-		            projectBaselayer.setBaselayerorder(j+1);
-		            
-					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+ baselayer.getName());
-					projectBaselayerList.add(projectBaselayer);	           
-		        }
-			}
-             */
             project.setProjectLayergroups(plgList);
             project.setUserProjects(userProjectList);
             project.setProjectBaselayers(projectBaselayerList);
             project.setProjectAreas(projectAreaList);
 
             projectService.addProject(project);
-
             projectService.deleteAdjByProject(projectName);
 
             ProjectAdjudicator adjObj = new ProjectAdjudicator();
@@ -450,35 +362,26 @@ public class ProjectController {
                 adjObj.setProjectName(projectName);
                 projectService.addAdjudicatorDetails(adjObj);
             }
-            //projectService.deleteHamletByProject(projectName);
 
             List<String> hamlettmplst = projectService.getHamletCodesbyProject(projectName);
-
-            List<ProjectHamlet> hamletObjtmp = new ArrayList<ProjectHamlet>();
-            //Must check the code after 1-Oct-15 for HamletList use.
+            
             for (int j = 0; j < hamlet_name.length; j++) {
                 ProjectHamlet hamletObj = new ProjectHamlet();
                 hamletObj.setHamletName(hamlet_name[j]);
                 hamletObj.setHamletNameSecondLanguage(hamlet_alias[j]);
                 hamletObj.setHamletCode(hamlet_code[j]);
+                hamletObj.setHamletLeaderName(hamlet_leader[j]);
                 hamletObj.setProjectName(projectName);
                 hamletObj.setCount(0);
                 if (!hamlettmplst.contains(hamlet_code[j])) {
                     projectService.addHamlets(hamletObj);
                 }
             }
-
-            /*//	hamletObjtmp.removeAll(hamlettmplst);
-				for (int i = 0; i < hamletObjtmp.size(); i++) {
-					
-					projectService.addHamlets(hamletObjtmp.get(i));
-				}*/
             return "ProjectAdded";
         } catch (Exception e) {
             logger.error(e);
             return "false";
         }
-
     }
 
     @RequestMapping(value = "/studio/project/{id}/bookmark/", method = RequestMethod.GET)

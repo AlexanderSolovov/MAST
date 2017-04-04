@@ -55,26 +55,11 @@ public class ConfigureMapDisplay extends ActionBarActivity
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,int position, long id) 
 			{
-				if(position==0)	  // for point
-				{ 
-					selectedColor = cf.getPointColor();
-					openColorDialog("point");
-				}
-				if(position==1)	  // for Line
-				{ 
-					selectedColor = cf.getLineColor();
-					openColorDialog("line");
-				}
-				if(position==2)	  // for Polygon
-				{ 
-					selectedColor = cf.getPolygonColor();
-					openColorDialog("polygon");
-				}
-                if(position==3)	  // for Snapping
+                if(position==0)	  // for Snapping
                 {
                     openSnappingDialog();
                 }
-				if(position==4)	  // for labeling
+				if(position==1)	  // for labeling
 				{
 					openLabelingDialog();
 				}

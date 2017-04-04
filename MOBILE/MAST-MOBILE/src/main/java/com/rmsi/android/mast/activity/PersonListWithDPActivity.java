@@ -450,6 +450,8 @@ public class PersonListWithDPActivity extends ActionBarActivity {
         final EditText firstName = (EditText) dialog.findViewById(R.id.editTextFirstName);
         final EditText middleName = (EditText) dialog.findViewById(R.id.editTextMiddleName);
         final EditText lastName = (EditText) dialog.findViewById(R.id.editTextLastName);
+        LinearLayout extraFields = (LinearLayout) dialog.findViewById(R.id.extraLayout);
+        extraFields.setVisibility(View.GONE);
         save.setText("Save");
 
         firstName.setText(StringUtility.empty(person.getFirstName()));
@@ -497,6 +499,7 @@ public class PersonListWithDPActivity extends ActionBarActivity {
 
         if (result) {
             deceasedPersons.remove(person);
+            property.setDeceasedPerson(null);
             dpAdapter.notifyDataSetChanged();
             Toast.makeText(context, getResources().getString(R.string.deleted), Toast.LENGTH_LONG).show();
         } else {

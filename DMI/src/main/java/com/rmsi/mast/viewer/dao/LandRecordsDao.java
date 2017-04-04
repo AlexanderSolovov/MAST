@@ -21,7 +21,8 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
 	boolean rejectStatus(Long id);
 
 	List<SpatialUnitTable> search(String usinStr, String ukaNumber,String
-			projname, String dateto, String datefrom, Long status, Integer startpos);
+			projname, String dateto, String datefrom, 
+                        Long status, String claimType, Integer startpos);
 
 	List<SpatialUnitTable> findSpatialUnitById(Long id);
 
@@ -35,7 +36,7 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
 	boolean deleteSpatial(Long id);
 
 	Integer searchSize(String usinStr, String ukaNumber, String projname,
-			String dateto, String datefrom, Long status);
+			String dateto, String datefrom, Long status, String claimType);
 
 	List<SpatialUnitTable> getSpatialUnitByBbox(String bbox, String project_name);
 

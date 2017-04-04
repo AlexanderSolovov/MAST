@@ -385,7 +385,7 @@ public class Property extends Feature implements Serializable {
         if (shareId == ShareType.TYPE_TENANCY_IN_PROBATE) {
             if(getRight().hasPersonSubType(Person.SUBTYPE_GUARDIAN) || !getRight().hasPersonSubType(Person.SUBTYPE_ADMINISTRATOR)
                     || getDeceasedPerson() == null || getRight().getAdministratorCount() > 2){
-                return handleError(context, R.string.GuardianShareError, showMessage);
+                return handleError(context, R.string.ProbateShareError, showMessage);
             }
         }
 

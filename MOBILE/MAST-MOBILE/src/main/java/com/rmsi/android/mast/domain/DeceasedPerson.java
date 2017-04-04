@@ -70,13 +70,13 @@ public class DeceasedPerson implements Serializable {
             if(name.equals(""))
                 name = getFirstName();
             else
-                name = " " + getFirstName();
+                name = name + " " + getFirstName();
         }
         if(!StringUtility.isEmpty(getMiddleName())){
             if(name.equals(""))
                 name = getMiddleName();
             else
-                name = " " + getMiddleName();
+                name = name + " " + getMiddleName();
         }
         return name;
     }

@@ -7,22 +7,27 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="claim_type")
+@Table(name = "claim_type")
 public class ClaimType implements Serializable {
-    private static final long serialVersionUID = 1L;
 
-	@Id
-	private String code;
-	@Column
-        private String name;
-        @Column(name="name_other_lang")
-        private String nameOtherLang;
-        @Column
-        boolean active;
-        
-        public ClaimType(){
-            
-        }
+    private static final long serialVersionUID = 1L;
+    public static final String CODE_NEW = "newClaim";
+    public static final String CODE_EXISTING = "existingClaim";
+    public static final String CODE_DISPUTED = "dispute";
+    public static final String CODE_UNCLAIMED = "unclaimed";
+
+    @Id
+    private String code;
+    @Column
+    private String name;
+    @Column(name = "name_other_lang")
+    private String nameOtherLang;
+    @Column
+    boolean active;
+
+    public ClaimType() {
+
+    }
 
     public String getCode() {
         return code;

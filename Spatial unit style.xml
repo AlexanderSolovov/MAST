@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.0.0"
+  xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns="http://www.opengis.net/sld"
+  xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<NamedLayer>
+		<Name>spatial_unit</Name>
+		<UserStyle>
+			<Name>spatial_unit</Name>
+			<Title>Spatial Unit</Title>
+			<FeatureTypeStyle>
+				<Rule>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Point</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<PointSymbolizer>
+						<Graphic>
+							<Mark>
+								<WellKnownName>square</WellKnownName>
+								<Fill>
+									<CssParameter name="fill">#FF0000</CssParameter>
+								</Fill>
+							</Mark>
+							<Size>6</Size>
+						</Graphic>
+
+					</PointSymbolizer>
+				</Rule>
+				<Rule>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Line</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#0000FF</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+				</Rule>
+				
+				<Rule>
+					<Name>New</Name>
+					<Title>New</Title>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Polygon</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>current_workflow_status_id</ogc:PropertyName>
+								<ogc:Literal>1</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<MinScaleDenominator>50</MinScaleDenominator>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">#2E54FE</CssParameter>
+							<CssParameter name="fill-opacity">0.1</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">1</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+				
+				<Rule>
+					<Name>Validated</Name>
+					<Title>Validated</Title>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Polygon</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>current_workflow_status_id</ogc:PropertyName>
+								<ogc:Literal>3</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<MinScaleDenominator>50</MinScaleDenominator>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">#FED82E</CssParameter>
+							<CssParameter name="fill-opacity">0.2</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">1</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+				
+				<Rule>
+					<Name>Referred</Name>
+					<Title>Referred to VC/VLC</Title>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Polygon</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>current_workflow_status_id</ogc:PropertyName>
+								<ogc:Literal>4</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<MinScaleDenominator>50</MinScaleDenominator>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">#E62EFE</CssParameter>
+							<CssParameter name="fill-opacity">0.2</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">1</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+				
+				<Rule>
+					<Name>Approved</Name>
+					<Title>Approved</Title>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Polygon</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>current_workflow_status_id</ogc:PropertyName>
+								<ogc:Literal>2</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<MinScaleDenominator>50</MinScaleDenominator>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">#64FE2E</CssParameter>
+							<CssParameter name="fill-opacity">0.3</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">1</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+
+				<Rule>
+					<Name>Denied</Name>
+					<Title>Denied</Title>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Polygon</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>current_workflow_status_id</ogc:PropertyName>
+								<ogc:Literal>5</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<MinScaleDenominator>50</MinScaleDenominator>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">#FE2E2E</CssParameter>
+							<CssParameter name="fill-opacity">0.3</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">1</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+				
+				<Rule> 
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>gtype</ogc:PropertyName>
+								<ogc:Literal>Polygon</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+							<ogc:PropertyIsEqualTo>
+								<ogc:PropertyName>active</ogc:PropertyName>
+								<ogc:Literal>true</ogc:Literal>
+							</ogc:PropertyIsEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<MaxScaleDenominator>10000</MaxScaleDenominator>
+
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>uka_propertyno</ogc:PropertyName>
+						</Label>
+						<LabelPlacement>
+							<PointPlacement>
+								<AnchorPoint>
+									<AnchorPointX>0.5</AnchorPointX>
+									<AnchorPointY>0.5</AnchorPointY>
+								</AnchorPoint>
+							</PointPlacement>
+						</LabelPlacement>
+					</TextSymbolizer>
+				</Rule>
+			</FeatureTypeStyle>
+		</UserStyle>
+	</NamedLayer>
+</StyledLayerDescriptor>

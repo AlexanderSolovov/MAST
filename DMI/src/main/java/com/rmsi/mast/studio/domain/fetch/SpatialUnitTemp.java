@@ -11,6 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.ProjectHamlet;
 import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.util.JsonDateSerializer;
@@ -57,9 +58,10 @@ public class SpatialUnitTemp implements Serializable {
     @JoinColumn(name = "hamlet_id")
     private ProjectHamlet hamlet_Id;
     
-    @Column(name="claim_type")
-    private String claimType;
-
+    @ManyToOne
+    @JoinColumn(name = "claim_type")
+    ClaimType claimType;
+    
     public long getUsin() {
         return usin;
     }
@@ -149,4 +151,11 @@ public class SpatialUnitTemp implements Serializable {
         this.hamlet_Id = hamlet_Id;
     }
 
+    public ClaimType getClaimType() {
+        return claimType;
+    }
+
+    public void setClaimType(ClaimType claimType) {
+        this.claimType = claimType;
+    }
 }

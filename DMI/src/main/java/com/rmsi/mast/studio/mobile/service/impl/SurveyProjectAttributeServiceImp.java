@@ -108,32 +108,22 @@ public class SurveyProjectAttributeServiceImp implements
 
     @Override
     public List<AttributeMaster> getSurveyAttributesByProjectId(String projectId) {
-
-        List<AttributeMaster> attributeMasterList = attributes
-                .getSurveyAttributes(projectId);
+        List<AttributeMaster> attributeMasterList = attributes.getSurveyAttributes(projectId);
         try {
-            Iterator<AttributeMaster> surveyProjectAttribItr = attributeMasterList
-                    .iterator();
-
+            Iterator<AttributeMaster> surveyProjectAttribItr = attributeMasterList.iterator();
             while (surveyProjectAttribItr.hasNext()) {
-
                 AttributeMaster attributeMaster = surveyProjectAttribItr.next();
-
-                if (attributeMaster.getDatatypeIdBean().getDatatype()
-                        .equalsIgnoreCase("dropdown")) {
-                    attributeMaster.setAttributeOptions(attributeOptions
-                            .getAttributeOptions(attributeMaster.getId()));
+                if (attributeMaster.getDatatypeIdBean().getDatatype().equalsIgnoreCase("dropdown")) {
+                    attributeMaster.setAttributeOptions(attributeOptions.getAttributeOptions(attributeMaster.getId()));
                 }
             }
-
         } catch (Exception ex) {
             logger.error("Exception", ex);
             System.out.println("Exception ::: " + ex);
         }
         return attributeMasterList;
-
     }
-    
+
     @Override
     public List<Property> getProperties(String projectId, int statusId) {
         List<Property> props = new ArrayList<>();
@@ -189,6 +179,10 @@ public class SurveyProjectAttributeServiceImp implements
 
                 if (rights != null && rights.size() > 0) {
                     for (SocialTenureRelationship right : rights) {
+                        if (!right.getIsActive()) {
+                            continue;
+                        }
+
                         if (propRight == null) {
                             propRight = new Right();
                             if (right.getCertIssueDate() != null) {
@@ -290,7 +284,7 @@ public class SurveyProjectAttributeServiceImp implements
                     prop.setMedia(new ArrayList<Media>());
 
                     for (SourceDocument doc : docs) {
-                        if (doc.getPerson_gid() == null && doc.getSocial_tenure_gid() == null && doc.getDisputeId() == null) {
+                        if (doc.isActive() && doc.getPerson_gid() == null && doc.getSocial_tenure_gid() == null && doc.getDisputeId() == null) {
                             Media media = new Media();
                             media.setId((long) doc.getGid());
                             media.setType(doc.getMediaType());
@@ -305,7 +299,7 @@ public class SurveyProjectAttributeServiceImp implements
                 List<Dispute> disputes = disputeDao.findByPropId(usin);
                 if (disputes != null && disputes.size() > 0) {
                     for (Dispute dispute : disputes) {
-                        if (dispute.getStatus() != null && dispute.getStatus().getCode() == 1) {
+                        if (!dispute.isDeleted() && dispute.getStatus() != null && dispute.getStatus().getCode() == 1) {
                             // Make sure property is disputed. set dispute type
                             prop.setClaimTypeCode("dispute");
 
@@ -333,7 +327,7 @@ public class SurveyProjectAttributeServiceImp implements
                                 propDispute.setMedia(new ArrayList<Media>());
 
                                 for (SourceDocument doc : docs) {
-                                    if (doc.getPerson_gid() == null && doc.getSocial_tenure_gid() == null && doc.getDisputeId() != null) {
+                                    if (doc.isActive() && doc.getPerson_gid() == null && doc.getSocial_tenure_gid() == null && doc.getDisputeId() != null) {
                                         Media media = new Media();
                                         media.setId((long) doc.getGid());
                                         media.setType(doc.getMediaType());
@@ -399,7 +393,12 @@ public class SurveyProjectAttributeServiceImp implements
 
     @Override
     public Long getSurveyProjectAttributeId(long attributeId, String projectId) {
-        return attributes.getSurveyProjectAttributeId(attributeId, projectId).getUid();
+        Surveyprojectattribute attribute = attributes.getSurveyProjectAttributeId(attributeId, projectId);
+        if (attribute != null) {
+            return attribute.getUid();
+        } else {
+            return null;
+        }
     }
 
     @Override

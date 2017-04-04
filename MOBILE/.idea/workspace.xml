@@ -10,125 +10,56 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b033bb5-c2eb-45ef-b1be-29d38b23357f" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/android_maps_utils_0_4_4.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/animated_vector_drawable_23_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/appcompat_v7_23_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_analytics_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_analytics_impl_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_auth_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_auth_common_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_auth_module_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_common_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_config_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_crash_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_database_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_database_connection_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_iid_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_messaging_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_storage_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/firebase_storage_common_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/gson_2_8_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/jts_1_8.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/mediarouter_v7_23_0_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/multidex_1_0_1.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/multidex_instrumentation_1_0_1.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_ads_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_ads_lite_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_analytics_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_analytics_impl_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_appindexing_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_appinvite_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_auth_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_auth_base_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_base_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_basement_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_cast_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_cast_framework_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_clearcut_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_contextmanager_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_drive_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_fitness_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_games_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_gass_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_gcm_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_identity_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_iid_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_location_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_maps_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_nearby_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_panorama_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_places_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_plus_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_safetynet_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_tagmanager_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_tagmanager_api_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_tasks_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_vision_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_wallet_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/play_services_wearable_9_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/recyclerview_v7_23_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/support_annotations_23_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/support_v4_23_4_0.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/support_vector_drawable_23_4_0.xml" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/images/foot_img.png" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/images/foot_img.png" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/security/ContextLoader.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/security/ProductKeyValidator.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/security/RequestAuthenticationInterceptor.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/security/RequestAuthenticationParameterFilter.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/security/URLInterceptor.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/images/viewer/PoweredBySPV.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/images/viewer/RMSI_logo.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/images/viewer/Seal.png" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DB/changes_18.11.2016.sql" afterPath="$PROJECT_DIR$/../DB/changes_18.11.2016.sql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/nbactions.xml" afterPath="$PROJECT_DIR$/../DMI/nbactions.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/pom.xml" afterPath="$PROJECT_DIR$/../DMI/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/ClaimType.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/ClaimType.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/ProjectArea.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/ProjectArea.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/Status.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/Status.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialUnitTable.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialUnitTable.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialUnitTemp.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialUnitTemp.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/AttributeValuesHiberanteDao.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/AttributeValuesHiberanteDao.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialunitPersonwithinterest.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialunitPersonwithinterest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/AttributeOptionsHibernateDao.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/AttributeOptionsHibernateDao.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/SurveyProjectAttributeHibernateDao.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/SurveyProjectAttributeHibernateDao.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/SurveyProjectAttributeServiceImp.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/SurveyProjectAttributeServiceImp.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/UserDataServiceImpl.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/UserDataServiceImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/transferobjects/Property.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/transferobjects/Property.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/web/MobileDataController.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/web/MobileDataController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/web/mvc/ProjectController.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/web/mvc/ProjectController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/LandRecordsDao.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/LandRecordsDao.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/hibernate/LandRecordsHibernateDAO.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/hibernate/LandRecordsHibernateDAO.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/hibernate/SpatialUnitPersonWithInterestHibernateDAO.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/hibernate/SpatialUnitPersonWithInterestHibernateDAO.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/hibernate/SpatialUnitTempHibernateDAO.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/dao/hibernate/SpatialUnitTempHibernateDAO.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/service/LandRecordsService.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/service/LandRecordsService.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/service/impl/LandRecordsServiceImpl.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/service/impl/LandRecordsServiceImpl.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/web/mvc/LandRecordsController.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/web/mvc/LandRecordsController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/views/studio/index.jsp" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/views/studio/index.jsp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/log4j.properties" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/log4j.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/applicationContext-security.xml" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/applicationContext-security.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/views/login.jsp" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/views/login.jsp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/views/viewer/index.jsp" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/WEB-INF/views/viewer/index.jsp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/studio/project.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/studio/project.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Editing.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Editing.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Info.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Info.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/studio/user.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/studio/user.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/LandRecords.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/LandRecords.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Toolbar.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Toolbar.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Viewer.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Viewer.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/CCRO.css" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/CCRO.css" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/style-new.css" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/style-new.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/viewer.css" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/viewer.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/studio/project.html" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/studio/project.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/viewer/editing.html" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/viewer/editing.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/studio/user.html" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/studio/user.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/viewer/landRecords.html" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/viewer/landRecords.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/PersonListFragment.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/PersonListFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/PoiListFragment.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/PoiListFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddCustomAttribActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddCustomAttribActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddDisputeActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddDisputeActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddGeneralPropertyActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddGeneralPropertyActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddMediaActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddMediaActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddNonNaturalPersonActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddNonNaturalPersonActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddPersonActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddPersonActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddSocialTenureActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddSocialTenureActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureAttributesActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureAttributesActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureDataMapActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureDataMapActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/DataSummaryActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/DataSummaryActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/LandingPageActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/LandingPageActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/LoginActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/LoginActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/MapViewerActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/MapViewerActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/MediaListActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/MediaListActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListActivity.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/ConfigureMapDisplay.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/ConfigureMapDisplay.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/AttributeAdapter.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/AttributeAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/PersonListAdapter.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/PersonListAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DBController.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DBController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Feature.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Feature.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/MapFeature.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/MapFeature.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Media.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Media.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/UserPreferences.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/UserPreferences.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/DeceasedPerson.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/DeceasedPerson.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Property.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Property.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/User.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/User.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/service/DownloadService.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/service/DownloadService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/CommonFunctions.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/CommonFunctions.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GisUtility.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GisUtility.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GuiUtility.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GuiUtility.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_person.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_person.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_property_info.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_property_info.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_capture_attributes.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_capture_attributes.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_social_tenure_information.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_social_tenure_information.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml" />
     </list>
@@ -163,14 +94,24 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file leaf-file-name="CaptureAttributesActivity.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="CaptureAttributesActivity.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureAttributesActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="230" column="26" selection-start-line="230" selection-start-column="26" selection-end-line="230" selection-end-column="26" />
+            <state relative-caret-position="4686">
+              <caret line="255" column="0" selection-start-line="255" selection-start-column="0" selection-end-line="255" selection-end-column="0" />
               <folding>
                 <element signature="method#updateCount#0;class#CaptureAttributesActivity#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AddPersonActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddPersonActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2904">
+              <caret line="175" column="50" selection-start-line="175" selection-start-column="50" selection-end-line="175" selection-end-column="50" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -207,39 +148,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DbController.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DbController.java">
+      <file leaf-file-name="PersonListWithDPActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="56496">
-              <caret line="2614" column="75" selection-start-line="2614" selection-start-column="75" selection-end-line="2614" selection-end-column="75" />
+            <state relative-caret-position="1936">
+              <caret line="131" column="45" selection-start-line="131" selection-start-column="45" selection-end-line="131" selection-end-column="45" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Property.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Property.java">
+      <file leaf-file-name="DeceasedPersonListAdapter.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/DeceasedPersonListAdapter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="25" column="4" selection-start-line="25" selection-start-column="4" selection-end-line="25" selection-end-column="29" />
-              <folding>
-                <element signature="e#3229#3230#0" expanded="true" />
-                <element signature="e#3261#3262#0" expanded="true" />
-                <element signature="e#3311#3312#0" expanded="true" />
-                <element signature="e#3353#3354#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="512">
+              <caret line="53" column="47" selection-start-line="53" selection-start-column="47" selection-end-line="53" selection-end-column="47" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="activity_capture_attributes.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_capture_attributes.xml">
-          <provider editor-type-id="android-designer2">
-            <state />
-          </provider>
+      <file leaf-file-name="strings.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2530">
-              <caret line="115" column="41" selection-start-line="115" selection-start-column="41" selection-end-line="115" selection-end-column="41" />
+            <state relative-caret-position="11330">
+              <caret line="515" column="35" selection-start-line="515" selection-start-column="18" selection-end-line="515" selection-end-column="35" />
               <folding />
             </state>
           </provider>
@@ -2503,13 +2436,10 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/AcquisitionType.java" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_data_summary.xml" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_dispute.xml" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/build.gradle" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Option.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Attribute.java" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/DeceasedPerson.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Dispute.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/PersonOfInterest.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Right.java" />
@@ -2530,13 +2460,9 @@
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddGeneralPropertyActivity.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddNonNaturalPersonActivity.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddPersonActivity.java" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_person.xml" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListActivity.java" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_social_tenure_information.xml" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/MapFeature.java" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Media.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/service/DownloadService.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GuiUtility.java" />
@@ -2551,9 +2477,16 @@
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/CommonFunctions.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_capture_attributes.xml" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Feature.java" />
-        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Property.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureAttributesActivity.java" />
         <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DbController.java" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/UserPreferences.java" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/ConfigureMapDisplay.java" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_person.xml" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Property.java" />
+        <option value="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/DeceasedPerson.java" />
       </list>
     </option>
   </component>
@@ -2622,6 +2555,10 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="ProjectPane">
+        <subPane />
+      </pane>
+      <pane id="Scope" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -2675,37 +2612,11 @@
               <option name="myItemId" value="MAST-MOBILE" />
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="mast" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="activity" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="MOBILE" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="MAST-MOBILE" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane">
-        <subPane />
-      </pane>
       <pane id="Scratches" />
-      <pane id="Scope" />
-      <pane id="ProjectPane">
+      <pane id="PackagesPane">
         <subPane />
       </pane>
     </panes>
@@ -3122,28 +3033,28 @@
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32629108" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Nl-Palette" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3200469" sideWeight="0.49570355" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31924883" sideWeight="0.49570355" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20891514" sideWeight="0.47027972" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32858837" sideWeight="0.504329" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.63849765" sideWeight="0.49785176" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32121924" sideWeight="0.495671" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32897863" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32121924" sideWeight="0.495671" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32473624" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24973147" sideWeight="0.49061033" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32858837" sideWeight="0.5021482" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20676692" sideWeight="0.49941385" order="6" side_tool="false" content_ui="combo" x="628" y="111" width="381" height="853" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20676692" sideWeight="0.49003518" order="6" side_tool="false" content_ui="combo" x="628" y="111" width="381" height="853" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20676692" sideWeight="0.50058615" order="7" side_tool="true" content_ui="tabs" x="440" y="108" width="483" height="900" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20676692" sideWeight="0.5099648" order="7" side_tool="true" content_ui="tabs" x="440" y="108" width="483" height="900" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.47479483" sideWeight="0.49785176" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4736225" sideWeight="0.49785176" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -3170,162 +3081,31 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="273" />
+      <option name="time" value="274" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddGeneralPropertyActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1474">
-          <caret line="87" column="43" selection-start-line="87" selection-start-column="43" selection-end-line="87" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddDisputeActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1100">
-          <caret line="76" column="48" selection-start-line="76" selection-start-column="48" selection-end-line="76" selection-end-column="48" />
-          <folding>
-            <element signature="e#3026#3065#0" expanded="false" />
-            <element signature="e#5119#5371#0" expanded="false" />
-            <element signature="e#5370#5371#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_dispute.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="111" column="31" selection-start-line="111" selection-start-column="31" selection-end-line="111" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_property_info.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="471">
-          <caret line="55" column="38" selection-start-line="55" selection-start-column="38" selection-end-line="55" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddCustomAttribActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1584">
-          <caret line="96" column="43" selection-start-line="96" selection-start-column="43" selection-end-line="96" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_media_list.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="69" column="8" selection-start-line="69" selection-start-column="8" selection-end-line="69" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="427">
-          <caret line="219" column="21" selection-start-line="219" selection-start-column="21" selection-end-line="219" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/item_list_single_choice.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="103" column="34" selection-start-line="103" selection-start-column="34" selection-end-line="103" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/menu/map_viewer_menu.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="572">
-          <caret line="26" column="38" selection-start-line="26" selection-start-column="38" selection-end-line="26" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_person.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="462">
-          <caret line="21" column="38" selection-start-line="18" selection-start-column="8" selection-end-line="21" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddPersonActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3740">
-          <caret line="225" column="0" selection-start-line="225" selection-start-column="0" selection-end-line="225" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_list.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/menu/media_attribute_listing_options.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/menu/media_attribute_listing_options_for_adjudicator.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GuiUtility.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="275" column="9" selection-start-line="275" selection-start-column="9" selection-end-line="275" selection-end-column="9" />
-        </state>
+      <provider editor-type-id="android-designer2">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/AttributeAdapter.java">
@@ -3346,7 +3126,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
           <caret line="81" column="9" selection-start-line="81" selection-start-column="9" selection-end-line="81" selection-end-column="9" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3358,13 +3137,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/fragment_survey_review_data_list.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
           <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/SyncedSurveyFragment.java">
@@ -3375,13 +3154,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/item_list_row.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="484">
           <caret line="22" column="40" selection-start-line="22" selection-start-column="40" selection-end-line="22" selection-end-column="40" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/SurveyListingAdapter.java">
@@ -3395,13 +3174,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="88">
           <caret line="29" column="28" selection-start-line="29" selection-start-column="28" selection-end-line="29" selection-end-column="28" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#4483#4484#0" expanded="false" />
-            <element signature="e#4547#4548#0" expanded="false" />
-            <element signature="e#5972#5973#0" expanded="false" />
-            <element signature="e#6036#6037#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3413,13 +3185,14 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_landing_page.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
           <caret line="108" column="41" selection-start-line="108" selection-start-column="33" selection-end-line="108" selection-end-column="41" />
+          <folding />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/service/DownloadService.java">
@@ -3440,10 +3213,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="578">
           <caret line="61" column="0" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
-          <folding>
-            <element signature="e#495#496#0" expanded="true" />
-            <element signature="e#522#523#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3451,7 +3220,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="556">
           <caret line="299" column="31" selection-start-line="299" selection-start-column="31" selection-end-line="299" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3487,13 +3255,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="362">
           <caret line="326" column="19" selection-start-line="326" selection-start-column="19" selection-end-line="326" selection-end-column="19" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1909#1910#0" expanded="true" />
-            <element signature="e#1939#1940#0" expanded="true" />
-            <element signature="e#4492#4493#0" expanded="true" />
-            <element signature="e#4536#4537#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3501,15 +3262,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
           <caret line="751" column="17" selection-start-line="751" selection-start-column="17" selection-end-line="751" selection-end-column="17" />
-          <folding>
-            <element signature="method#handleMapClick#0;class#MapViewerActivity#0" expanded="false" />
-            <element signature="method#onOptionsItemSelected#0;class#MapViewerActivity#0" expanded="false" />
-            <element signature="class#DrawerItemClickListener#0;class#MapViewerActivity#0" expanded="false" />
-            <element signature="method#showXYDialog#0;class#MapViewerActivity#0" expanded="false" />
-            <element signature="method#showMeasureDialog#0;class#MapViewerActivity#0" expanded="false" />
-            <element signature="class#24178:25679" expanded="false" />
-            <element signature="method#clearDrawnFeaturesFromMap#0;class#MapViewerActivity#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3524,7 +3276,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="97">
           <caret line="561" column="0" selection-start-line="561" selection-start-column="0" selection-end-line="561" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3532,7 +3283,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="88">
           <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -3540,18 +3290,150 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="644">
           <caret line="107" column="0" selection-start-line="107" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_capture_attributes.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2530">
           <caret line="115" column="41" selection-start-line="115" selection-start-column="41" selection-end-line="115" selection-end-column="41" />
           <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddSocialTenureActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5236">
+          <caret line="281" column="23" selection-start-line="281" selection-start-column="23" selection-end-line="281" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Right.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3850">
+          <caret line="232" column="31" selection-start-line="232" selection-start-column="31" selection-end-line="232" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="android-dummy://C:/Projects/MAST/NEW_MAST/MAST/MOBILE/MAST-MOBILE/Translations Editor">
+      <provider selected="true" editor-type-id="string-resource-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_user_preferences.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="295">
+          <caret line="198" column="0" selection-start-line="198" selection-start-column="0" selection-end-line="198" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="android-dummy://C:/Projects/MAST/NEW_MAST/MAST/MOBILE/MAST-MOBILE/Translations Editor">
+      <provider selected="true" editor-type-id="string-resource-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="android-dummy://C:/Projects/MAST/NEW_MAST/MAST/MOBILE/MAST-MOBILE/Translations Editor">
+      <provider selected="true" editor-type-id="string-resource-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="android-dummy://C:/Projects/MAST/NEW_MAST/MAST/MOBILE/MAST-MOBILE/Translations Editor">
+      <provider selected="true" editor-type-id="string-resource-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="android-dummy://C:/Projects/MAST/NEW_MAST/MAST/MOBILE/MAST-MOBILE/Translations Editor">
+      <provider selected="true" editor-type-id="string-resource-editor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/ConfigureMapDisplay.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="63" column="41" selection-start-line="63" selection-start-column="41" selection-end-line="63" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/UserPreferences.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="427">
+          <caret line="236" column="62" selection-start-line="236" selection-start-column="62" selection-end-line="236" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_social_tenure_information.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="361">
+          <caret line="33" column="40" selection-start-line="33" selection-start-column="40" selection-end-line="33" selection-end-column="40" />
+          <folding>
+            <element signature="e#4226#4246#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_add_person.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="711">
+          <caret line="158" column="0" selection-start-line="158" selection-start-column="0" selection-end-line="158" selection-end-column="0" />
+          <folding>
+            <element signature="e#6023#6043#0" expanded="false" />
+            <element signature="e#6141#6155#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureAttributesActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4686">
+          <caret line="255" column="0" selection-start-line="255" selection-start-column="0" selection-end-line="255" selection-end-column="0" />
+          <folding>
+            <element signature="method#updateCount#0;class#CaptureAttributesActivity#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/GuiUtility.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="37" column="23" selection-start-line="37" selection-start-column="23" selection-end-line="37" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddPersonActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2904">
+          <caret line="175" column="50" selection-start-line="175" selection-start-column="50" selection-end-line="175" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DbController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-387">
+          <caret line="1278" column="19" selection-start-line="1278" selection-start-column="19" selection-end-line="1278" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -3565,76 +3447,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddSocialTenureActivity.java">
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5236">
-          <caret line="281" column="23" selection-start-line="281" selection-start-column="23" selection-end-line="281" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/layout/activity_social_tenure_information.xml">
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="317">
-          <caret line="109" column="49" selection-start-line="109" selection-start-column="49" selection-end-line="109" selection-end-column="49" />
-          <folding>
-            <element signature="e#6299#6322#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Right.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3850">
-          <caret line="232" column="31" selection-start-line="232" selection-start-column="31" selection-end-line="232" selection-end-column="31" />
+        <state relative-caret-position="11330">
+          <caret line="515" column="35" selection-start-line="515" selection-start-column="18" selection-end-line="515" selection-end-column="35" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Property.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="25" column="4" selection-start-line="25" selection-start-column="4" selection-end-line="25" selection-end-column="29" />
-          <folding>
-            <element signature="e#3229#3230#0" expanded="true" />
-            <element signature="e#3261#3262#0" expanded="true" />
-            <element signature="e#3311#3312#0" expanded="true" />
-            <element signature="e#3353#3354#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="594">
+          <caret line="387" column="70" selection-start-line="387" selection-start-column="70" selection-end-line="387" selection-end-column="70" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DbController.java">
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="56496">
-          <caret line="2614" column="75" selection-start-line="2614" selection-start-column="75" selection-end-line="2614" selection-end-column="75" />
+        <state relative-caret-position="1936">
+          <caret line="131" column="45" selection-start-line="131" selection-start-column="45" selection-end-line="131" selection-end-column="45" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="android-dummy://C:/Projects/MAST/NEW_MAST/MAST/MOBILE/MAST-MOBILE/Translations Editor">
-      <provider selected="true" editor-type-id="string-resource-editor">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml">
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/DeceasedPerson.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="485" column="18" selection-start-line="485" selection-start-column="18" selection-end-line="485" selection-end-column="18" />
+        <state relative-caret-position="581">
+          <caret line="78" column="30" selection-start-line="78" selection-start-column="30" selection-end-line="78" selection-end-column="30" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureAttributesActivity.java">
+    <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/DeceasedPersonListAdapter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="230" column="26" selection-start-line="230" selection-start-column="26" selection-end-line="230" selection-end-column="26" />
-          <folding>
-            <element signature="method#updateCount#0;class#CaptureAttributesActivity#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="512">
+          <caret line="53" column="47" selection-start-line="53" selection-start-column="47" selection-end-line="53" selection-end-column="47" />
+          <folding />
         </state>
       </provider>
     </entry>

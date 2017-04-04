@@ -204,9 +204,6 @@
     <string name="title_activity_configure_map_display">Configure Map Display</string>
 
     <string-array name="configureMapToolsitems">
-        <item>Point</item>
-        <item>Line</item>
-        <item>Polygon</item>
         <item>Snapping</item>
         <item>Labeling and vertices</item>
     </string-array>
@@ -216,7 +213,7 @@
     </string-array>
 
     <string name="title_activity_add_image">AddImageActivity</string>
-    <string name="captureImage">capture Image</string>
+    <string name="captureImage">Capture Image</string>
     <string name="title_activity_video">VideoActivity</string>
     <string name="view_media">View media</string>
     <string name="feature_not_allowed_msg">You are not allowed to access this feature.</string>
@@ -251,7 +248,7 @@
     <string name="internet_disabled_title">Internet Disabled</string>
     <string name="internet_disabled_msg">Internet is Disabled.Go to the settings to Enable Internet</string>
     <string name="no_fix_msg">No Fix</string>
-    <string name="sats_use_msg">sats in use</string>
+    <string name="sats_use_msg">Sats in use</string>
     <string name="deleteEntryMsg">Are you sure you to delete this entry ?</string>
     <string name="add_atlest_one_person">Please add at least one person</string>
     <string name="warning">Warning</string>
@@ -278,7 +275,7 @@
     </string-array>
 
     <string name="view_map">View Map</string>
-    <string name="view_attributes">View Attributes</string>
+    <string name="view_attributes">View taarifa</string>
     <string name="add_witness">Add Witness</string>
     <string name="mark_as_verified">Mark as verified</string>
     <string name="add_custom_attributes">Add Custom Attributes</string>
@@ -357,7 +354,7 @@
     <string name="pic_added_successfully">Photo added successfully</string>
     <string name="prosessing_image">Processing Image</string>
     <string name="tap_on_map_xy">Tap on map to fetch XY</string>
-    <string name="gps_capture_exit">Due you want to exit capturing feature using GPS?</string>
+    <string name="gps_capture_exit">Do you want to exit capturing feature using GPS?</string>
     <string name="view_on_map">View on map</string>
     <string name="logoutWarningMsg">Your all data will be deleted.Do you want to logout?</string>
     <string name="selectOptionDialogTitle">Select option to capture</string>
@@ -376,7 +373,7 @@
     <string name="ErrorDownloadingProjectdata">Error in downloading Project data</string>
     <string name="ErrorDownloadingOfflineData">Error in downloading offline data</string>
     <string name="Downloading">Downloading..</string>
-    <string name="unableToDownloadAttributeData">unable to download attribute data</string>
+    <string name="unableToDownloadAttributeData">Unable to download attribute data</string>
     <string name="DownloadFinished">"Download Finished..</string>
     <string name="DownloadError">Download Error..</string>
     <string name="spatialunit_hemlet_lbl">Hamlet</string>
@@ -432,7 +429,7 @@
     <string name="can_not_add_adminGuardian_in_SingleOccuapncy">You can not add "\"Administrator\"" or "\"Guardian\"" in case of "\"Single Occupancy\""</string>
     <string name="can_not_add_more_than_one_owner_in_SingleOccuapncy">You can not add more than one Owner in case of "\"Single Occupancy\""</string>
     <string name="can_not_add_adminGuardian_in_multipleOccuapncy_joint">You can not add "Administrator" or "Guardian" in case of "Multiple Occupancy(Joint Tenancy)"</string>
-    <string name="can_not_add_more_than_two_owners_in_multipleOccuapncy_joint">You can not add more than 2 Owners in case of "Multiple Occupancy(Joint Tenancy)"</string>
+    <string name="can_not_add_more_than_two_owners_in_multipleOccuapncy_joint">You can add more than 2 Owners in case of "Multiple Occupancy(Joint Tenancy)"</string>
     <string name="can_not_add_adminGuardian_in_multipleOccuapncy_common">You can not add "Administrator" or "Guardian" in case of "Multiple Occupancy(Tenancy in common)"</string>
     <string name="guardian_can_not_more_than_two">Guardian can not be more than two in case of "\"Guardian(Minor)\""</string>
     <string name="guardian_can_not_more_than_owners">Guardian can not be more than Owners </string>
@@ -451,7 +448,7 @@
     <string name="You_have_selected">You have selected : </string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="unable_to_add_person_tye">Unable to save peron type</string>
+    <string name="unable_to_add_person_tye">Unable to save person type</string>
     <string name="do_u_want_to_add_media">Do you want to Add Media Files?</string>
     <string name="no_media_exist">No Media Exist for this Spatial feature</string>
     <string name="person">Person(s)</string>
@@ -466,7 +463,7 @@
     <string name="satellite_map">Satellite Map</string>
     <string name="capture_features">Capture features</string>
     <string name="edit_Person">Edit Person</string>
-    <string name="administrator_can_not_be_more_tha_Owner">Administrator can not be more than Owner</string>
+    <string name="administrator_can_not_be_more_tha_Owner">You can add two Administrators only</string>
     <string name="please_fill_tenure_details">Please fill "Tenure" details.</string>
     <string name="please_fill_owner_details">Please fill "Owner" details.</string>
     <string name="select_other_option">Please select other option</string>
@@ -476,8 +473,8 @@
     <string name="nonNatural">Non-Natural</string>
     <string name="personType">Person type:</string>
     <string name="selectPersonType">Select person type</string>
-    <string name="rightType">Tenancy type</string>
-    <string name="shareType">Occupation type</string>
+    <string name="rightType">Type of Right</string>
+    <string name="shareType">Type of Tenancy</string>
     <string name="certNumber">CCRO/Title number</string>
     <string name="certDate">CCRO/Title date</string>
     <string name="juridicalArea">Juridical area (acres)</string>
@@ -513,10 +510,10 @@
     <string name="AgeMustBe18or100">Person age must be between 18 and 110 years</string>
     <string name="AgeLessThan18">Owner age must be less than 18 years</string>
     <string name="SingleShareCheck">Single ownership must have only 1 owner</string>
-    <string name="MultiJointShareError">Multiple joint occupancy must have only 2 owners</string>
-    <string name="MultiCommonShareError">Multiple occupancy in common must have at least 2 owners and no other person types</string>
+    <string name="MultiJointShareError">Multiple joint occupancy must have at least 2 owners</string>
+    <string name="MultiCommonShareError">Multiple occupancy in common must have at least 2 owners </string>
     <string name="GuardianShareError">Guardian occupancy must have one or more Minors and up to 2 Guardians</string>
-    <string name="ProbateShareError">Tenancy in probate must have deceased person and up to 2 administrators. Multiple owners can be added as well.</string>
+    <string name="ProbateShareError">Tenancy in probate must have deceased person and up to 2 administrators. </string>
     <string name="FillShareSize">Fill in share size field</string>
     <string name="ShareSize">Share size</string>
     <string name="Next">Next</string>
