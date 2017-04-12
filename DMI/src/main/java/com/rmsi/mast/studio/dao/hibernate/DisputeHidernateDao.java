@@ -31,6 +31,24 @@ public class DisputeHidernateDao extends GenericHibernateDAO<Dispute, Long> impl
     }
 
     @Override
+    public List<Dispute> findActiveByPropId(Long usin){
+        try {
+            Query query = getEntityManager().createQuery("Select d from Dispute d where d.deleted = false and d.usin = :usin order by d.status.code, d.regDate desc");
+            @SuppressWarnings("unchecked")
+            List<Dispute> disputes = query.setParameter("usin", usin).getResultList();
+
+            if (disputes.size() > 0) {
+                return disputes;
+            } else {
+                return new ArrayList<Dispute>();
+            }
+        } catch (Exception e) {
+            logger.error(e);
+            return new ArrayList<Dispute>();
+        }
+    }
+    
+    @Override
     public Dispute save(Dispute dispute) {
         try {
             return makePersistent(dispute);

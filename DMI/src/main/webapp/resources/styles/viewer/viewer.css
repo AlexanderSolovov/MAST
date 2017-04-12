@@ -2567,7 +2567,10 @@ table.tablesorter {
     width: 100%;
 	border: 1px solid #dbdbdb;
 	border-collapse: collapse; /* 'cellspacing' equivalent */
+}
 
+table.tablesorter tr:hover td{
+    background: #dbedff;
 }
 
 table.tablesorter td:last-child {

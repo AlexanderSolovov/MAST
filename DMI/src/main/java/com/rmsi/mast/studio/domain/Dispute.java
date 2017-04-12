@@ -48,7 +48,7 @@ public class Dispute implements Serializable {
     private Date resolutionDate;
     
     @ManyToOne
-    @JoinColumn(name = "status", updatable = false)
+    @JoinColumn(name = "status")
     private DisputeStatus status;
     
     @Column
@@ -62,7 +62,7 @@ public class Dispute implements Serializable {
             })
     List<NaturalPerson> disputingPersons;
     
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="dispute_id")
     List<SourceDocument> documents;
     

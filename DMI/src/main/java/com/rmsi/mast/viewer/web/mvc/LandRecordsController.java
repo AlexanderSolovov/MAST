@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.rmsi.mast.custom.dto.CcroDto;
+import com.rmsi.mast.studio.dao.DisputeStatusDao;
 import com.rmsi.mast.studio.domain.AcquisitionType;
 import com.rmsi.mast.studio.domain.AttributeCategory;
 import com.rmsi.mast.studio.domain.AttributeValues;
@@ -80,12 +80,16 @@ import com.rmsi.mast.studio.service.UserService;
 import com.rmsi.mast.viewer.service.LandRecordsService;
 import com.rmsi.mast.studio.domain.Citizenship;
 import com.rmsi.mast.studio.domain.ClaimType;
+import com.rmsi.mast.studio.domain.Dispute;
+import com.rmsi.mast.studio.domain.DisputeStatus;
+import com.rmsi.mast.studio.domain.DisputeType;
 import com.rmsi.mast.studio.domain.DocumentType;
 import com.rmsi.mast.studio.domain.IdType;
 import com.rmsi.mast.studio.domain.Project;
 import com.rmsi.mast.studio.domain.RelationshipType;
 import com.rmsi.mast.studio.util.DateUtils;
 import com.rmsi.mast.studio.util.StringUtils;
+import org.apache.log4j.Priority;
 
 @Controller
 public class LandRecordsController {
@@ -105,6 +109,11 @@ public class LandRecordsController {
 
     @Autowired
     private UserDataService userDataService;
+
+    @Autowired
+    private DisputeStatusDao disputeStatusDao;
+
+    public static final String RESPONSE_OK = "OK";
 
     @RequestMapping(value = "/viewer/landrecords/", method = RequestMethod.GET)
     @ResponseBody
@@ -226,26 +235,13 @@ public class LandRecordsController {
         }
     }
 
-    @RequestMapping(value = "/viewer/landrecords/updateapprove/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/viewer/landrecords/reject/{id}", method = RequestMethod.GET)
     @ResponseBody
-    public boolean updateApprove(@PathVariable Long id, Principal principal) {
-
-        String username = principal.getName();
-        User user = userService.findByUniqueName(username);
-        long userid = user.getId();
-        return landRecordsService.updateApprove(id, userid);
-
-    }
-
-    @RequestMapping(value = "/viewer/landrecords/rejectstatus/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public boolean rejectStatus(@PathVariable Long id, Principal principal) {
-
+    public boolean rejectClaim(@PathVariable Long id, Principal principal) {
         String username = principal.getName();
         User user = userService.findByUniqueName(username);
         long userid = user.getId();
         return landRecordsService.rejectStatus(id, userid);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/search/{project}/{startpos}", method = RequestMethod.POST)
@@ -403,13 +399,15 @@ public class LandRecordsController {
         int newnatural_length = 0;
         long usin = 0;
         long person_subType = 0;
+        long parentNonNaturalId;
+        long disputeId;
         int idTypeCode;
         String idNumber;
         String shareSize;
 
-        NaturalPerson naturalPerson = new NaturalPerson();
-        naturalPerson.setResident(true);
-        naturalPerson.setResident_of_village(true);
+        NaturalPerson person = new NaturalPerson();
+        person.setResident(true);
+        person.setResident_of_village(true);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
@@ -425,10 +423,13 @@ public class LandRecordsController {
                 logger.error(e);
             }
 
+            parentNonNaturalId = ServletRequestUtils.getLongParameter(request, "parentNonNaturalId", 0);
+            disputeId = ServletRequestUtils.getLongParameter(request, "personDisputeId", 0);
             first_name = ServletRequestUtils.getRequiredStringParameter(request, "fname");
             middle_name = ServletRequestUtils.getRequiredStringParameter(request, "mname");
             last_name = ServletRequestUtils.getRequiredStringParameter(request, "lname");
             mobile_number = ServletRequestUtils.getRequiredStringParameter(request, "mobile_natural");
+
             try {
                 dob = ServletRequestUtils.getRequiredStringParameter(request, "dob");
                 if (!StringUtils.isEmpty(dob)) {
@@ -456,45 +457,43 @@ public class LandRecordsController {
             }
 
             if (id != 0) {
-                naturalPerson = landRecordsService.naturalPersonById(id).get(0);
+                person = landRecordsService.naturalPersonById(id).get(0);
             }
 
-            naturalPerson.setAlias(first_name);
-            naturalPerson.setFirstName(first_name);
-            naturalPerson.setMiddleName(middle_name);
-            naturalPerson.setLastName(last_name);
-            naturalPerson.setMobile(mobile_number);
-            naturalPerson.setOwner(false);
-            naturalPerson.setDob(dobDate);
-            naturalPerson.setAge(age);
-            naturalPerson.setShare(shareSize);
-            naturalPerson.setIdNumber(idNumber);
-            naturalPerson.setActive(true);
+            person.setAlias(first_name);
+            person.setFirstName(first_name);
+            person.setMiddleName(middle_name);
+            person.setLastName(last_name);
+            person.setMobile(mobile_number);
+            person.setOwner(false);
+            person.setDob(dobDate);
+            person.setAge(age);
+            person.setShare(shareSize);
+            person.setIdNumber(idNumber);
+            person.setActive(true);
 
             if (idTypeCode != 0) {
-                naturalPerson.setIdType(landRecordsService.getIdType(idTypeCode));
+                person.setIdType(landRecordsService.getIdType(idTypeCode));
             } else {
-                naturalPerson.setIdType(null);
+                person.setIdType(null);
             }
 
             if (citizenship != 0) {
-                naturalPerson.setCitizenship_id(landRecordsService.findcitizenship(citizenship));
+                person.setCitizenship_id(landRecordsService.findcitizenship(citizenship));
             }
 
             if (genderid != 0) {
-                naturalPerson.setGender(landRecordsService.findGenderById(genderid));
+                person.setGender(landRecordsService.findGenderById(genderid));
             }
 
-            PersonType personTypeObj = landRecordsService.findPersonTypeById(persontype);
-            naturalPerson.setPerson_type_gid(personTypeObj);
+            person.setPerson_type_gid(landRecordsService.findPersonTypeById(persontype));
 
             if (maritalid != 0) {
-                MaritalStatus maritalIdObj = landRecordsService.findMaritalById(maritalid);
-                naturalPerson.setMarital_status(maritalIdObj);
+                person.setMarital_status(landRecordsService.findMaritalById(maritalid));
             }
 
             if (person_subType != 0) {
-                naturalPerson.setPersonSubType(landRecordsService.findPersonTypeById(person_subType));
+                person.setPersonSubType(landRecordsService.findPersonTypeById(person_subType));
             }
 
             //AttributeValues attributeValues=new AttributeValues();
@@ -515,13 +514,38 @@ public class LandRecordsController {
             }
 
             //For updating in Attribute Values Table
-            NaturalPerson naturalobj = landRecordsService.editnatural(naturalPerson);
+            person = landRecordsService.editnatural(person);
 
-            if (id == 0) {
-                SocialTenureRelationship socialtenuretmp = landRecordsService.findAllSocialTenureByUsin(usin).get(0);
-                socialtenuretmp.setGid(0);
-                socialtenuretmp.setPerson_gid(naturalobj);
-                landRecordsService.edittenure(socialtenuretmp);
+            // Create right for new person (id = 0) and skip for non natural representatives (parentNonNaturalId > 0)
+            if (id == 0 && parentNonNaturalId == 0 && usin > 0 && disputeId == 0) {
+                SocialTenureRelationship right = landRecordsService.findAllSocialTenureByUsin(usin).get(0);
+                // Check if right has person assigned, if not, it will be saved with current person, if yes, new right will be created
+                if (right.getPerson_gid() != null) {
+                    right.setGid(0);
+                }
+                right.setPerson_gid(person);
+                landRecordsService.edittenure(right);
+            }
+
+            // Update NonNatural, if person is representative (parentNonNaturalId > 0)
+            if (parentNonNaturalId > 0) {
+                NonNaturalPerson nonPerson = landRecordsService.getNonNaturalPersonBy(parentNonNaturalId);
+                if (nonPerson != null) {
+                    nonPerson.setPoc_gid(person.getPerson_gid());
+                    landRecordsService.editNonNatural(nonPerson);
+                }
+            }
+
+            // Add person to disputing parties
+            if (disputeId > 0 && id == 0) {
+                Dispute dispute = landRecordsService.getDispute(disputeId);
+                if (dispute != null) {
+                    if (dispute.getDisputingPersons() == null) {
+                        dispute.setDisputingPersons(new ArrayList<NaturalPerson>());
+                    }
+                    dispute.getDisputingPersons().add(person);
+                    landRecordsService.updateDispute(dispute);
+                }
             }
 
             if (newnatural_length != 0) {
@@ -538,19 +562,19 @@ public class LandRecordsController {
                     uid = ServletRequestUtils.getRequiredLongParameter(request, "alias_uid" + j);
 
                     tmpvalue.setValue(alias_value);
-                    tmpvalue.setParentuid(naturalobj.getPerson_gid());
+                    tmpvalue.setParentuid(person.getPerson_gid());
                     tmpvalue.setUid(uid);
                     landRecordsService.saveAttributealues(tmpvalue);
                 }
             }
 
             try {
-                userDataService.updateNaturalPersonAttribValues(naturalobj, project_name);
+                userDataService.updateNaturalPersonAttribValues(person, project_name);
             } catch (Exception e) {
                 logger.error(e);
             }
 
-            return naturalobj;
+            return person;
 
         } catch (ServletRequestBindingException e) {
             logger.error(e);
@@ -560,7 +584,7 @@ public class LandRecordsController {
 
     @RequestMapping(value = "/viewer/landrecords/updatenonnatural", method = RequestMethod.POST)
     @ResponseBody
-    public boolean updatenonNaturalPerson(HttpServletRequest request, HttpServletResponse response) {
+    public boolean updateNonNaturalPerson(HttpServletRequest request, HttpServletResponse response) {
 
         Long id = 0L;
         String institute_name = "";
@@ -573,10 +597,11 @@ public class LandRecordsController {
         String project_nonnatural = "";
         int group_type = 0;
 
-        NonNaturalPerson nonnaturalPerson = new NonNaturalPerson();
+        NonNaturalPerson nonPerson = new NonNaturalPerson();
 
         try {
             id = ServletRequestUtils.getRequiredLongParameter(request, "non_natural_key");
+            long usin = ServletRequestUtils.getLongParameter(request, "nonnatural_usin", 0);
             institute_name = ServletRequestUtils.getRequiredStringParameter(request, "institution");
             address = ServletRequestUtils.getRequiredStringParameter(request, "address");
             phone_no = ServletRequestUtils.getRequiredStringParameter(request, "mobile_no");
@@ -587,19 +612,35 @@ public class LandRecordsController {
 
             group_type = ServletRequestUtils.getRequiredIntParameter(request, "group_type");
 
-            nonnaturalPerson.setPerson_gid(id);
-            nonnaturalPerson.setAddress(address);
-            nonnaturalPerson.setInstitutionName(institute_name);
-            nonnaturalPerson.setPhoneNumber(phone_no);
-            nonnaturalPerson.setActive(true);
+            nonPerson.setPerson_gid(id);
+            nonPerson.setAddress(address);
+            nonPerson.setInstitutionName(institute_name);
+            nonPerson.setPhoneNumber(phone_no);
+            nonPerson.setActive(true);
 
-            PersonType personTypeObj = landRecordsService.findPersonTypeById(persontype);
-            nonnaturalPerson.setPerson_type_gid(personTypeObj);
-            nonnaturalPerson.setMobileGroupId(mobileGroupId);
-            nonnaturalPerson.setPoc_gid(poc_id);
+            nonPerson.setPerson_type_gid(landRecordsService.findPersonTypeById(persontype));
+            nonPerson.setMobileGroupId(mobileGroupId);
+            if (poc_id > 0) {
+                nonPerson.setPoc_gid(poc_id);
+            } else {
+                nonPerson.setPoc_gid(null);
+            }
+
             if (group_type != 0) {
-                GroupType grouptypeObj = landRecordsService.findGroupType(group_type);
-                nonnaturalPerson.setGroupType(grouptypeObj);
+                nonPerson.setGroupType(landRecordsService.findGroupType(group_type));
+            }
+
+            nonPerson = landRecordsService.editNonNatural(nonPerson);
+
+            // Create new right if non person is new
+            if (id == 0 && usin > 0) {
+                SocialTenureRelationship right = landRecordsService.findAllSocialTenureByUsin(usin).get(0);
+                // Check if right has person assigned, if not, it will be saved with current person, if yes, new right will be created
+                if (right.getPerson_gid() != null) {
+                    right.setGid(0);
+                }
+                right.setPerson_gid(nonPerson);
+                landRecordsService.edittenure(right);
             }
 
             //AttributeValues attributeValues=new AttributeValues();
@@ -618,25 +659,183 @@ public class LandRecordsController {
                         landRecordsService.updateAttributeValues(value_key, alias);
                     }
                 }
-
             }
 
             //For Updating Non Natural in Attribute Vlaues
             try {
-                userDataService.updateNonNaturalPersonAttribValues(nonnaturalPerson, project_nonnatural);
+                userDataService.updateNonNaturalPersonAttribValues(nonPerson, project_nonnatural);
             } catch (Exception e) {
                 logger.error(e);
             }
 
-            return landRecordsService.editNonNatural(nonnaturalPerson);
+            return true;
 
         } catch (ServletRequestBindingException e) {
-
             logger.error(e);
             return false;
+        }
+    }
 
+    @RequestMapping(value = "/viewer/landrecords/deletedispute/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public String deleteDispute(@PathVariable Long id) {
+        try {
+            Dispute dispute = landRecordsService.getDispute(id);
+
+            if (dispute == null) {
+                return "Dispute not found.";
+            }
+
+            String validation = validateDisputeForDelete(dispute);
+            if (!validation.equals(RESPONSE_OK)) {
+                return validation;
+            }
+
+            // Delete dispute 
+            if (landRecordsService.deleteDispute(dispute)) {
+                return RESPONSE_OK;
+            } else {
+                return "Failed to delete dispute";
+            }
+
+        } catch (Exception e) {
+            logger.error(e);
+            return "Failed to delete dispute";
+        }
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/resolvedispute", method = RequestMethod.POST)
+    @ResponseBody
+    public String resolveDispute(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            long id = ServletRequestUtils.getRequiredLongParameter(request, "resolveDisputeId");
+            String resolutionText = ServletRequestUtils.getRequiredStringParameter(request, "resolutionText");
+
+            Dispute dispute = landRecordsService.getDispute(id);
+
+            if (dispute == null) {
+                return "Dispute not found.";
+            }
+
+            String validation = validateDisputeForDelete(dispute);
+
+            if (!validation.equals(RESPONSE_OK)) {
+                return validation;
+            }
+
+            // Resolve dispute 
+            dispute.setResolutionText(resolutionText);
+
+            if (landRecordsService.resolveDispute(dispute)) {
+                return RESPONSE_OK;
+            } else {
+                return "Failed to resolve dispute";
+            }
+
+        } catch (Exception e) {
+            logger.error(e);
+            return "Failed to resolve dispute";
+        }
+    }
+
+    private String validateDisputeForDelete(Dispute dispute) {
+        SpatialUnitTable parcel = landRecordsService.findSpatialUnitbyId(dispute.getUsin()).get(0);
+
+        // Allow delete only for parcels with new and referred statuses
+        if (parcel.getStatus().getWorkflowStatusId() != Status.STATUS_NEW
+                && parcel.getStatus().getWorkflowStatusId() != Status.STATUS_REFERRED) {
+            return "Disputes can not be managed for this claim";
         }
 
+        // Allow delete only for parcels with new or disputed type
+        if (!parcel.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_NEW)
+                && !parcel.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_DISPUTED)) {
+            return "Disputes can not be managed for this type of claims";
+        }
+
+        // Allow deletion only if ownership information exists
+        List<SocialTenureRelationship> rights = landRecordsService.findAllSocialTenureByUsin(parcel.getUsin());
+
+        if (rights == null || rights.size() < 1) {
+            return "Ownership rights must be recorded.";
+        }
+
+        boolean activeRightExists = false;
+
+        for (SocialTenureRelationship right : rights) {
+            if (right.getIsActive()) {
+                // Check for person
+                if (right.getPerson_gid() != null) {
+                    activeRightExists = true;
+                    break;
+                }
+            }
+        }
+
+        if (!activeRightExists) {
+            return "Right holders must be recorded.";
+        }
+
+        return RESPONSE_OK;
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/updatedispute", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateDispute(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            long usin = ServletRequestUtils.getRequiredLongParameter(request, "disputeUsin");
+            long id = ServletRequestUtils.getRequiredLongParameter(request, "disputeId");
+            int disputeTypeCode = ServletRequestUtils.getRequiredIntParameter(request, "cbxDisputeTypes");
+            String description = ServletRequestUtils.getRequiredStringParameter(request, "txtDisputeDescription");
+
+            if (usin < 1) {
+                return "Spatial unit was not found";
+            }
+
+            Dispute dispute;
+
+            if (id > 0) {
+                dispute = landRecordsService.getDispute(id);
+                if (dispute == null) {
+                    return "Dispute not found";
+                }
+            } else {
+                // New dispute
+                SpatialUnitTable parcel = landRecordsService.findSpatialUnitbyId(usin).get(0);
+                // Check for parcel to have new or referred status and be new claim or disputed
+                if ((parcel.getStatus().getWorkflowStatusId() != Status.STATUS_NEW
+                        && parcel.getStatus().getWorkflowStatusId() != Status.STATUS_REFERRED)
+                        || (!parcel.getClaimType().getCode().equals(ClaimType.CODE_NEW)
+                        && !parcel.getClaimType().getCode().equals(ClaimType.CODE_DISPUTED))) {
+                    return "Dispute can not be registered for this claim";
+                }
+                dispute = new Dispute();
+                dispute.setStatus(disputeStatusDao.findById(DisputeStatus.STATUS_ACTIVE, false));
+                dispute.setDeleted(false);
+                dispute.setRegDate(Calendar.getInstance().getTime());
+                dispute.setId(id);
+                dispute.setUsin(usin);
+            }
+
+            if (disputeTypeCode > 0) {
+                dispute.setDisputeType(landRecordsService.getDisputeType(disputeTypeCode));
+            }
+
+            dispute.setDescription(description);
+            landRecordsService.updateDispute(dispute);
+
+            return RESPONSE_OK;
+
+        } catch (Exception e) {
+            logger.error(e);
+            return "Failed to save dispute";
+        }
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/deleteDisputant/{disputeId}/{partyId}", method = RequestMethod.GET)
+    @ResponseBody
+    public boolean deleteDisputant(@PathVariable Long disputeId, @PathVariable Long partyId) {
+        return landRecordsService.deleteDisputant(disputeId, partyId);
     }
 
     @RequestMapping(value = "/viewer/landrecords/updatetenure", method = RequestMethod.POST)
@@ -651,6 +850,7 @@ public class LandRecordsController {
         Integer acquisitionTypeCode;
         long relationshipTypeCode;
         float tenureDuration = 0;
+        long rightId;
         Double juridicalArea;
         String projectName;
 
@@ -672,6 +872,7 @@ public class LandRecordsController {
             certNumber = ServletRequestUtils.getStringParameter(request, "txtCertNumber", "");
             certDate = ServletRequestUtils.getStringParameter(request, "txtCertDate", "");
             tenureType = ServletRequestUtils.getLongParameter(request, "tenure_type", 0);
+            rightId = ServletRequestUtils.getLongParameter(request, "tenure_key", 0);
             rightType = ServletRequestUtils.getIntParameter(request, "tenureclass_id", 0);
             acquisitionTypeCode = ServletRequestUtils.getRequiredIntParameter(request, "lstAcquisitionTypes");
             relationshipTypeCode = ServletRequestUtils.getLongParameter(request, "lstRelationshipTypes", 0);
@@ -679,37 +880,30 @@ public class LandRecordsController {
             tenureDuration = ServletRequestUtils.getFloatParameter(request, "tenureDuration", 0);
             length = ServletRequestUtils.getRequiredIntParameter(request, "tenure_length");
             projectName = ServletRequestUtils.getRequiredStringParameter(request, "projectname_key3");
+
             List<SocialTenureRelationship> ownershipRights = landRecordsService.findAllSocialTenureByUsin(usin);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-            if (length > 0) {
-                for (int i = 0; i < length; i++) {
-                    long uid = 0l;
-                    for (int j = 0; j < ownershipRights.size(); j++) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("alias");
-                        sb.append(i);
-                        String alias = sb.toString();
-                        Long value_key = 0l;
-
-                        value_key = ServletRequestUtils.getRequiredLongParameter(request, "alias_tenure_key" + i);
-                        Long attributeKey = 0L;
-                        if (value_key != 0) {
-                            AttributeValues attributefetch = landRecordsService.getAttributeValue(value_key);
-                            uid = attributefetch.getUid();
-                            attributeKey = landRecordsService.getAttributeKey(ownershipRights.get(j).getGid(), uid);
-                        }
-
-                        alias = ServletRequestUtils.getRequiredStringParameter(request, "alias_tenure" + i);
-                        if (attributeKey != 0) {
-                            landRecordsService.updateAttributeValues(attributeKey, alias);
-                        }
-                    }
-                }
+            if (ownershipRights == null) {
+                ownershipRights = new ArrayList<>();
             }
 
-            if (ownershipRights != null && ownershipRights.size() > 0) {
-                for (SocialTenureRelationship ownershipRight : ownershipRights) {
+            if (rightId == 0) {
+                // This is new right. Add it to the list
+                SocialTenureRelationship right = new SocialTenureRelationship();
+                right.setUsin(usin);
+                right.setTenureclassId(landRecordsService.findtenureClasseById(2));
+                right.setIsActive(true);
+                if (rightType > 0) {
+                    right.setTenureclassId(landRecordsService.findtenureClasseById(rightType));
+                }
+                ownershipRights.add(right);
+            }
+
+            if (ownershipRights.size() > 0) {
+                for (int i = 0; i < ownershipRights.size(); i++) {
+                    SocialTenureRelationship ownershipRight = ownershipRights.get(i);
+
                     if (tenureType > 0) {
                         ownershipRight.setShare_type(landRecordsService.findTenureType(tenureType));
                     }
@@ -736,22 +930,55 @@ public class LandRecordsController {
                     ownershipRight.setJuridicalArea(juridicalArea);
                     ownershipRight.setTenureDuration(tenureDuration);
 
+                    // Update/save tenure
+                    try {
+                        ownershipRight = landRecordsService.edittenure(ownershipRight);
+                        // Refresh right after saving if it's new
+                        if (rightId == 0 && ownershipRight != null) {
+                            ownershipRights.set(i, ownershipRight);
+                        }
+                    } catch (Exception e) {
+                        logger.error(e);
+                        return false;
+                    }
+
                     //For Updating tenure in AttributeValues
                     try {
                         userDataService.updateTenureAttribValues(ownershipRight, projectName);
                     } catch (Exception e) {
                         logger.error(e);
                     }
-                    try {
-                        landRecordsService.edittenure(ownershipRight);
-                    } catch (Exception e) {
-                        logger.error(e);
-                        return false;
+                }
+            }
+
+            // Custom attributes
+            if (length > 0 && ownershipRights != null && ownershipRights.size() > 0) {
+                for (int i = 0; i < length; i++) {
+                    long uid = 0l;
+                    for (int j = 0; j < ownershipRights.size(); j++) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("alias");
+                        sb.append(i);
+                        String alias = sb.toString();
+                        Long value_key = 0l;
+
+                        value_key = ServletRequestUtils.getRequiredLongParameter(request, "alias_tenure_key" + i);
+                        Long attributeKey = 0L;
+
+                        if (value_key != 0) {
+                            AttributeValues attributefetch = landRecordsService.getAttributeValue(value_key);
+                            uid = attributefetch.getUid();
+                            attributeKey = landRecordsService.getAttributeKey(ownershipRights.get(j).getGid(), uid);
+                        }
+
+                        alias = ServletRequestUtils.getRequiredStringParameter(request, "alias_tenure" + i);
+                        if (attributeKey != 0) {
+                            landRecordsService.updateAttributeValues(attributeKey, alias);
+                        }
                     }
                 }
             }
 
-            // Create new right
             return true;
         } catch (Exception e) {
             logger.error(e);
@@ -761,172 +988,151 @@ public class LandRecordsController {
 
     @RequestMapping(value = "/viewer/landrecords/updatemultimedia", method = RequestMethod.POST)
     @ResponseBody
-    public boolean updateMultimedia(HttpServletRequest request, HttpServletResponse response) {
-
-        int gid = 0;
-        String id = "";
-        String recordation = "";
-        String scannedDocs = "";
-        String comments = "";
-        long usin = 0;
-        long personGid = 0;
-        int socialGid = 0;
+    public boolean updateMultimedia(MultipartHttpServletRequest request, HttpServletResponse response, Principal principal) {
+        int gid;
+        String comments;
+        long usin;
         int docType;
-        String source_path = "";
-        String project_multimedia = "";
+        String docName;
+        String projectName;
 
         SourceDocument sourceDocument = new SourceDocument();
 
         try {
+            Iterator<String> file = request.getFileNames();
+            usin = ServletRequestUtils.getRequiredLongParameter(request, "usink");
+            projectName = ServletRequestUtils.getRequiredStringParameter(request, "projectname_multimedia_key");
             gid = ServletRequestUtils.getRequiredIntParameter(request, "primary_key");
             docType = ServletRequestUtils.getRequiredIntParameter(request, "docType");
-            id = ServletRequestUtils.getRequiredStringParameter(request, "multimedia_id");
-            try {
-                recordation = ServletRequestUtils.getRequiredStringParameter(request, "recordation");
-            } catch (Exception e) {
-                logger.error(e);
-            }
-            scannedDocs = ServletRequestUtils.getRequiredStringParameter(request, "scanned_srs");
+            docName = ServletRequestUtils.getRequiredStringParameter(request, "docName");
             comments = ServletRequestUtils.getRequiredStringParameter(request, "comments_multimedia");
-            usin = ServletRequestUtils.getRequiredLongParameter(request, "usink");
-            source_path = ServletRequestUtils.getRequiredStringParameter(request, "source_path");
-            project_multimedia = ServletRequestUtils.getRequiredStringParameter(request, "projectname_multimedia_key");
 
-            try {
-                personGid = ServletRequestUtils.getRequiredLongParameter(request, "person_gidk");
-            } catch (Exception e) {
-                logger.error(e);
-            }
-            try {
-                socialGid = ServletRequestUtils.getRequiredIntParameter(request, "social_gid");
-            } catch (Exception e) {
-                logger.error(e);
-            }
-
-            if(gid > 0){
+            if (gid > 0) {
                 sourceDocument = landRecordsService.getDocumentbyGid(new Long(gid));
+            } else {
+                sourceDocument.setGid(gid);
+                sourceDocument.setRecordation(Calendar.getInstance().getTime());
             }
-            
-            sourceDocument.setGid(gid);
-            
-            if (id != "") {
-                sourceDocument.setId(id);
-            }
-            
-            Date recordDate = null;
-            
-            try {
-                SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-                recordDate = sdfDate.parse(recordation);
-            } catch (ParseException e) {
-                logger.error(e);
-            }
-            
-            sourceDocument.setRecordation(recordDate);
-            sourceDocument.setScanedSourceDoc(scannedDocs);
+
+            sourceDocument.setEntity_name(docName);
             sourceDocument.setComments(comments);
             sourceDocument.setUsin(usin);
             sourceDocument.setActive(true);
-            
-            if (personGid != 0) {
-                sourceDocument.setPerson_gid(personGid);
-            }
-            if (socialGid != 0) {
-                sourceDocument.setSocial_tenure_gid(socialGid);
-            }
-            if(docType > 0){
+
+            if (docType > 0) {
                 sourceDocument.setDocumentType(landRecordsService.getDocumentType(docType));
             } else {
                 sourceDocument.setDocumentType(null);
             }
-            sourceDocument.setLocScannedSourceDoc(source_path);
 
-            //For Updating tenure in AttributeValues
-            try {
-                userDataService.updateMultimediaAttribValues(sourceDocument, project_multimedia);
-            } catch (Exception e) {
-                logger.error(e);
+            if (gid == 0) {
+                // Save new document
+                byte[] document = null;
+                while (file.hasNext()) {
+                    String fileName = file.next();
+                    MultipartFile mpFile = request.getFile(fileName);
+                    String originalFileName = mpFile.getOriginalFilename();
+                    String fileExtension = originalFileName.substring(originalFileName.indexOf(".") + 1, originalFileName.length()).toLowerCase();
+
+                    if (!"".equals(originalFileName)) {
+                        document = mpFile.getBytes();
+                    }
+
+                    String uploadFileName = null;
+                    String tmpDirPath = request.getSession().getServletContext().getRealPath(File.separator);
+                    String outDirPath = tmpDirPath.replace("mast", "") + "resources" + File.separator + "documents" + File.separator + projectName + File.separator + "webupload";
+                    File outDir = new File(outDirPath);
+                    boolean exists = outDir.exists();
+
+                    if (!exists) {
+                        (new File(outDirPath)).mkdirs();
+                    }
+
+                    sourceDocument.setScanedSourceDoc(originalFileName);
+                    uploadFileName = ("resources/documents/" + projectName + "/webupload");
+                    sourceDocument.setLocScannedSourceDoc(uploadFileName);
+                    sourceDocument.setActive(true);
+                    sourceDocument.setRecordation(new Date());
+                    sourceDocument.setUsin(usin);
+
+                    sourceDocument = landRecordsService.saveUploadedDocuments(sourceDocument);
+
+                    try {
+                        FileOutputStream uploadfile = new FileOutputStream(outDirPath + File.separator + sourceDocument.getGid() + "." + fileExtension);
+                        uploadfile.write(document);
+                        uploadfile.flush();
+                        uploadfile.close();
+                    } catch (Exception e) {
+                        logger.error(e);
+                        return false;
+                    }
+                }
+            } else {
+                landRecordsService.updateMultimedia(sourceDocument);
             }
 
-            landRecordsService.updateMultimedia(sourceDocument);
-            return true;
+            //For Updating tenure in AttributeValues
+            userDataService.updateMultimediaAttribValues(sourceDocument, projectName);
 
-        } catch (ServletRequestBindingException e) {
+            return true;
+        } catch (Exception e) {
             logger.error(e);
             return false;
         }
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/socialtenure/edit/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<SocialTenureRelationship> SocialTenurebyGidList(@PathVariable Integer id) {
-
         return landRecordsService.findSocialTenureByGid(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/multimedia/edit/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<SourceDocument> MultimediaList(@PathVariable Long id) {
-
         return landRecordsService.findMultimediaByUsin(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/multimedia/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<SourceDocument> MultimediaGidList(@PathVariable Long id) {
-
         return landRecordsService.findMultimediaByGid(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/delete/{id}", method = RequestMethod.GET)
     @ResponseBody
     public boolean deleteMultimedia(@PathVariable Long id) {
-
         return landRecordsService.deleteMultimedia(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/deleteNatural/{id}", method = RequestMethod.GET)
     @ResponseBody
     public boolean deleteNatural(@PathVariable Long id) {
-
         return landRecordsService.deleteNatural(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/deletenonnatural/{id}", method = RequestMethod.GET)
     @ResponseBody
     public boolean deleteNonNatural(@PathVariable Long id) {
-
         return landRecordsService.deleteNonNatural(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/deleteTenure/{id}", method = RequestMethod.GET)
     @ResponseBody
     public boolean deleteTenure(@PathVariable Long id) {
-
         return landRecordsService.deleteTenure(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/educationlevel/", method = RequestMethod.GET)
     @ResponseBody
     public List<EducationLevel> educationList() {
-
         return landRecordsService.findAllEducation();
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/landusertype/", method = RequestMethod.GET)
     @ResponseBody
     public List<LandUseType> landUserList() {
         return landRecordsService.findAllLanduserType();
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/tenureclass/", method = RequestMethod.GET)
@@ -934,7 +1140,7 @@ public class LandRecordsController {
     public List<TenureClass> tenureclassList() {
         return landRecordsService.findAllTenureClass();
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/doctypes/", method = RequestMethod.GET)
     @ResponseBody
     public List<DocumentType> getDocumentTypes() {
@@ -944,14 +1150,12 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/ukanumber/{id}", method = RequestMethod.GET)
     @ResponseBody
     public String ukaNumberByUsin(@PathVariable Long id) {
-
         return landRecordsService.findukaNumberByUsin(id);
     }
 
     @RequestMapping(value = "/viewer/landrecords/hamletname/{project}", method = RequestMethod.GET)
     @ResponseBody
     public List<ProjectHamlet> findAllHamlet(@PathVariable String project) {
-
         return projectService.findHamletByProject(project);
     }
 
@@ -976,74 +1180,25 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/attributecategory/", method = RequestMethod.GET)
     @ResponseBody
     public List<AttributeCategory> attribList() {
-
         return landRecordsService.findAllAttributeCategories();
     }
 
     @RequestMapping(value = "/viewer/landrecords/getCCRO/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<SpatialUnitTable> CCROList(@PathVariable Long id, Principal principal) {
-        /*
-		String username = principal.getName();
-		User user = userService.findByUniqueName(username);
-		long userid=user.getId();
-
-		List<SpatialUnitTable> spatialunit = landRecordsService.findSpatialUnitbyId(id);
-		if(spatialunit.get(0).getStatus().getWorkflowStatusId()==4)
-		{		if(landRecordsService.updateCCRO(id,userid))
-		{
-			return landRecordsService.findCCRO_by_USIN(id);
-		}
-		else	{
-
-			return null;
-		}
-		}
-		else{
-
-			return landRecordsService.findCCRO_by_USIN(id);
-
-		}*/
-
         return landRecordsService.findSpatialUnitbyId(id);
-
     }
 
-    /*	@RequestMapping(value = "/viewer/gethamlet/{projectname}", method = RequestMethod.GET)
-	@ResponseBody
-	public String HamletbyUsin(@PathVariable String projectname)
-	{
-
-		Project project=	projectService.findProjectByName(projectname);
-		return project.getProjectAreas().get(0).getVillage();
-
-	}
-     */
     @RequestMapping(value = "/viewer/landrecords/attributedata/{categoryid}/{parentid}", method = RequestMethod.GET)
     @ResponseBody
     public List<AttributeValuesFetch> attributeDataList(@PathVariable long categoryid, @PathVariable long parentid) {
-
         return landRecordsService.findAttributelistByCategoryId(parentid, categoryid);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/naturalpersondata/{personid}", method = RequestMethod.GET)
     @ResponseBody
     public Person naturalPersonList(@PathVariable long personid) {
-
         return landRecordsService.findPersonGidById(personid);
-
-    }
-
-    @RequestMapping(value = "/viewer/landrecords/finalstatus/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public boolean updateFinal(@PathVariable Long id, Principal principal) {
-
-        String username = principal.getName();
-        User user = userService.findByUniqueName(username);
-        long userid = user.getId();
-        return landRecordsService.updateFinal(id, userid);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/uploadweb/", method = RequestMethod.POST)
@@ -1138,20 +1293,25 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/sourcedocument/{usinId}", method = RequestMethod.GET)
     @ResponseBody
     public List<SourceDocument> sourcedocumentList(@PathVariable long usinId) {
-
         return landRecordsService.findMultimediaByUsin(usinId);
-
     }
 
-    @RequestMapping(value = "/viewer/landrecords/adjudicatestatus/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/viewer/landrecords/disputes/{usin}", method = RequestMethod.GET)
     @ResponseBody
-    public boolean updateAdjudicated(@PathVariable Long id, Principal principal) {
+    public List<Dispute> getDisputes(@PathVariable long usin) {
+        return landRecordsService.getDisputes(usin);
+    }
 
-        String username = principal.getName();
-        User user = userService.findByUniqueName(username);
-        long userid = user.getId();
-        return landRecordsService.updateAdjudicated(id, userid);
+    @RequestMapping(value = "/viewer/landrecords/dispute/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Dispute getDispute(@PathVariable long id) {
+        return landRecordsService.getDispute(id);
+    }
 
+    @RequestMapping(value = "/viewer/landrecords/disputetypes/", method = RequestMethod.GET)
+    @ResponseBody
+    public List<DisputeType> getDisputeType() {
+        return landRecordsService.getDisputeTypes();
     }
 
     @RequestMapping(value = "/viewer/landrecords/download/{id}", method = RequestMethod.GET)
@@ -1176,34 +1336,37 @@ public class LandRecordsController {
         } catch (Exception e) {
             logger.error(e);
         }
+    }
 
+    @RequestMapping(value = "/viewer/landrecords/personphoto/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getPersonPhoto(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
+
+        SourceDocument doc = landRecordsService.getdocumentByPerson(id);
+        String fileName = doc.getScanedSourceDoc();
+        String fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
+        String filepath = request.getSession().getServletContext().getRealPath(File.separator).replace("mast", "")
+                + doc.getLocScannedSourceDoc() + File.separator
+                + doc.getGid() + "." + fileType;
+        Path path = Paths.get(filepath);
+        try {
+            byte[] data = Files.readAllBytes(path);
+
+            response.setContentLength(data.length);
+            OutputStream out = response.getOutputStream();
+            out.write(data);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            logger.error(e);
+        }
     }
 
     @RequestMapping(value = "/viewer/landrecords/Adjuticator/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<SpatialUnitTable> AdjuticatorList(Principal principal, @PathVariable Long id) {
-        /*
-		List<SpatialUnitTable> spatialunit = landRecordsService.findSpatialUnitbyId(id);
-		if(spatialunit.get(0).getStatus().getWorkflowStatusId()==1)
-		{
-			if(updateAdjudicated(id, principal))
-			{
-				return landRecordsService.findAdjuticator_by_USIN(id);
-			}
-
-			else{
-
-				return null;
-			}
-		}
-		else
-		{
-			return landRecordsService.findAdjuticator_by_USIN(id);
-
-		}*/
-
         return landRecordsService.findSpatialUnitbyId(id);
-
     }
 
     @RequestMapping(value = "/viewer/landrecords/projectarea/", method = RequestMethod.GET)
@@ -1426,6 +1589,56 @@ public class LandRecordsController {
         return landRecordsService.deleteSpatialUnit(id);
     }
 
+    @RequestMapping(value = "/viewer/landrecords/showndisputers/{usin}", method = RequestMethod.GET)
+    @ResponseBody
+    public List<NaturalPerson> showDisputers(@PathVariable Long usin) {
+        List<Dispute> disputes = landRecordsService.getDisputes(usin);
+        List<NaturalPerson> persons = new ArrayList<>();
+
+        if (disputes != null && disputes.size() > 0) {
+            for (Dispute dispute : disputes) {
+                if (!dispute.isDeleted() && dispute.getDisputingPersons() != null) {
+                    persons.addAll(dispute.getDisputingPersons());
+                }
+            }
+        }
+
+        return persons;
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/addexistingperson/{usin}/{personId}", method = RequestMethod.GET)
+    @ResponseBody
+    public boolean addExistingPerson(@PathVariable Long usin, @PathVariable Long personId) {
+        try {
+            if (personId > 0 && usin > 0) {
+                Person person = landRecordsService.findPersonGidById(personId);
+                List<SocialTenureRelationship> rights = landRecordsService.findAllSocialTenureByUsin(usin);
+
+                if (person != null && rights != null && rights.size() > 0) {
+                    // Check person doesn't exist already
+                    for (SocialTenureRelationship right : rights) {
+                        if (right.getPerson_gid() != null && right.getPerson_gid().getPerson_gid() == personId) {
+                            return true;
+                        }
+                    }
+                    // Add person to right
+                    SocialTenureRelationship right = rights.get(0);
+                    if (right.getPerson_gid() != null) {
+                        right.setGid(0);
+                    }
+                    right.setPerson_gid(person);
+                    landRecordsService.edittenure(right);
+                }
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            logger.error(e);
+            return false;
+        }
+    }
+
     @RequestMapping(value = "/viewer/landrecords/shownatural/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<SocialTenureRelationship> showDeletedNatural(@PathVariable Long id) {
@@ -1616,12 +1829,6 @@ public class LandRecordsController {
                 logger.error(e);
 
             }
-            /*try {
-				document_comments= ServletRequestUtils.getRequiredStringParameter(request, "document_comments");
-			} catch (Exception e2) {
-				logger.error(e2);
-
-			}*/
 
             byte[] document = null;
             while (file.hasNext()) {
@@ -1870,67 +2077,497 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/deceasedperson/{usin}", method = RequestMethod.GET)
     @ResponseBody
     public List<SpatialunitDeceasedPerson> deceasedPerson(@PathVariable Long usin) {
-
         return landRecordsService.findDeceasedPersonByUsin(usin);
-
     }
 
-    @RequestMapping(value = "/viewer/landrecords/autogenerateuka/{project}", method = RequestMethod.GET)
+    @RequestMapping(value = "/viewer/landrecords/refer/{usin}", method = RequestMethod.GET)
     @ResponseBody
-    public boolean autogenerateUKA(@PathVariable String projectName) {
-        List<ProjectHamlet> projecthamlets = projectService.findHamletByProject(projectName);
-        Project project = projectService.findProjectByName(projectName);
+    public String referClaim(@PathVariable Long usin, Principal principal) {
+        try {
+            SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
+            if (claim == null) {
+                return "Claim was not found";
+            }
+
+            // Check parcel for appropriate status and type
+            if ((claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_NEW)
+                    || claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_DISPUTED))
+                    && claim.getStatus().getWorkflowStatusId() == Status.STATUS_NEW) {
+
+                User user = userService.findByUniqueName(principal.getName());
+
+                if (landRecordsService.referClaim(claim, user.getId())) {
+                    return RESPONSE_OK;
+                } else {
+                    return "Failed to refer claim";
+                }
+            } else {
+                return "This claim cannot be referred";
+            }
+        } catch (Exception e) {
+            logger.error(e);
+            return "Failed to refer claim";
+        }
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/makevalidated/{usin}", method = RequestMethod.GET)
+    @ResponseBody
+    public List<String> makeClaimValidated(@PathVariable Long usin, Principal principal) {
+        List<String> errors = new ArrayList<>();
+
+        try {
+            SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
+            errors = validateClaim(claim, true);
+
+            if (errors != null && errors.size() > 0) {
+                return errors;
+            }
+
+            if (claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_NEW)
+                    && claim.getStatus().getWorkflowStatusId() == Status.STATUS_NEW) {
+                User user = userService.findByUniqueName(principal.getName());
+                if (StringUtils.isEmpty(claim.getPropertyno())) {
+                    // Generate UKA number
+                    claim.setPropertyno(generateUkaNumber(claim));
+                }
+                if (!landRecordsService.makeClaimValidated(claim, user.getId())) {
+                    errors.add("Failed to make claim validated");
+                }
+            } else {
+                errors.add("This claim cannot be marked as validated");
+            }
+
+            return errors;
+
+        } catch (Exception e) {
+            logger.error(e);
+            errors.add("Failed to make claim validated");
+            return errors;
+        }
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/approve/{usin}", method = RequestMethod.GET)
+    @ResponseBody
+    public List<String> approveClaim(@PathVariable Long usin, Principal principal) {
+        List<String> errors = new ArrayList<>();
+
+        try {
+            SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
+            errors = validateClaim(claim, false);
+
+            if (errors != null && errors.size() > 0) {
+                return errors;
+            }
+
+            if ((claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_NEW)
+                    && claim.getStatus().getWorkflowStatusId() == Status.STATUS_VALIDATED)
+                    || (claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_EXISTING)
+                    && claim.getStatus().getWorkflowStatusId() == Status.STATUS_NEW)) {
+
+                if (StringUtils.isEmpty(claim.getPropertyno())) {
+                    // Generate UKA number
+                    claim.setPropertyno(generateUkaNumber(claim));
+                }
+
+                User user = userService.findByUniqueName(principal.getName());
+
+                if (!landRecordsService.approveClaim(claim, user.getId())) {
+                    errors.add("Failed to make claim validated");
+                }
+            } else {
+                errors.add("This claim cannot be marked as validated");
+            }
+
+            return errors;
+
+        } catch (Exception e) {
+            logger.error(e);
+            errors.add("Failed to make claim validated");
+            return errors;
+        }
+    }
+
+    private List<String> validateClaim(SpatialUnitTable claim, boolean validateStatus) {
+        List<String> errors = new ArrayList<>();
+
+        try {
+            if (claim == null) {
+                errors.add("Claim was not found");
+                return errors;
+            }
+
+            long usin = claim.getUsin();
+
+            // Check claim type
+            if (!claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_NEW)
+                    && !claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_EXISTING)) {
+                errors.add("This type of claim cannot be validated.");
+                return errors;
+            }
+
+            // Check claim status
+            if (validateStatus) {
+                if (claim.getStatus().getWorkflowStatusId() != Status.STATUS_NEW && claim.getStatus().getWorkflowStatusId() != Status.STATUS_REFERRED) {
+                    errors.add("Claim with status \"" + claim.getStatus().getWorkflowStatus() + "\" cannot be validated");
+                    return errors;
+                }
+            }
+
+            // UKA Number
+            if (claim.getStatus().getWorkflowStatusId() == Status.STATUS_VALIDATED && StringUtils.isEmpty(claim.getPropertyno())) {
+                errors.add("UKA number must be assigned");
+                return errors;
+            }
+
+            // Check for any disputes
+            List<Dispute> disputes = landRecordsService.getDisputes(usin);
+            if (disputes != null && disputes.size() > 0) {
+                for (Dispute dispute : disputes) {
+                    if (dispute.getStatus().getCode() == DisputeStatus.STATUS_ACTIVE) {
+                        errors.add("There are unresolved disputes found. You have to resolve them first.");
+                        return errors;
+                    }
+                }
+            }
+
+            // Validate rights
+            List<SocialTenureRelationship> rights = landRecordsService.findAllSocialTenureByUsin(usin);
+            if (rights == null || rights.size() < 1) {
+                errors.add("No ownership rights found");
+                return errors;
+            }
+
+            // Check general properties
+            if (claim.getExistingUse() == null) {
+                errors.add("Select Existing land use");
+            }
+            if (claim.getProposedUse() == null) {
+                errors.add("Select Proposed land use");
+            }
+
+            // Get deceased persons
+            List<SpatialunitDeceasedPerson> deceasedPersons = landRecordsService.findDeceasedPersonByUsin(usin);
+
+            // Check rights
+            int owners = 0;
+            int admins = 0;
+            int guardians = 0;
+            int nonNatural = 0;
+            boolean hasRepresentative = false;
+
+            for (SocialTenureRelationship right : rights) {
+                if (right.getPerson_gid() != null) {
+                    if (right.getPerson_gid().getPerson_type_gid().getPerson_type_gid() != PersonType.TYPE_NATURAL) {
+                        nonNatural += 1;
+                        NonNaturalPerson nonPerson = (NonNaturalPerson) right.getPerson_gid();
+                        if (nonPerson.getPoc_gid() != null && nonPerson.getPoc_gid() > 0) {
+                            hasRepresentative = true;
+                        }
+                    } else {
+                        NaturalPerson person = (NaturalPerson) right.getPerson_gid();
+                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_ADMINISTRATOR) {
+                            admins += 1;
+                        }
+                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER) {
+                            owners += 1;
+                        }
+                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_GUARDIAN) {
+                            guardians += 1;
+                        }
+                    }
+                }
+            }
+
+            int i = 0;
+
+            for (SocialTenureRelationship right : rights) {
+                // Validate only first right, considering that all others must be the same
+                if (i == 0) {
+                    if (right.getTenureclassId() == null) {
+                        errors.add("Enter type of right.");
+                    }
+
+                    if (right.getShare_type() == null) {
+                        errors.add("Select tenure type");
+                    }
+
+                    // For existing claims
+                    if (claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_EXISTING)) {
+                        if (right.getJuridicalArea() == null || right.getJuridicalArea() == 0) {
+                            errors.add("Enter Juridical area more than 0");
+                        }
+                    }
+
+                    if (right.getPerson_gid() == null) {
+                        errors.add("Add at least 1 person");
+                    }
+
+                    // Check share type
+                    if (right.getShare_type() != null) {
+                        if (right.getShare_type().getGid() != ShareType.SHARE_INSTITUTION && nonNatural > 0) {
+                            errors.add("Only natural persons are allowed for " + right.getShare_type().getShareType());
+                        }
+
+                        if (right.getShare_type().getGid() == ShareType.SHARE_SINGLE) {
+                            // Only 1 natural person is allowed
+                            if (owners == 0) {
+                                errors.add("Add owner");
+                            }
+                            if (owners > 1) {
+                                errors.add("Only 1 owner is allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (admins > 0) {
+                                errors.add("Administrators are not allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (guardians > 0) {
+                                errors.add("Guardians are not allowed for " + right.getShare_type().getShareType());
+                            }
+                        }
+
+                        if (right.getShare_type().getGid() == ShareType.SHARE_ADMINISTRATOR) {
+                            // 1 or many owners, max 2 admins and deceased person
+                            if (deceasedPersons == null || deceasedPersons.size() < 0) {
+                                errors.add("Add deceased person");
+                            }
+                            if (admins == 0) {
+                                errors.add("Add at least 1 administrator");
+                            }
+                            if (admins > 2) {
+                                errors.add("Maximum 2 administrators are allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (guardians > 0) {
+                                errors.add("Guardians are not allowed for " + right.getShare_type().getShareType());
+                            }
+                        }
+
+                        if (right.getShare_type().getGid() == ShareType.SHARE_GUARDIAN) {
+                            // 1 or many owners (minors), max 2 guardians
+                            if (owners == 0) {
+                                errors.add("Add at least 1 owner (minor)");
+                            }
+                            if (guardians == 0) {
+                                errors.add("Add at least 1 guardian");
+                            }
+                            if (guardians > 2) {
+                                errors.add("Maximum 2 guardians are allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (admins > 0) {
+                                errors.add("Administrators are not allowed for " + right.getShare_type().getShareType());
+                            }
+                        }
+
+                        if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_COMMON) {
+                            // At least 2 owners 
+                            if (owners < 2) {
+                                errors.add("Add at least 2 owners");
+                            }
+                            if (admins > 0) {
+                                errors.add("Administrators are not allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (guardians > 0) {
+                                errors.add("Guardians are not allowed for " + right.getShare_type().getShareType());
+                            }
+                        }
+
+                        if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_JOINT) {
+                            // 2 owners 
+                            if (owners == 0) {
+                                errors.add("Add 2 owners");
+                            }
+                            if (owners > 2) {
+                                errors.add("Maximum 2 owners are allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (admins > 0) {
+                                errors.add("Administrators are not allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (guardians > 0) {
+                                errors.add("Guardians are not allowed for " + right.getShare_type().getShareType());
+                            }
+                        }
+
+                        if (right.getShare_type().getGid() == ShareType.SHARE_INSTITUTION) {
+                            // 1 non natural person should be 
+                            if (nonNatural == 0) {
+                                errors.add("Add 1 Non Natural person");
+                            }
+                            if (nonNatural > 1) {
+                                errors.add("Maximum 1 Non Natural person is allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (!hasRepresentative) {
+                                errors.add("One representative person has to be added");
+                            }
+                            if (owners > 0) {
+                                errors.add("Natural persons as owners are not allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (admins > 0) {
+                                errors.add("Administrators are not allowed for " + right.getShare_type().getShareType());
+                            }
+                            if (guardians > 0) {
+                                errors.add("Guardians are not allowed for " + right.getShare_type().getShareType());
+                            }
+                        }
+                    }
+                }
+
+                i += 1;
+
+                // Check person
+                if (right.getShare_type() != null && right.getPerson_gid() != null) {
+
+                    NonNaturalPerson nonPerson = null;
+                    NaturalPerson person = null;
+
+                    if (right.getPerson_gid().getPerson_type_gid().getPerson_type_gid() != PersonType.TYPE_NATURAL) {
+                        nonPerson = (NonNaturalPerson) right.getPerson_gid();
+                        if (nonPerson.getPoc_gid() != null && nonPerson.getPoc_gid() > 0) {
+                            person = (NaturalPerson) landRecordsService.findPersonGidById(nonPerson.getPoc_gid());
+                        }
+                    } else {
+                        person = (NaturalPerson) right.getPerson_gid();
+                    }
+
+                    // Validate non natural
+                    if (nonPerson != null) {
+                        if (StringUtils.isEmpty(nonPerson.getInstitutionName())) {
+                            errors.add("Enter Non Natural person name");
+                        }
+                        if (StringUtils.isEmpty(nonPerson.getAddress())) {
+                            errors.add("Enter Non Natural person address");
+                        }
+                        if (nonPerson.getGroupType() == null) {
+                            errors.add("Select type of Non Natural person");
+                        }
+                    }
+
+                    // Validate natural
+                    if (person != null) {
+                        if (StringUtils.isEmpty(person.getFirstName())) {
+                            errors.add("Enter first name for " + getPersonName(person));
+                        }
+                        if (StringUtils.isEmpty(person.getLastName())) {
+                            errors.add("Enter last name for " + getPersonName(person));
+                        }
+                        if (person.getPersonSubType() == null && right.getShare_type().getGid() != ShareType.SHARE_INSTITUTION) {
+                            errors.add("Select owner type for " + getPersonName(person));
+                        }
+                        if (person.getIdType() == null) {
+                            errors.add("Select ID type for " + getPersonName(person));
+                        }
+                        if (StringUtils.isEmpty(person.getIdNumber())) {
+                            errors.add("Enter ID number for " + getPersonName(person));
+                        }
+                        if (person.getGender() == null) {
+                            errors.add("Select gender for " + getPersonName(person));
+                        }
+                        if (person.getDob() == null) {
+                            errors.add("Enter date of birth for " + getPersonName(person));
+                        }
+                        if (person.getCitizenship_id() == null) {
+                            errors.add("Select citizenship for " + getPersonName(person));
+                        }
+                        if (person.getMarital_status() == null) {
+                            errors.add("Select marital status for " + getPersonName(person));
+                        }
+
+                        // Check share size
+                        if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_JOINT
+                                && person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
+                                && StringUtils.isEmpty(person.getShare())) {
+                            errors.add("Enter share size for " + getPersonName(person));
+                        }
+
+                        // Check age
+                        int age = 0;
+
+                        // Give priority to dob to calculate age
+                        if (person.getDob() != null) {
+                            age = DateUtils.getAge(person.getDob());
+                        } else {
+                            age = person.getAge();
+                        }
+
+                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
+                                && right.getShare_type().getGid() == ShareType.SHARE_GUARDIAN) {
+                            if (age > 17) {
+                                errors.add(getPersonName(person) + " age must be less than 18 years");
+                            }
+                        } else if (age < 18 || age > 110) {
+                            errors.add(getPersonName(person) + " age must be between 18 and 110 years");
+                        }
+
+                        // Check person photo
+                        SourceDocument photo = landRecordsService.getdocumentByPerson(person.getPerson_gid());
+                        if (photo == null) {
+                            errors.add("Add photo for " + getPersonName(person));
+                        }
+                    }
+                }
+            }
+
+            return errors;
+
+        } catch (Exception e) {
+            logger.error(e);
+            errors.clear();
+            errors.add("Failed to validate claim");
+            return errors;
+        }
+    }
+
+    private String getPersonName(NaturalPerson person) {
+        String name = "";
+        if (!StringUtils.isEmpty(person.getFirstName())) {
+            name = person.getFirstName();
+        }
+        if (!StringUtils.isEmpty(person.getLastName())) {
+            if (name.length() > 0) {
+                name = name + " " + person.getLastName();
+            } else {
+                name = person.getLastName();
+            }
+        }
+        return name;
+    }
+
+    private String generateUkaNumber(SpatialUnitTable claim) {
+        Project project = projectService.findProjectByName(claim.getProject());
         String village = project.getProjectAreas().get(0).getVillage_code();
 
         try {
-            for (int i = 0; i < projecthamlets.size(); i++) {
-                String hamletCode = projecthamlets.get(i).getHamletCode();
-                int count = 0;
-                List<Long> usinList = landRecordsService.findUsinforUKAGeneration(projectName, hamletCode);
-
-                for (int j = 0; j < usinList.size(); j++) {
-                    String uka = village + "/" + hamletCode + "/" + (projecthamlets.get(i).getCount() + j + 1);
-                    count = projecthamlets.get(i).getCount() + j + 1;
-                    landRecordsService.updateUKAnumber(usinList.get(j), uka);
-                }
-                if (count != 0) {
-                    projecthamlets.get(i).setCount(count);
-                    projectService.saveHamlet(projecthamlets.get(i));
-                }
-            }
-            return true;
+            return landRecordsService.findNextUkaNumber(village + "/" + claim.getHamlet_Id().getHamletCode() + "/");
         } catch (Exception e) {
             logger.error(e);
-            return false;
+            return null;
         }
     }
 
     @RequestMapping(value = "/viewer/landrecords/updatehamlet/{project}", method = RequestMethod.POST)
     @ResponseBody
     public boolean updateUkaNum(HttpServletRequest request, HttpServletResponse response, @PathVariable String project) {
-        long Usin = 0;
-        long HamletId = 0;
-
-        //SpatialUnitTable spatialunit=new SpatialUnitTable();
         try {
-            Usin = ServletRequestUtils.getRequiredLongParameter(request, "primeryky");
-            HamletId = ServletRequestUtils.getRequiredLongParameter(request, "hamlet_id");
+            long usin = ServletRequestUtils.getRequiredLongParameter(request, "primeryky");
+            long hamletId = ServletRequestUtils.getRequiredLongParameter(request, "cbxHamlets");
 
-            String village = projectService.findProjectByName(project).getProjectAreas().get(0).getVillage_code();
-            SpatialUnitTable spatialunit = landRecordsService.findSpatialUnitbyId(Usin).get(0);
-            ProjectHamlet projectHamlet = projectService.findHamletById(HamletId);
-            spatialunit.setHamlet_Id(projectHamlet);
+            SpatialUnitTable claim = landRecordsService.findSpatialUnitbyId(usin).get(0);
 
-            spatialunit.setPropertyno(village + "/" + projectHamlet.getHamletCode() + "/" + (projectHamlet.getCount() + 1));
-            projectHamlet.setCount(projectHamlet.getCount() + 1);
-            projectService.addHamlets(projectHamlet);
-            return landRecordsService.update(spatialunit);
+            if (claim.getHamlet_Id().getId() == hamletId) {
+                return true;
+            }
+
+            ProjectHamlet hamlet = projectService.findHamletById(hamletId);
+            long oldHamletId = claim.getHamlet_Id().getId();
+
+            claim.setHamlet_Id(hamlet);
+
+            if (!StringUtils.isEmpty(claim.getPropertyno()) && hamletId != oldHamletId) {
+                claim.setPropertyno(generateUkaNumber(claim));
+            }
+
+            return landRecordsService.update(claim);
 
         } catch (ServletRequestBindingException e) {
-
             logger.error(e);
             return false;
-
         }
     }
 
@@ -1981,7 +2618,7 @@ public class LandRecordsController {
             spi.setPersonName(name);
             spi.setUsin(Usin);
             spi.setDob(dobDate);
-            
+
             if (genderCode != 0) {
                 spi.setGender(landRecordsService.findGenderById(genderCode));
             } else {
@@ -2066,202 +2703,6 @@ public class LandRecordsController {
     public boolean deleteDeceasedPerson(@PathVariable Long id) {
 
         return landRecordsService.deleteDeceasedPerson(id);
-
-    }
-
-    @RequestMapping(value = "/viewer/landrecords/validator/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public String personValidator(@PathVariable Long id) {
-
-        List<SocialTenureRelationship> socialTenureRelationshiptmp = landRecordsService.findAllSocialTenureByUsin(id);
-        List<SpatialunitPersonwithinterest> spatialunitPersonwithinteresttmp = landRecordsService.findpersonInterestByUsin(id);
-        List<SpatialunitDeceasedPerson> spatialunitDeceasedPersontmp = landRecordsService.findDeceasedPersonByUsin(id);
-        List<String> personSubType = new ArrayList<String>();
-        List<String> personAge = new ArrayList<String>();
-
-        for (int i = 0; i < socialTenureRelationshiptmp.size(); i++) {
-
-            if (socialTenureRelationshiptmp.get(i).getPerson_gid().getPerson_type_gid().getPerson_type_gid() == 1) {
-
-                NaturalPerson naturalPerson = landRecordsService.naturalPersonById(socialTenureRelationshiptmp.get(i).getPerson_gid().getPerson_gid()).get(0);
-
-                try {
-                    if (naturalPerson.getPersonSubType().getPerson_type_gid() == 3) {
-                        personSubType.add("Owner");
-                        if (naturalPerson.getAge() >= 18) {
-                            personAge.add("Adult");
-                        } else {
-                            personAge.add("Minor");
-                        }
-                    } else if (naturalPerson.getPersonSubType().getPerson_type_gid() == 4) {
-                        personSubType.add("Admin");
-                    } else if (naturalPerson.getPersonSubType().getPerson_type_gid() == 5) {
-                        personSubType.add("Guard");
-                    }
-                } catch (Exception e) {
-                    logger.error(e);
-                    return "Please specify person subtype";
-                }
-
-                if (personSubType.size() == socialTenureRelationshiptmp.size()) {
-                    //Case-1 for Owner and Admin
-                    if (socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 4) {
-                        if ((!personSubType.contains("Guard") && personSubType.contains("Owner")) && personSubType.contains("Admin")) {
-                            if (spatialunitDeceasedPersontmp.size() > 1) {
-                                return "Only one deceased persons are allowed";
-                            }
-                            /*if(personSubType.size()>2)
-								return "Only two administrators are allowed";*/
-                            if (personAge.contains("Adult")) {
-
-                                if (spatialunitDeceasedPersontmp.size() > 0) {
-                                    /*if(spatialunitPersonwithinteresttmp.size()>0)
-									{
-										return "Success";
-
-									}
-									else{
-										return "Add person of interest";
-
-									}*/
-                                    return "Success";
-                                } else {
-
-                                    return "Add deceased person";
-                                }
-                            } else {
-
-                                return "Owner is minor";
-                            }
-
-                        } else if ((!personSubType.contains("Guard") && !personSubType.contains("Owner")) && personSubType.contains("Admin")) {
-
-                            if (spatialunitDeceasedPersontmp.size() > 0 && spatialunitDeceasedPersontmp.size() <= 1) {
-
-                                return "Success";
-                            } else if (spatialunitDeceasedPersontmp.size() > 1) {
-                                return "Only one deceased persons are allowed";
-                            } else if (spatialunitDeceasedPersontmp.size() == 0) {
-                                return "Add deceased person";
-
-                            }
-                        } else {
-                            return "Tenure type is tenancy in probate,provide inputs accordingly";
-                        }
-
-                    }
-
-                    // Case-2 for Only Owner
-                    if (socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 1 || socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 2 || socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 3) {
-                        if ((!personSubType.contains("Admin") && !personSubType.contains("Guard")) && personSubType.contains("Owner")) {
-                            if (spatialunitDeceasedPersontmp.size() > 0) {
-                                return "Remove deceased person";
-                            } else if (personAge.contains("Minor")) {
-                                return "All owner must be adult";
-                            } else if (socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 2) {
-                                if (personSubType.size() == 1) {
-                                    return "Success";
-                                } else {
-                                    return "For the selected tenure number of Owner must be one";
-                                }
-
-                            } else if ((socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 3 || socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 1)) {
-                                if (personSubType.size() >= 2) {
-                                    return "Success";
-                                } else {
-                                    return "For the selected tenure number of Owner must be more than one";
-                                }
-
-                            }
-                            /*else {
-								
-								return "Condition not fulfilled";
-							}*/
-                        } else {
-
-                            return "Tenure Mismatched";
-                        }
-                    }
-
-                    /*	// Case-3  Only Admin
-					if(personSubType.contains("Admin") && !personSubType.contains("Owner") && !personSubType.contains("Guard"))
-					{
-						
-						if(spatialunitDeceasedPersontmp.size()>0 && spatialunitDeceasedPersontmp.size()<=2)
-						{
-						
-							return "Success";
-						}
-						else if(spatialunitDeceasedPersontmp.size()>2)
-						{
-							return "Only two deceased persons are allowed";
-						}
-						else if(spatialunitDeceasedPersontmp.size()==0)
-						{
-							return "Add deceased person";
-
-						}
-
-					}
-					else{
-						return "Tenure type is tenancy in probate,provide inputs accordingly";
-					}*/
-                    // Case-4 Owner And Guardian
-                    if (socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 5) {
-                        if (personSubType.contains("Guard") && personSubType.contains("Owner") && !personSubType.contains("Admin")) {
-
-                            if (spatialunitDeceasedPersontmp.size() > 0) {
-                                return "Remove deceased person";
-                            } else if (personAge.contains("Adult")) {
-                                return "All Owner must be minor";
-                            } else if (spatialunitPersonwithinteresttmp.size() > 0) {
-                                return "Remove person of interest";
-
-                            } else {
-
-                                return "Success";
-                            }
-
-                        } else {
-
-                            return "Tenure type is Guardian(minor),provide inputs accordingly";
-                        }
-
-                    }
-
-                    /*	// Case-5 Admin And Guardian
-					if(personSubType.contains("Guard") && personSubType.contains("Admin") && !personSubType.contains("Owner")){
-
-						if(spatialunitDeceasedPersontmp.size()>0){
-
-							return "Remove guardian";
-						}
-						else{
-							return "Remove administrator and add Minor";
-						}
-
-					}
-
-					// Case-6 Admin And Guardian and Owner
-
-					if(personSubType.contains("Guard") && personSubType.contains("Admin") && personSubType.contains("Owner"))
-					{
-						return "Invalid Data";	
-
-					}*/
-                }
-
-            } else if (socialTenureRelationshiptmp.get(i).getPerson_gid().getPerson_type_gid().getPerson_type_gid() == 2) {
-                if (socialTenureRelationshiptmp.get(i).getShare_type().getGid() == 6) {
-                    return "Success";
-                } else {
-                    return "Tenure Mismatched";
-                }
-            }
-
-        }
-
-        return "Invalid Data";
 
     }
 

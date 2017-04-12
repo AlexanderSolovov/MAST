@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.rmsi.mast.studio.dao.hibernate.GenericHibernateDAO;
+import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.viewer.dao.LandRecordsDao;
 
@@ -43,9 +44,8 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
     public boolean updateApprove(Long id) {
 
         try {
-            int finalstatus = 4;
             Query query = getEntityManager().createQuery("UPDATE SpatialUnitTable su SET su.status.workflowStatusId = :statusId  where su.usin = :usin");
-            int updateFinal = query.setParameter("statusId", finalstatus).setParameter("usin", id).executeUpdate();
+            int updateFinal = query.setParameter("statusId", Status.STATUS_APPROVED).setParameter("usin", id).executeUpdate();
 
             if (updateFinal > 0) {
                 return true;
@@ -145,9 +145,7 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
 
     @Override
     public List<SpatialUnitTable> findSpatialUnitById(Long id) {
-
         try {
-
             Query query = getEntityManager().createQuery("Select su from SpatialUnitTable su where su.usin = :usin and su.active = true");
             @SuppressWarnings("unchecked")
             List<SpatialUnitTable> spatialUnitlst = query.setParameter("usin", id).getResultList();
@@ -158,11 +156,38 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
                 return null;
             }
         } catch (Exception e) {
-
             logger.error(e);
             return null;
         }
+    }
+    
+    @Override
+    public String findBiggestUkaNumber(String ukaPrefix){
+        try {
+            Query query = getEntityManager().createQuery("Select max(su.propertyno) from SpatialUnitTable su where su.propertyno like :ukaPrefix");
+            return (String)query.setParameter("ukaPrefix", ukaPrefix + "%").getSingleResult();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
 
+    @Override
+    public SpatialUnitTable getSpatialUnit(Long id) {
+        try {
+            Query query = getEntityManager().createQuery("Select su from SpatialUnitTable su where su.usin = :usin and su.active = true");
+            @SuppressWarnings("unchecked")
+            List<SpatialUnitTable> spatialUnitlst = query.setParameter("usin", id).getResultList();
+
+            if (spatialUnitlst.size() > 0) {
+                return spatialUnitlst.get(0);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
     }
 
     @Override
@@ -296,7 +321,7 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
             if (claimType != null && claimType.length() > 0) {
                 query.setParameter("claimType", claimType);
             }
-            
+
             @SuppressWarnings("unchecked")
             List<?> spatialUnit = query.getResultList();
             if (spatialUnit.size() > 0) {

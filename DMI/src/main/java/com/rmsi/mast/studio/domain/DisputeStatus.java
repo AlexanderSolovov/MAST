@@ -9,6 +9,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name="dispute_status")
 public class DisputeStatus implements Serializable {
+    public static final int STATUS_ACTIVE = 1;
+    public static final int STATUS_RESOLVED = 2;
+    
     private static final long serialVersionUID = 1L;
 
     @Id

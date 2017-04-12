@@ -38,7 +38,7 @@ public class SocialTenureRelationship implements Serializable {
     private Long usin;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "person_gid", updatable = false)
+    @JoinColumn(name = "person_gid")
     private Person person_gid;
 
     @ManyToOne
@@ -59,6 +59,9 @@ public class SocialTenureRelationship implements Serializable {
     
     @Column(name = "cert_number")
     private String certNumber;
+    
+    @Column(name = "file_number")
+    private String fileNumber;
     
     @Column(name = "ccro_issue_date")
     private Date certIssueDate;
@@ -102,6 +105,14 @@ public class SocialTenureRelationship implements Serializable {
 
     public void setCertNumber(String certNumber) {
         this.certNumber = certNumber;
+    }
+
+    public String getFileNumber() {
+        return fileNumber;
+    }
+
+    public void setFileNumber(String fileNumber) {
+        this.fileNumber = fileNumber;
     }
 
     public Date getCertIssueDate() {

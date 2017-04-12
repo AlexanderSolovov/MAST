@@ -54,16 +54,25 @@ var relationshipTypes = null;
 var claimType = null;
 var idTypesList = null;
 var docTypesList = null;
+var editList = null;
+var disputeTypesList = null;
 
-var CLAIM_TYPE_NEW = "new";
+var RESPONSE_OK = "OK";
+var CLAIM_TYPE_NEW = "newClaim";
 var CLAIM_TYPE_EXISTING = "existingClaim";
 var CLAIM_TYPE_DISPUTED = "dispute";
 var CLAIM_TYPE_UNCLAIMED = "unclaimed";
+var CLAIM_STATUS_NEW = 1;
+var CLAIM_STATUS_APPROVED = 2;
+var CLAIM_STATUS_VALIDATED = 3;
+var CLAIM_STATUS_REFERRED = 4;
+var CLAIM_STATUS_DENIED = 5;
+var landRecordsInitialized = false;
 
 function LandRecords(_selectedItem) {
     selectedItem = _selectedItem;
     URL = "landrecords/spatialunit/default/" + 0;
-    if (activeProject != "") {
+    if (activeProject !== null && activeProject !== "") {
         URL = "landrecords/spatialunit/" + activeProject + "/" + 0;
     }
     jQuery.ajax({
@@ -100,64 +109,68 @@ function LandRecords(_selectedItem) {
         }
     });
 
-    displayRefreshedLandRecords('All');
-    $('body').find("#editattribute-dialog-form").remove();
+    displayRefreshedLandRecords();
 }
 
-function displayRefreshedLandRecords(_landRecord) {
+function displayRefreshedLandRecords() {
     var URL = "landrecords/";
     if (activeProject != "") {
         URL = "landrecords/" + activeProject;
+    }
+
+    if (!landRecordsInitialized) {
+        landRecordsInitialized = true;
+        jQuery("#landrecords-div").empty();
+        jQuery.get("resources/templates/viewer/" + selectedItem + ".html", function (template) {
+            jQuery("#landrecords-div").append(template);
+            jQuery('#landRecordsFormdiv').css("visibility", "visible");
+            jQuery("#landRecordsTable").show();
+        });
     }
 
     jQuery.ajax({
         url: URL,
         success: function (data) {
             projList = data;
-            jQuery("#landrecords-div").empty();
-            jQuery.get("resources/templates/viewer/" + selectedItem + ".html", function (template) {
-                jQuery("#landrecords-div").append(template);
-                jQuery('#landRecordsFormdiv').css("visibility", "visible");
-                jQuery("#landRecordsRowData").empty();
-                jQuery("#landRecordsTable").show();
 
-                if (dataList.length != 0 && dataList.length != undefined) {
-                    jQuery("#landRecordsAttrTemplate").tmpl(dataList).appendTo("#landRecordsRowData");
-                }
+            jQuery("#landRecordsRowData").empty();
 
-                jQuery("#status_id").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-                jQuery("#claim_type").append(jQuery("<option></option>").attr("value", "").text("Please Select"));
+            if (dataList.length != 0 && dataList.length != undefined) {
+                jQuery("#landRecordsAttrTemplate").tmpl(dataList).appendTo("#landRecordsRowData");
+            }
 
-                jQuery.each(statusList, function (i, statusobj) {
-                    jQuery("#status_id").append(jQuery("<option></option>").attr("value", statusobj.workflowStatusId).text(statusobj.workflowStatus));
-                });
+            jQuery("#status_id").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
+            jQuery("#claim_type").append(jQuery("<option></option>").attr("value", "").text("Please Select"));
 
-                jQuery.each(claimTypes, function (i, claimType) {
-                    jQuery("#claim_type").append(jQuery("<option></option>").attr("value", claimType.code).text(claimType.name));
-                });
+            jQuery.each(statusList, function (i, statusobj) {
+                jQuery("#status_id").append(jQuery("<option></option>").attr("value", statusobj.workflowStatusId).text(statusobj.workflowStatus));
+            });
 
-                jQuery("#records_from").val(records_from + 1);
-                jQuery("#records_to").val(records_from + 20);
+            jQuery.each(claimTypes, function (i, claimType) {
+                jQuery("#claim_type").append(jQuery("<option></option>").attr("value", claimType.code).text(claimType.name));
+            });
 
-                if (totalRecords <= records_from + 20)
-                    jQuery("#records_to").val(totalRecords);
+            jQuery("#records_from").val(records_from + 1);
+            jQuery("#records_to").val(records_from + 20);
 
-                jQuery('#records_all').val(totalRecords);
-                jQuery("#projectName").text(data.name);
-                jQuery("#country").text(data.countryName);
-                jQuery("#region").text(data.region);
-                jQuery("#district").text(data.districtName);
-                jQuery("#village").text(data.village);
-                jQuery("#hamlet").text("--");
+            if (totalRecords <= records_from + 20)
+                jQuery("#records_to").val(totalRecords);
 
-                if (data.hamlet != "" && data.hamlet != null) {
-                    jQuery("#hamlet").text(data.hamlet);
-                }
+            jQuery('#records_all').val(totalRecords);
+            jQuery("#projectName").text(data.name);
+            jQuery("#country").text(data.countryName);
+            jQuery("#region").text(data.region);
+            jQuery("#district").text(data.districtName);
+            jQuery("#village").text(data.village);
+            jQuery("#hamlet").text("--");
 
-                $("#landRecordsTable").trigger("update");
-                $("#landRecordsTable").tablesorter({
-                    sortList: [[0, 1], [1, 0]]
-                });
+            if (data.hamlet != "" && data.hamlet != null) {
+                jQuery("#hamlet").text(data.hamlet);
+            }
+
+            $("#landRecordsTable").trigger("update");
+            $("#landRecordsTable").tablesorter({
+                sortList: [[0, 1], [1, 0]]
             });
         }
     });
@@ -178,7 +191,7 @@ function displayRefreshedTenure() {
 }
 
 function editAttributeNew(usin, statusId) {
-    if (statusId == 1 || statusId == 4 || statusId == 6) {
+    if (statusId === CLAIM_STATUS_NEW || statusId === CLAIM_STATUS_REFERRED || statusId === CLAIM_STATUS_VALIDATED) {
         read = false;
     } else {
         read = true;
@@ -270,9 +283,15 @@ function editAttribute(id) {
         }
     });
 
-    jQuery("#primary").val(id);
-    jQuery('#liNonNatural').show();
-    jQuery('#liNatural').show();
+    $("#primary").val(id);
+    $('#liNonNatural').hide();
+    $('#liNatural').hide();
+    $("#btnNewTenure").show();
+    $("#btnNewNonNatural").show();
+    $("#btnAddExistingPerson").hide();
+    $(".addRepresentative").hide();
+    $("#divRegisterDispute").show();
+    associatednaturalPersonList = null;
 
     jQuery.ajax({
         url: "landrecords/socialtenure/" + id,
@@ -284,34 +303,44 @@ function editAttribute(id) {
             jQuery("#non_naturalpersonRowData").empty();
             jQuery("#associatedNaturalRowData").empty();
 
-            if (data != '') {
+            if (data !== null && data.length > 0) {
+                $("#btnNewTenure").hide();
                 jQuery("#tenureinfoTemplate").tmpl(data[0]).appendTo("#tenureRowData");
                 for (i = 0; i < data.length; i++) {
-                    if (data[i].person_gid.person_type_gid.person_type_gid == 1) {
-                        if (data[i].person_gid.active == true) {
-                            jQuery('#liNonNatural').hide();
-                            $(".showNatural").show();
-                            jQuery("#naturalpersonTemplate").tmpl(data[i]).appendTo("#naturalpersonRowData");
-                        }
-                    }
-
-                    if (data[i].person_gid.person_type_gid.person_type_gid == 2) {
-                        if (data[i].person_gid.active == true) {
-                            jQuery('#liNatural').hide();
+                    if (data[i].share_type.gid === 6) {
+                        // Non-natural
+                        $('#liNonNatural').show();
+                        if (data[i].person_gid !== null && data[i].person_gid.active === true) {
                             jQuery("#non_naturalpersonTemplate").tmpl(data[i]).appendTo("#non_naturalpersonRowData");
+
+                            $("#btnNewNonNatural").hide();
+                            $(".addRepresentative").hide();
 
                             var poc_gid = data[i].person_gid.poc_gid;
 
-                            jQuery.ajax({
-                                url: "landrecords/naturalpersondata/" + poc_gid,
-                                async: false,
-                                success: function (result) {
-                                    associatednaturalPersonList = result;
-                                    $(".delHide").hide();
-                                    $('#naturalTable td:nth-child(8)').hide();
-                                    jQuery("#naturalpersonTemplate_2").tmpl(associatednaturalPersonList).appendTo("#associatedNaturalRowData");
-                                }
-                            });
+                            if (poc_gid !== null) {
+                                jQuery.ajax({
+                                    url: "landrecords/naturalpersondata/" + poc_gid,
+                                    async: false,
+                                    success: function (result) {
+                                        if (result === null || result === "") {
+                                            $(".addRepresentative").show();
+                                        }
+                                        associatednaturalPersonList = result;
+                                        jQuery("#naturalpersonTemplate_2").tmpl(associatednaturalPersonList).appendTo("#associatedNaturalRowData");
+                                    }
+                                });
+                            } else {
+                                // Show add representative button
+                                $(".addRepresentative").show();
+                            }
+                        }
+                    } else {
+                        // Natural person
+                        $('#liNatural').show();
+                        if (data[i].person_gid !== null && data[i].person_gid.active === true) {
+                            $(".showNatural").show();
+                            jQuery("#naturalpersonTemplate").tmpl(data[i]).appendTo("#naturalpersonRowData");
                         }
                     }
                 }
@@ -354,7 +383,7 @@ function editAttribute(id) {
             jQuery("#witness_1").empty();
             jQuery("#witness_1").append(jQuery("<option></option>").attr("value", "").text("Please Select"));
 
-            if (adjudicatorList.length != 0 && adjudicatorList.length != undefined) {
+            if (adjudicatorList.length !== 0 && adjudicatorList.length !== undefined) {
                 jQuery.each(adjudicatorList, function (i, adjobj) {
                     jQuery("#witness_1").append(jQuery("<option></option>").attr("value", adjobj.adjudicatorName).text(adjobj.adjudicatorName));
                 });
@@ -363,30 +392,30 @@ function editAttribute(id) {
             jQuery("#witness_2").empty();
             jQuery("#witness_2").append(jQuery("<option></option>").attr("value", "").text("Please Select"));
 
-            if (adjudicatorList.length != 0 && adjudicatorList.length != undefined) {
+            if (adjudicatorList.length !== 0 && adjudicatorList.length !== undefined) {
                 jQuery.each(adjudicatorList, function (i, adjobj) {
                     jQuery("#witness_2").append(jQuery("<option></option>").attr("value", adjobj.adjudicatorName).text(adjobj.adjudicatorName));
                 });
             }
 
-            if (data[0].landType != null) {
+            if (data[0].landType !== null) {
                 jQuery("#land_type").val(data[0].landType.landTypeId);
             }
 
             jQuery("#existing_use").val(0);
             jQuery("#proposed_use").val(0);
 
-            if (data[0].existingUse != null) {
+            if (data[0].existingUse !== null) {
                 jQuery("#existing_use").val(data[0].existingUse.landUseTypeId);
             }
 
-            if (data[0].proposedUse != null) {
+            if (data[0].proposedUse !== null) {
                 jQuery("#proposed_use").val(data[0].proposedUse.landUseTypeId);
             }
 
             jQuery("#survey_date").val(data[0].surveyDate);
 
-            if (adjudicatorList.length != 0 && adjudicatorList.length != undefined) {
+            if (adjudicatorList.length !== 0 && adjudicatorList.length !== undefined) {
                 jQuery("#witness_1").val(data[0].witness_1);
                 jQuery("#witness_2").val(data[0].witness_2);
             } else {
@@ -403,6 +432,27 @@ function editAttribute(id) {
         }
     });
 
+    jQuery.ajax({
+        url: "landrecords/disputes/" + id,
+        async: false,
+        success: function (data) {
+            $("#divDisputes").empty();
+            jQuery("#disputeTemplate").tmpl(data).appendTo("#divDisputes");
+            if (data && data.length > 0) {
+                $("#btnAddExistingPerson").show();
+                $.each(data, function (i, dispute) {
+                    if (dispute.status.code === 1) {
+                        $("#divRegisterDispute").hide();
+                        return;
+                    }
+                });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to get list of disputes');
+        }
+    });
+
     editAttrDialog = $("#editattribute-dialog-form").dialog({
         autoOpen: false,
         height: 520,
@@ -411,11 +461,6 @@ function editAttribute(id) {
         width: 880,
         resizable: false,
         modal: true,
-        buttons: {
-            "Update Attributes": function () {
-                updateattributesGen();
-            }
-        },
         close: function () {
             editAttrDialog.dialog("destroy");
             $('#tabs').tabs("select", "#tabGeneralInfo");
@@ -446,8 +491,11 @@ function editAttribute(id) {
     }
 
     editAttrDialog.dialog("open");
-    jQuery('.gendisable').attr('disabled', false);
-    jQuery('.justread').attr('readonly', false);
+
+    $('.gendisable').attr('disabled', false);
+    $('.justread').attr('readonly', false);
+    $(".showNon").show();
+    $(".showAssociate").show();
     $(".hideNatural").hide();
     $(".hideAssociate").hide();
     $('#associatedNaturalTable td:nth-child(7)').hide();
@@ -458,10 +506,11 @@ function editAttribute(id) {
     $('#naturalTable td:nth-child(10)').show();
     $('#naturalTable td:nth-child(11)').show();
     $(".hideNon").hide();
-    $('#non_naturalTable td:nth-child(7)').hide();
+    $('#non_naturalTable td:nth-child(8)').hide();
     $(".showTenure").show();
-    $('#tenureTable td:nth-child(6)').show();
     $('#tenureTable td:nth-child(7)').show();
+    $('#tenureTable td:nth-child(8)').hide();
+    $('#tenureTable th:nth-child(8)').hide();
     $(".showMul").show();
     $('#multimediaTable td:nth-child(6)').show();
     $('#multimediaTable td:nth-child(5)').show();
@@ -476,24 +525,22 @@ function editAttribute(id) {
     $('#deceasedTable td:nth-child(5)').show();
     $('#deceasedTable td:nth-child(4)').show();
     $(".hideTenure").hide();
-    $('#tenureTable td:nth-child(8)').hide();
-    $(".showTenure").show();
+    $('#tenureTable td:nth-child(9)').hide();
     $(".hideMul").hide();
     $('#multimediaTable td:nth-child(8)').hide();
     $(".showMul").show();
     $(".showAddPerson").show();
-    $(".showNonAddPerson").show();
     $(".hideNew").show();
-
+    
     if (read) {
-        $('.ui-dialog-buttonpane button:contains("Update")').button().hide();
+        $('.ui-dialog-buttonpane button').button().hide();
         $(".hideNatural").show();
         $(".hideAssociate").show();
         $('#associatedNaturalTable td:nth-child(7)').show();
         $(".hideNon").show();
-        $('#non_naturalTable td:nth-child(7)').show();
+        $('#non_naturalTable td:nth-child(8)').show();
         $(".hideTenure").show();
-        $('#tenureTable td:nth-child(8)').show();
+        $('#tenureTable td:nth-child(9)').show();
         $(".hideMul").show();
         $('#multimediaTable td:nth-child(8)').show();
         jQuery('.gendisable').attr('disabled', true);
@@ -512,8 +559,9 @@ function editAttribute(id) {
         $('#non_naturalTable td:nth-child(5)').hide();
         $('#non_naturalTable td:nth-child(6)').hide();
         $(".showTenure").hide();
-        $('#tenureTable td:nth-child(6)').hide();
         $('#tenureTable td:nth-child(7)').hide();
+        $('#tenureTable td:nth-child(8)').hide();
+        $('#tenureTable th:nth-child(8)').hide();
         $(".showMul").hide();
         $('#multimediaTable td:nth-child(6)').hide();
         $('#multimediaTable td:nth-child(5)').hide();
@@ -528,73 +576,124 @@ function editAttribute(id) {
         $('#deceasedTable td:nth-child(5)').hide();
         $('#deceasedTable td:nth-child(4)').hide();
         $(".showAddPerson").hide();
-        $(".showNonAddPerson").hide();
         $(".hideNew").hide();
+        $(".addRepresentative").hide();
+        $("#btnNewNonNatural").hide();
+        $("#btnAddExistingPerson").hide();
+        $("#btnNewTenure").hide();
+        $("#divRegisterDispute").hide();
     }
 }
 
-function editHamlet(Id, statusId) {
-    if (statusId == 1) {
-        jQuery.ajax({
-            url: "landrecords/hamletbyusin/" + Id,
-            async: false,
-            success: function (data) {
-                selectedHamlet = data;
-            }
-        });
+function editHamlet(usin) {
+    jQuery.ajax({
+        url: "landrecords/hamletbyusin/" + usin,
+        async: false,
+        success: function (data) {
+            selectedHamlet = data;
+        }
+    });
 
-        jQuery.ajax({
-            url: "landrecords/hamletname/" + activeProject,
-            async: false,
-            success: function (data) {
-                hamletList = data;
-                jQuery("#hamlet_id").empty();
-                if (selectedHamlet[0].hamlet_Id != null) {
-                    jQuery("#hamlet_id").append(jQuery("<option></option>").attr("value", selectedHamlet[0].hamlet_Id.id).text(selectedHamlet[0].hamlet_Id.hamletName));
-                    jQuery.each(hamletList, function (i, hamletobj) {
-                        if (hamletobj.hamletName != selectedHamlet[0].hamlet_Id.hamletName)
-                            jQuery("#hamlet_id").append(jQuery("<option></option>").attr("value", hamletobj.id).text(hamletobj.hamletName));
-                    });
-                } else {
-                    jQuery("#hamlet_id").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-                    jQuery.each(hamletList, function (i, hamletobj) {
-                        jQuery("#hamlet_id").append(jQuery("<option></option>").attr("value", hamletobj.id).text(hamletobj.hamletName));
-                    });
+    jQuery.ajax({
+        url: "landrecords/hamletname/" + activeProject,
+        async: false,
+        success: function (data) {
+            hamletList = data;
+            jQuery("#cbxHamlets").empty();
+            if (selectedHamlet[0].hamlet_Id != null) {
+                jQuery.each(hamletList, function (i, hamletobj) {
+                    jQuery("#cbxHamlets").append(jQuery("<option></option>").attr("value", hamletobj.id).text(hamletobj.hamletName));
+                });
+                $("#cbxHamlets").val(selectedHamlet[0].hamlet_Id.id);
+            } else {
+                jQuery("#cbxHamlets").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
+                jQuery.each(hamletList, function (i, hamletobj) {
+                    jQuery("#cbxHamlets").append(jQuery("<option></option>").attr("value", hamletobj.id).text(hamletobj.hamletName));
+                });
+            }
+        }
+    });
+
+    genAttrDialog = $("#attribute-dialog-form").dialog({
+        autoOpen: false,
+        height: 200,
+        width: 234,
+        resizable: true,
+        modal: true,
+        buttons: {
+            "Update": function () {
+                if (selectedHamlet[0].hamlet_Id !== null)
+                    updateHamlet(usin, selectedHamlet[0].hamlet_Id.id);
+                else {
+                    updateHamlet(usin, "0");
                 }
             }
-        });
+        }
+    });
+    genAttrDialog.dialog("open");
+}
 
-        genAttrDialog = $("#attribute-dialog-form").dialog({
-            autoOpen: false,
-            height: 200,
-            width: 234,
-            resizable: true,
-            modal: true,
-            buttons: {
-                "Update": function () {
-                    if (selectedHamlet[0].hamlet_Id != null)
-                        updateHamlet(Id, selectedHamlet[0].hamlet_Id.id);
-                    else {
-                        updateHamlet(Id, 0);
+function referClaim(usin) {
+    jConfirm('Are you sure you want to refer this claim to VC/VLC?', 'Confirmation', function (response) {
+        if (response) {
+            $.ajax({
+                url: "landrecords/refer/" + usin,
+                async: false,
+                success: function (result) {
+                    if (result === RESPONSE_OK) {
+                        jAlert('Claim has been successfully referred to VC/VLC', 'Info');
+                        refreshLandRecords();
+                    } else {
+                        jAlert(result, 'Error');
                     }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to refer claim');
                 }
-            },
-            close: function () {
-                genAttrDialog.dialog("destroy");
-            }
-        });
-        genAttrDialog.dialog("open");
+            });
+        }
+    });
+}
+
+function markClaimValidated(usin) {
+    jConfirm('Are you sure you want to mark this claim as validated?<br>UKA number will be assigned.', 'Confirmation', function (response) {
+        if (response) {
+            $.ajax({
+                url: "landrecords/makevalidated/" + usin,
+                async: false,
+                success: function (result) {
+                    if (result === "" || result.length === 0) {
+                        jAlert('Claim has been successfully marked as validated.');
+                        if (searchRecords !== null) {
+                            spatialSearch(records_from);
+                        } else {
+                            spatialRecords(records_from);
+                        }
+                    } else {
+                        showErrors(result);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to refer claim');
+                }
+            });
+        }
+    });
+}
+
+function refreshLandRecords() {
+    if (searchRecords !== null) {
+        spatialSearch(records_from);
     } else {
-        jAlert("Update is only applicable for New Status", "Alert");
+        spatialRecords(records_from);
     }
 }
 
-function updateHamlet(Id, hamId) {
-    var dropdownId = jQuery("#hamlet_id").val();
-    if (dropdownId == hamId || dropdownId == 0) {
+function updateHamlet(usin, hamId) {
+    if ($("#cbxHamlets").val() === "" + hamId || $("#cbxHamlets").val() === "0") {
         jAlert("Select another hamlet", "Alert");
     } else {
-        jQuery("#primeryky").val(Id);
+        jQuery("#primeryky").val(usin);
         jQuery.ajax({
             type: "POST",
             url: "landrecords/updatehamlet/" + activeProject,
@@ -602,11 +701,7 @@ function updateHamlet(Id, hamId) {
             success: function (result) {
                 if (result) {
                     jAlert("Data Successfully saved", "Hamlet");
-                    if (searchRecords != null) {
-                        spatialSearch(records_from);
-                    } else {
-                        spatialRecords(records_from);
-                    }
+                    refreshLandRecords();
                     genAttrDialog.dialog("destroy");
                     genAttrDialog.dialog("close");
                 } else {
@@ -680,76 +775,69 @@ function updateattributes() {
     });
 }
 
-function updateStatus(id, statusId) {
-    if (statusId == 4) {
-        jAlert('Status is already Approved', 'Status');
-    } else if (statusId == 1) {
-        jConfirm('Do you want to <strong> Approve </strong> selected Spatial Unit? ', 'Update Confirmation', function (response) {
-            if (response) {
-                jQuery.ajax({
-                    type: "GET",
-                    url: "landrecords/updateapprove/" + id,
-                    success: function (result) {
-                        if (result) {
-                            if (searchRecords != null) {
-                                spatialSearch(records_from);
-                            } else {
-                                spatialRecords(records_from);
-                            }
+function approveClaim(id) {
+    jConfirm('Do you want to <strong>Approve</strong> selected claim?<br>No further changes will be possible.', 'Confirmation', function (response) {
+        if (response) {
+            jQuery.ajax({
+                type: "GET",
+                url: "landrecords/approve/" + id,
+                success: function (result) {
+                    if (result === "" || result.length === 0) {
+                        jAlert('Claim has been successfully approved.');
+                        if (searchRecords !== null) {
+                            spatialSearch(records_from);
                         } else {
-                            jAlert('Request not completed');
+                            spatialRecords(records_from);
                         }
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        jAlert('Request not completed');
+                    } else {
+                        showErrors(result);
                     }
-                });
-            }
-        });
-    } else {
-        jAlert('Action is only applicable for New Status', 'Alert');
-    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to approve claim');
+                }
+            });
+        }
+    });
 }
 
-function rejectStatus(id, statusId) {
-    if (statusId == 5) {
-        jAlert('Status is already Rejected', 'Status');
-    } else if (statusId == 1) {
-        jConfirm('Do you want to <strong> Reject </strong> selected Spatial Unit?', 'Update Confirmation', function (response) {
-            if (response) {
-                jQuery.ajax({
-                    type: "GET",
-                    url: "landrecords/rejectstatus/" + id,
-                    success: function (result) {
-                        if (result) {
-                            if (searchRecords != null) {
-                                spatialSearch(records_from);
-                            } else {
-                                spatialRecords(records_from);
-                            }
+function rejectClaim(id) {
+    jConfirm('Do you want to <strong>Deny</strong> selected claim?<br>No further changes will be possible.', 'Confirmation', function (response) {
+        if (response) {
+            jQuery.ajax({
+                type: "GET",
+                url: "landrecords/reject/" + id,
+                success: function (result) {
+                    if (result) {
+                        jAlert('Claim has been successfully denied.');
+                        if (searchRecords !== null) {
+                            spatialSearch(records_from);
                         } else {
-                            jAlert('Request not completed');
+                            spatialRecords(records_from);
                         }
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        jAlert('Request not completed');
+                    } else {
+                        jAlert('Failed to deny claim');
                     }
-                });
-            }
-        });
-    } else {
-        jAlert('Action is only applicable for New Status', 'Alert');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to deny claim');
+                }
+            });
+        }
+    });
+}
+
+function showErrors(errors){
+    if(errors !== null && errors.length > 0){
+        combinedErrors = "";
+        for(i=0; i < errors.length; i++){
+            combinedErrors = combinedErrors + "- " + errors[i] + "<br>"
+        }
+        jAlert(combinedErrors);
     }
 }
 
 function search() {
-    var usinStrid = $('#usinstr_id').val();
-    var ukaid = $('#uka_id').val();
-    var statusid = $('#status_id').val();
-    var claimTypeCode = $('#claim_type').val();
-    var todate = $('#to_id').val();
-    var fromdate = $('#from_id').val();
-
     jQuery.ajax({
         type: "POST",
         async: false,
@@ -768,51 +856,18 @@ function search() {
             if (result.length != undefined && result.length != 0) {
                 if (result != "") {
                     records_from = 0;
-                    jQuery("#landrecords-div").empty();
-                    jQuery.get("resources/templates/viewer/" + selectedItem + ".html;", function (template) {
-                        jQuery("#landrecords-div").append(template);
-                        jQuery('#landRecordsFormdiv').css("visibility", "visible");
-                        jQuery("#landRecordsRowData").empty();
-                        $('#usinstr_id').val(usinStrid);
-                        $('#uka_id').val(ukaid);
-                        $('#status_id').val(statusid);
-                        $('#claim_type').val(claimTypeCode);
-                        $('#to_id').val(todate);
-                        $('#from_id').val(fromdate);
+                    jQuery("#landRecordsRowData").empty();
+                    jQuery("#landRecordsAttrTemplate").tmpl(result).appendTo("#landRecordsRowData");
 
-                        jQuery("#landRecordsTable").show();
-                        jQuery("#landRecordsAttrTemplate").tmpl(result).appendTo("#landRecordsRowData");
-                        jQuery("#status_id").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-                        jQuery("#claim_type").append(jQuery("<option></option>").attr("value", "").text("Please Select"));
+                    jQuery("#records_from").val(records_from + 1);
+                    jQuery("#records_to").val(searchRecords);
+                    if (records_from + 20 <= searchRecords)
+                        $('#records_to').val(records_from + 20);
+                    jQuery('#records_all').val(searchRecords);
 
-                        jQuery.each(statusList, function (i, statusobj) {
-                            jQuery("#status_id").append(jQuery("<option></option>").attr("value", statusobj.workflowStatusId).text(statusobj.workflowStatus));
-                        });
-
-                        jQuery.each(claimTypes, function (i, claimType) {
-                            jQuery("#claim_type").append(jQuery("<option></option>").attr("value", claimType.code).text(claimType.name));
-                        });
-                        jQuery("#records_from").val(records_from + 1);
-                        jQuery("#records_to").val(searchRecords);
-                        if (records_from + 20 <= searchRecords)
-                            $('#records_to').val(records_from + 20);
-                        jQuery('#records_all').val(searchRecords);
-                        jQuery("#status_id").val(statusid);
-                        jQuery('#claim_type').val(claimTypeCode);
-                        jQuery("#projectName").text(projList.name);
-                        jQuery("#country").text(projList.countryName);
-                        jQuery("#region").text(projList.region);
-                        jQuery("#district").text(projList.districtName);
-                        jQuery("#village").text(projList.village);
-                        jQuery("#hamlet").text("--");
-                        if (projList.hamlet != "" && projList.hamlet != null) {
-                            jQuery("#hamlet").text(projList.hamlet);
-                        }
-
-                        $("#landRecordsTable").trigger("update");
-                        $("#landRecordsTable").tablesorter({
-                            sortList: [[0, 1], [1, 0]]
-                        });
+                    $("#landRecordsTable").trigger("update");
+                    $("#landRecordsTable").tablesorter({
+                        sortList: [[0, 1], [1, 0]]
                     });
                 } else {
                     jAlert("No Data Available", "Search");
@@ -827,7 +882,7 @@ function search() {
     });
 }
 
-function editNaturalData(id) {
+function editNaturalData(id, viewOnly) {
     jQuery(".hidden_alias").hide();
     displayAttributeCategory(2, id);
 
@@ -853,7 +908,6 @@ function editNaturalData(id) {
         success: function (data) {
             person_subtype = data;
         }
-
     });
 
     jQuery.ajax({
@@ -862,8 +916,9 @@ function editNaturalData(id) {
         success: function (data) {
             maritalList = data;
         }
-
     });
+
+    $("#imgPersonPhoto").attr("src", "");
 
     jQuery.ajax({
         url: "landrecords/citizenship/",
@@ -911,23 +966,23 @@ function editNaturalData(id) {
 
             });
 
-            if (data != null && data != "" && data != undefined) {
-                if (data[0].marital_status != null) {
+            if (data !== null && data !== "" && data !== undefined) {
+                if (data[0].marital_status !== null) {
                     jQuery("#marital_status").val(data[0].marital_status.maritalStatusId);
                 }
-                if (data[0].gender != null) {
+                if (data[0].gender !== null) {
                     jQuery("#gender").val(data[0].gender.genderId);
                 }
-                if (data[0].idType != null) {
+                if (data[0].idType !== null) {
                     jQuery("#idType").val(data[0].idType.code);
                 }
-                if (data[0].idNumber != null) {
+                if (data[0].idNumber !== null) {
                     jQuery("#idNumber").val(data[0].idNumber);
                 }
-                if (data[0].personSubType != null) {
+                if (data[0].personSubType !== null) {
                     jQuery("#person_subType").val(data[0].personSubType.person_type_gid);
                 }
-                if (data[0].citizenship_id != null) {
+                if (data[0].citizenship_id !== null) {
                     jQuery("#citizenship").val(data[0].citizenship_id.id);
                 }
 
@@ -939,7 +994,7 @@ function editNaturalData(id) {
                 jQuery("#mobile_natural").val(data[0].mobile);
                 $("#shareSize").val(data[0].share);
 
-                if (data[0].dob != null) {
+                if (data[0].dob !== null) {
                     jQuery("#dob").val(formatDate(data[0].dob));
                 } else {
                     jQuery("#dob").val("");
@@ -948,6 +1003,8 @@ function editNaturalData(id) {
                 $("#dob").live('click', function () {
                     $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
                 });
+
+                $("#imgPersonPhoto").attr("src", "landrecords/personphoto/" + id);
             }
         }
     });
@@ -959,7 +1016,7 @@ function editNaturalData(id) {
         resizable: false,
         modal: true,
         buttons: {
-            "Update Natural": function () {
+            "Save": function () {
                 updateAttributeNaturalPerson(false);
             }
         },
@@ -973,8 +1030,8 @@ function editNaturalData(id) {
     jQuery('.justread').attr('readonly', false);
     jQuery('.justdisable').attr('disabled', false);
 
-    if (read) {
-        $('.ui-dialog-buttonpane button:contains("Update Natural")').button().hide();
+    if (read || viewOnly) {
+        $('.ui-dialog-buttonpane button').button().hide();
         jQuery('.justread').attr('readonly', true);
         jQuery('.justdisable').attr('disabled', true);
     }
@@ -1076,28 +1133,41 @@ function editNonNatural(id) {
         }
     });
 
-    jQuery.ajax({
-        url: "landrecords/nonnaturalperson/" + id,
-        async: false,
-        success: function (data) {
-            jQuery("#institution").val(data[0].institutionName);
-            jQuery("#mobile_no").val(data[0].phoneNumber);
-            jQuery("#address").val(data[0].address);
-            jQuery("#non_natural_key").val(data[0].person_gid);
-            jQuery("#poc_id").val(data[0].poc_gid);
-            jQuery("#mobileGroupId").val(data[0].mobileGroupId);
-            jQuery("#group_type").empty();
-            jQuery("#group_type").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-            jQuery.each(groupTypeList, function (i, groupTypeobj) {
-                jQuery("#group_type").append(jQuery("<option></option>").attr("value", groupTypeobj.groupId).text(groupTypeobj.groupValue));
-
-            });
-            jQuery("#group_type").val(0);
-            if (data[0].groupType != null) {
-                jQuery("#group_type").val(data[0].groupType.groupId);
-            }
-        }
+    // reset form
+    $("#nonnatural_usin").val(editList[0].usin);
+    $("#group_type").empty();
+    $("#group_type").append($("<option></option>").attr("value", 0).text("Please Select"));
+    $.each(groupTypeList, function (i, groupTypeobj) {
+        $("#group_type").append($("<option></option>").attr("value", groupTypeobj.groupId).text(groupTypeobj.groupValue));
     });
+    $("#institution").val("");
+    $("#mobile_no").val("");
+    $("#address").val("");
+    $("#non_natural_key").val(id);
+    $("#poc_id").val(0);
+    $("#mobileGroupId").val("");
+    $("#group_type").val(0);
+
+    if (id > 0) {
+        jQuery.ajax({
+            url: "landrecords/nonnaturalperson/" + id,
+            async: false,
+            success: function (data) {
+                $("#institution").val(data[0].institutionName);
+                $("#mobile_no").val(data[0].phoneNumber);
+                $("#address").val(data[0].address);
+                $("#non_natural_key").val(data[0].person_gid);
+                if (data[0].poc_gid !== null && data[0].poc_gid !== "") {
+                    $("#poc_id").val(data[0].poc_gid);
+                }
+                $("#mobileGroupId").val(data[0].mobileGroupId);
+
+                if (data[0].groupType !== null) {
+                    jQuery("#group_type").val(data[0].groupType.groupId);
+                }
+            }
+        });
+    }
 
     nonnaturalPersonDialog = $("#non_naturalperson-dialog-form").dialog({
         autoOpen: false,
@@ -1106,7 +1176,7 @@ function editNonNatural(id) {
         resizable: false,
         modal: true,
         buttons: {
-            "Update Non-Natural": function () {
+            "Save": function () {
                 updateAttributeNonNaturalPerson();
             }
         },
@@ -1121,7 +1191,7 @@ function editNonNatural(id) {
     jQuery('.disablenon').attr('disabled', false);
 
     if (read) {
-        $('.ui-dialog-buttonpane button:contains("Update Non-Natural")').button().hide();
+        $('.ui-dialog-buttonpane button').button().hide();
         jQuery('.read-non').attr('readonly', true);
         jQuery('.disablenon').attr('disabled', true);
     }
@@ -1226,105 +1296,123 @@ function editTenure(id) {
         }
     });
 
+    // Reset tenure fields
+    $("#tenure_key").val(id);
+    $("#usin").val($("#primary").val());
     jQuery('.read-tenure').attr('disabled', false);
     jQuery('.tenure-read').attr('readonly', false);
+    $("#tenureclass_id").empty();
+    $("#lstAcquisitionTypes").empty();
+    $("#tenure_type").empty();
+    $("#lstRelationshipTypes").empty();
+    $("#txtCertNumber").val("");
+    $("#txtCertDate").val("");
+    $("#tenureDuration").val("");
+    $("#txtJuridicalArea").val("");
+    $("#txtCertNumber").val("");
 
-    jQuery.ajax({
-        url: "landrecords/socialtenure/edit/" + id,
-        async: false,
-        success: function (data) {
-            socialEditTenureList = data;
-            jQuery("#tenure_key").val(data[0].gid);
-            jQuery("#usin").val(data[0].usin);
-            jQuery("#tenureclass_id").empty();
-            jQuery("#lstAcquisitionTypes").empty();
-            jQuery("#tenure_type").empty();
-            jQuery("#lstRelationshipTypes").empty();
-            jQuery("#txtCertNumber").val("");
-            jQuery("#txtCertDate").val("");
-            jQuery("#tenureDuration").val("");
-            jQuery("#txtJuridicalArea").val("");
-            jQuery("#txtCertNumber").val("");
+    $("#tenure_type").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
+    $("#lstAcquisitionTypes").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
+    $("#lstRelationshipTypes").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
 
-            if (data[0].certNumber !== null) {
-                jQuery("#txtCertNumber").val(data[0].certNumber);
-            }
+    $('#lstRelationshipTypes').attr('disabled', false);
+    $('#tenureclass_id').attr('disabled', true);
 
-            if (data[0].certIssueDate !== null) {
-                jQuery("#txtCertDate").val(formatDate(data[0].certIssueDate));
-            }
-
-            if (data[0].tenureDuration !== null) {
-                jQuery("#tenureDuration").val(data[0].tenureDuration);
-            }
-
-            if (data[0].juridicalArea !== null) {
-                jQuery("#txtJuridicalArea").val(data[0].juridicalArea);
-            }
-
-            jQuery.each(tenureclassList, function (i, tenureclassobj) {
-                if (tenureclassList[i].active)
-                    jQuery("#tenureclass_id").append(jQuery("<option></option>").attr("value", tenureclassobj.tenureId).text(tenureclassobj.tenureClass));
+    if (claimType !== null) {
+        if (claimType === CLAIM_TYPE_EXISTING) {
+            $("#txtCertDate").live('click', function () {
+                $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
             });
+        } else {
+            $('#txtCertNumber').attr('disabled', true);
+            $('#txtCertDate').attr('disabled', true);
+            $("#txtJuridicalArea").attr('disabled', true);
+        }
+    }
 
-            jQuery("#tenure_type").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-            jQuery("#lstAcquisitionTypes").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-            jQuery("#lstRelationshipTypes").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
+    jQuery.each(tenureclassList, function (i, tenureclassobj) {
+        if (tenureclassList[i].active)
+            jQuery("#tenureclass_id").append(jQuery("<option></option>").attr("value", tenureclassobj.tenureId).text(tenureclassobj.tenureClass));
+    });
 
-            jQuery.each(tenuretypeList, function (i, tenureobj) {
-                jQuery("#tenure_type").append(jQuery("<option></option>").attr("value", tenureobj.gid).text(tenureobj.shareType));
-            });
+    $("#tenureclass_id").val("2");
 
-            jQuery.each(acquisitionTypes, function (i, acquisitionType) {
-                jQuery("#lstAcquisitionTypes").append(jQuery("<option></option>").attr("value", acquisitionType.code).text(acquisitionType.name));
-            });
+    jQuery.each(tenuretypeList, function (i, tenureobj) {
+        jQuery("#tenure_type").append(jQuery("<option></option>").attr("value", tenureobj.gid).text(tenureobj.shareType));
+    });
 
-            jQuery.each(relationshipTypes, function (i, relationshipType) {
-                jQuery("#lstRelationshipTypes").append(jQuery("<option></option>").attr("value", relationshipType.code).text(relationshipType.name));
-            });
+    jQuery.each(acquisitionTypes, function (i, acquisitionType) {
+        jQuery("#lstAcquisitionTypes").append(jQuery("<option></option>").attr("value", acquisitionType.code).text(acquisitionType.name));
+    });
 
-            if (data[0].share_type !== null) {
-                jQuery("#tenure_type").val(data[0].share_type.gid);
-                // Allow relationship selection only for joint tenancy (3)
-                if (data[0].share_type.gid !== 3)
-                    $('#lstRelationshipTypes').attr('disabled', true);
-            }
+    jQuery.each(relationshipTypes, function (i, relationshipType) {
+        jQuery("#lstRelationshipTypes").append(jQuery("<option></option>").attr("value", relationshipType.code).text(relationshipType.name));
+    });
 
-            jQuery("#tenure_type").live('change', function () {
-                // Allow relationship selection only for joint tenancy (3)
-                if ($(this).val() === "3")
-                    $('#lstRelationshipTypes').attr('disabled', false);
-                else {
-                    $('#lstRelationshipTypes').val(0);
-                    $('#lstRelationshipTypes').attr('disabled', true);
-                }
-            });
-
-            if (data[0].tenureclassId !== null) {
-                jQuery("#tenureclass_id").val(data[0].tenureclassId.tenureId);
-            }
-
-            if (data[0].acquisitionType !== null) {
-                jQuery("#lstAcquisitionTypes").val(data[0].acquisitionType.code);
-            }
-
-            if (data[0].relationshipType !== null) {
-                jQuery("#lstRelationshipTypes").val(data[0].relationshipType.code);
-            }
-
-            if (claimType !== null) {
-                if (claimType === CLAIM_TYPE_EXISTING) {
-                    $("#txtCertDate").live('click', function () {
-                        $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
-                    });
-                } else {
-                    $('#txtCertNumber').attr('disabled', true);
-                    $('#txtCertDate').attr('disabled', true);
-                    $("#txtJuridicalArea").attr('disabled', true);
-                }
-            }
+    $('#lstRelationshipTypes').attr('disabled', true);
+    jQuery("#tenure_type").live('change', function () {
+        // Allow relationship selection only for joint tenancy (3)
+        if ($(this).val() === "3")
+            $('#lstRelationshipTypes').attr('disabled', false);
+        else {
+            $('#lstRelationshipTypes').val(0);
+            $('#lstRelationshipTypes').attr('disabled', true);
         }
     });
+
+    socialEditTenureList = null;
+
+    if (id > 0) {
+        jQuery.ajax({
+            url: "landrecords/socialtenure/edit/" + id,
+            async: false,
+            success: function (data) {
+                if (data === "") {
+                    return;
+                }
+
+                socialEditTenureList = data;
+                jQuery("#tenure_key").val(data[0].gid);
+                jQuery("#usin").val(data[0].usin);
+
+                if (data[0].certNumber !== null) {
+                    jQuery("#txtCertNumber").val(data[0].certNumber);
+                }
+
+                if (data[0].certIssueDate !== null) {
+                    jQuery("#txtCertDate").val(formatDate(data[0].certIssueDate));
+                }
+
+                if (data[0].tenureDuration !== null) {
+                    jQuery("#tenureDuration").val(data[0].tenureDuration);
+                }
+
+                if (data[0].juridicalArea !== null) {
+                    jQuery("#txtJuridicalArea").val(data[0].juridicalArea);
+                }
+
+                if (data[0].share_type !== null) {
+                    jQuery("#tenure_type").val(data[0].share_type.gid);
+                    jQuery("#tenure_type").attr('disabled', true);
+                    // Allow relationship selection only for joint tenancy (3)
+                    if (data[0].share_type.gid === 3)
+                        $('#lstRelationshipTypes').attr('disabled', false);
+                }
+
+                if (data[0].tenureclassId !== null) {
+                    jQuery("#tenureclass_id").val(data[0].tenureclassId.tenureId);
+                }
+
+                if (data[0].acquisitionType !== null) {
+                    jQuery("#lstAcquisitionTypes").val(data[0].acquisitionType.code);
+                }
+
+                if (data[0].relationshipType !== null) {
+                    jQuery("#lstRelationshipTypes").val(data[0].relationshipType.code);
+                }
+            }
+        });
+    }
 
     tenureDialog = $("#tenureinfo-dialog-form").dialog({
         autoOpen: false,
@@ -1333,24 +1421,23 @@ function editTenure(id) {
         resizable: false,
         modal: true,
         buttons: {
-            "Update Tenure": function () {
+            "Save": function () {
                 updateAttributeTenure();
             }
         },
         close: function () {
             tenureDialog.dialog("destroy");
-            $('#tab-tenure').tabs("select", "#tabs-5");
         }
     });
 
     tenureDialog.dialog("open");
 
     if (read) {
-        $('.ui-dialog-buttonpane button:contains("Update Tenure")').button().hide();
+        $('.ui-dialog-buttonpane button').button().hide();
         jQuery('.read-tenure').attr('disabled', true);
         jQuery('.tenure-read').attr('readonly', true);
+        $('#tenureclass_id').attr('disabled', true);
     }
-    $('#tenureclass_id').attr('disabled', true);
 }
 
 function updateAttributeTenure() {
@@ -1367,7 +1454,7 @@ function updateAttributeTenure() {
 
     if ($("#edittenureinfoformID").valid()) {
         if ($("#tenure_type").val() == 0) {
-            alert("Please Select Tenure Type");
+            alert("Please select Type of Right");
         } else if ($("#lstAcquisitionTypes").val() == 0) {
             alert("Select Acquisition Type");
         } else {
@@ -1394,6 +1481,7 @@ function updateTenure() {
         success: function (data) {
             if (data) {
                 tenureDialog.dialog("destroy");
+                tenureDialog.dialog("close");
                 editAttribute(id);
                 jAlert('Data Sucessfully Saved', 'Tenure Info');
             } else {
@@ -1406,7 +1494,7 @@ function updateTenure() {
     });
 }
 
-function editMultimedia(id) {
+function editMultimedia(id, usin, reloadPropForm) {
     displayAttributeCategory(3, id);
 
     jQuery.ajax({
@@ -1417,32 +1505,44 @@ function editMultimedia(id) {
         }
     });
 
+    // Reset form
+    $("#docType").attr('readonly', false);
+    $("#docName").attr('readonly', false);
+    $("#docType").attr('disabled', false);
+    $("#docName").attr('disabled', false);
     $("#docType").empty();
     $("#docType").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
     $.each(docTypesList, function (i, docType) {
         if (docTypesList[i].active)
             $("#docType").append(jQuery("<option></option>").attr("value", docType.code).text(docType.name));
     });
+    $("#recordation").val(formatDate(new Date().getTime()));
+    $("#comments_multimedia").val("");
+    $("#primary_key").val(id);
+    if (usin === 0)
+        $("#usink").val(editList[0].usin);
+    else
+        $("#usink").val(usin);
+    $("#docName").val("");
+    $("#divNewFile").show();
 
-    jQuery.ajax({
-        url: "landrecords/multimedia/" + id,
-        async: false,
-        success: function (data) {
-            jQuery("#scanned_srs").val(data[0].scanedSourceDoc);
-            jQuery("#quality_type").val(data[0].qualityType);
-            jQuery("#recordation").val(data[0].recordation);
-            jQuery("#comments_multimedia").val(data[0].comments);
-            jQuery("#primary_key").val(data[0].gid);
-            jQuery("#multimedia_id").val(data[0].id);
-            jQuery("#source_path").val(data[0].locScannedSourceDoc);
-            jQuery("#usink").val(data[0].usin);
-            jQuery("#person_gidk").val(data[0].person_gid);
-            jQuery("#social_gid").val(data[0].social_tenure_gid);
-            if (data[0].documentType !== null) {
-                jQuery("#docType").val(data[0].documentType.code);
+    if (id > 0) {
+        $("#divNewFile").hide();
+        $.ajax({
+            url: "landrecords/multimedia/" + id,
+            async: false,
+            success: function (data) {
+                $("#recordation").val(data[0].recordation);
+                $("#comments_multimedia").val(data[0].comments);
+                $("#primary_key").val(data[0].gid);
+                $("#usink").val(data[0].usin);
+                $("#docName").val(data[0].entity_name);
+                if (data[0].documentType !== null) {
+                    $("#docType").val(data[0].documentType.code);
+                }
             }
-        }
-    });
+        });
+    }
 
     multimediaDialog = $("#multimedia-dialog-form").dialog({
         autoOpen: false,
@@ -1451,69 +1551,85 @@ function editMultimedia(id) {
         resizable: false,
         modal: true,
         buttons: {
-            "Update Multimedia": function () {
-                updateAttributeMultimedia();
+            "Save": function () {
+                updateMultimedia(reloadPropForm);
             }
         },
         close: function () {
             multimediaDialog.dialog("destroy");
-            $('#tab-multimedia').tabs("select", "#tabs-7");
         }
     });
 
     multimediaDialog.dialog("open");
-    jQuery('.read-mul').attr('readonly', false);
-    jQuery('.disablemul').attr('disabled', false);
+    $('.read-mul').attr('readonly', false);
+    $('.disablemul').attr('disabled', false);
 
     if (read) {
-        $('.ui-dialog-buttonpane button:contains("Update Multimedia")').button().hide();
-        jQuery('.read-mul').attr('readonly', true);
-        jQuery('.disablemul').attr('disabled', true);
+        $('.ui-dialog-buttonpane button').button().hide();
+        $('.read-mul').attr('readonly', true);
+        $('.disablemul').attr('disabled', true);
+        $("#docType").attr('disabled', true);
+        $("#docName").attr('disabled', true);
+        $("#docType").attr('readonly', true);
+        $("#docName").attr('readonly', true);
     }
 }
 
-function updateAttributeMultimedia() {
-    $("#editmultimediaformID").validate({
-        rules: {
-            scanned_srs: "required",
-        },
-        messages: {
-            scanned_srs: "Please enter Document Name",
-        },
-        ignore: []
-    });
-
-    if ($("#editmultimediaformID").valid()) {
-        updateMultimedia();
-    } else {
-        jAlert("Please Fill Mandatory fields in all tabs", "Message");
-    }
-
-}
-
-function updateMultimedia() {
-    var id = editList[0].usin;
+function updateMultimedia(reloadPropForm) {
     var length_multimedia = attributeList.length;
-    jQuery("#multimedia_length").val(0);
-    if (length_multimedia != 0 && length_multimedia != undefined)
-        jQuery("#multimedia_length").val(length_multimedia);
-    jQuery("#projectname_multimedia_key").val(project);
+    if (length_multimedia !== undefined)
+        length_multimedia = 0;
+
+    var file = $('#fileUploadNewDowcument')[0].files[0];
+
+    // Validate
+    if ($("#divNewFile").is(":visible")) {
+        if (typeof (file) === "undefined") {
+            jAlert('Please select the file to upload', 'Warning');
+            return;
+        } else if ((file.size) / 1024 >= 5120) {
+            jAlert('Please select file with size below 5Mb', 'Warning');
+            return;
+        }
+    }
+
+    if ($("#docName").val() === "") {
+        jAlert('Please enter document name', 'Warning');
+        return;
+    }
+
+    var formData = new FormData();
+
+    formData.append("newFile", file);
+    formData.append("primary_key", $("#primary_key").val());
+    formData.append("docType", $("#docType").val());
+    formData.append("docName", $("#docName").val());
+    formData.append("comments_multimedia", $("#comments_multimedia").val());
+    formData.append("usink", $("#usink").val());
+    formData.append("projectname_multimedia_key", project);
+    formData.append("multimedia_length", length_multimedia);
 
     jQuery.ajax({
         type: "POST",
         url: "landrecords/updatemultimedia",
-        data: jQuery("#editmultimediaformID").serialize(),
+        mimeType: "multipart/form-data",
+        contentType: false,
+        cache: false,
+        processData: false,
+        data: formData,
         success: function (data) {
             if (data) {
                 multimediaDialog.dialog("destroy");
-                editAttribute(id);
-                jAlert('Data Sucessfully Saved', 'Multimedia');
+                if (reloadPropForm) {
+                    editAttribute($("#docName").val());
+                }
+                jAlert('Document has been sucessfully saved', 'Info');
             } else {
                 jAlert('Request not completed');
             }
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
-            jAlert('Request not completed');
+            jAlert('Failed to save document');
         }
     });
 }
@@ -1583,13 +1699,13 @@ var deleteNonNatural = function (id, name) {
                 url: "landrecords/deletenonnatural/" + id,
                 success: function (result) {
                     if (result == true) {
-                        jAlert('Data Successfully Deleted', 'Multimedia');
+                        jAlert('Data Successfully Deleted', 'Info');
+                        $('#tabs').tabs("select", "#tabGeneralInfo");
                         editAttribute(usinid);
                     }
 
-                    if (result == false)
-                    {
-                        jAlert('Data Can not be deleted..Used by Project', 'Multimedia');
+                    if (result == false) {
+                        jAlert('Data Can not be deleted..Used by Project', 'Info');
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -1718,122 +1834,6 @@ function displayAttributeCategory(id, gid) {
                 }
             }
         }
-    } else {
-        $("#customtenure-div").append("<strong style='color:#1366c5'>No Attributes</strong>");
-        $("#customnatural-div").append("<strong style='color:#1366c5'>No Attributes</strong>");
-        $("#customnonnatural-div").append("<strong style='color:#1366c5'>No Attributes</strong>");
-        $("#custommultimedia-div").append("<strong style='color:#1366c5'>No Attributes</strong>");
-        $("#customgeneral-div").append("<strong style='color:#1366c5'>No Attributes</strong>");
-    }
-}
-
-function updatefinal(id, statusId) {
-    if (statusId == 7) {
-        jAlert('Status is already Final', 'Status');
-    } else {
-        jConfirm('Do you want to set selected Spatial Unit as <strong> Final </strong>?', 'Update Confirmation', function (response) {
-            if (response) {
-                jQuery.ajax({
-                    type: "GET",
-                    url: "landrecords/finalstatus/" + id,
-                    success: function (result) {
-                        if (result) {
-                            if (searchRecords != null) {
-                                spatialSearch(records_from);
-                            } else {
-                                spatialRecords(records_from);
-                            }
-                        } else {
-                            jAlert('Request not completed');
-                        }
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        jAlert('Request not completed');
-                    }
-                });
-            }
-        });
-    }
-}
-
-function uploadDocuments(id) {
-    usinId = id;
-    uploadDialog = $("#upload-dialog-form").dialog({
-        autoOpen: false,
-        height: 350,
-        width: 350,
-        resizable: false,
-        modal: true,
-        buttons: {
-            "Upload": function () {
-                uploadWebDocument();
-
-            },
-            "Cancel": function () {
-
-                displayRefreshedLandRecords("landRecords");
-                uploadDialog.dialog("destroy");
-                uploadDialog.dialog("close");
-                $('body').find("#upload-dialog-form").remove();
-            }
-        },
-        close: function () {
-            displayRefreshedLandRecords("landRecords");
-            uploadDialog.dialog("destroy");
-            uploadDialog.dialog("close");
-            $('body').find("#upload-dialog-form").remove();
-        }
-    });
-    uploadDialog.dialog("open");
-}
-
-function uploadWebDocument() {
-    var formData = new FormData();
-    var file = $('#fileUploadWeb')[0].files[0];
-    var name = $("#document_name").val();
-    var comments = $("#document_comments").val();
-
-    if (typeof (file) === "undefined") {
-        jAlert('Please Select file to upload', 'Upload Web Document ');
-    } else if (name === "") {
-        jAlert('Please Enter Document Name', 'Upload Web Document');
-    } else if ((file.size) / 1024 >= 5120) {
-        jAlert('Please Enter file size below 5Mb', 'Upload Web Document');
-    } else {
-        formData.append("spatialdata", file);
-        formData.append("document_name", name);
-        formData.append("document_comments", comments);
-        formData.append("Usin_Upload", usinId);
-
-        $.ajax({
-            url: 'landrecords/uploadweb/',
-            type: 'POST',
-            data: formData,
-            mimeType: "multipart/form-data",
-            contentType: false,
-            cache: false,
-            processData: false,
-            success: function (result, textStatus, jqXHR) {
-                if (result == "Success") {
-                    jAlert('File uploaded', 'upload');
-
-                    if (searchRecords != null) {
-                        spatialSearch(records_from);
-                    } else {
-                        spatialRecords(records_from);
-                    }
-
-                    uploadDialog.dialog("destroy");
-                    $('#uploaddocumentformID')[0].reset();
-                } else if (result == "Error") {
-                    jAlert("Error in Uploading", 'Upload');
-                    clearUploadDialog();
-                } else {
-                    jAlert("Data cannot be uploaded", "Upload");
-                    clearUploadDialog();
-                }
-            }
-        });
     }
 }
 
@@ -1841,37 +1841,6 @@ function clearUploadDialog() {
     uploadDialog.dialog("close");
     uploadDialog.dialog("destroy");
     $('#uploaddocumentformID')[0].reset();
-}
-
-function adjudicateStatus(id, statusId) {
-    if (statusId == 2) {
-        jAlert('Status is already Adjudicated', 'Status');
-    } else if (statusId == 1 || statusId == 4) {
-        jConfirm('Do you want <strong> Adjudicate </strong> selected Spatial Unit?', 'Update Confirmation', function (response) {
-            if (response) {
-                jQuery.ajax({
-                    type: "GET",
-                    url: "landrecords/adjudicatestatus/" + id,
-                    success: function (result) {
-                        if (result) {
-                            if (searchRecords != null) {
-                                spatialSearch(records_from);
-                            } else {
-                                spatialRecords(records_from);
-                            }
-                        } else {
-                            jAlert('Request not completed');
-                        }
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        jAlert('Request not completed');
-                    }
-                });
-            }
-        });
-    } else {
-        jAlert('Action is only applicable for New and Approved Status', 'Alert');
-    }
 }
 
 function viewMultimedia(id) {
@@ -2087,56 +2056,49 @@ function defaultProject() {
     document.location.href = "http://" + location.host + "/mast/viewer/";
 }
 
-function addNaturalPerson(empty) {
-    var idUsin = editList[0].usin;
+function addNaturalPerson() {
+    $("#deletedNaturalpersonRowData").empty();
+
     jQuery.ajax({
-        url: "landrecords/shownatural/" + idUsin,
+        url: "landrecords/showndisputers/" + editList[0].usin,
         async: false,
-        success: function (shownaturaldata) {
-            DeletedNaturalList = shownaturaldata;
+        success: function (persons) {
+            if (persons === "" || persons.length < 0) {
+                jAlert("No existing persons found", "Info");
+            } else {
+                $("#naturalpersonTemplate_add").tmpl(persons).appendTo("#deletedNaturalpersonRowData");
+                addDeletedNaturalDialog = $("#deletednat-dialog-form").dialog({
+                    autoOpen: false,
+                    height: 300,
+                    width: 500,
+                    resizable: false,
+                    modal: true,
+                    buttons: {
+                        "Close": function () {
+                            addDeletedNaturalDialog.dialog("close");
+                            addDeletedNaturalDialog.dialog("destroy");
+                        }
+                    }
+                });
+                addDeletedNaturalDialog.dialog("open");
+            }
         }
     });
-
-    jQuery("#deletedNaturalpersonRowData").empty();
-
-    if (DeletedNaturalList.toString() == "") {
-        if (empty != "empty")
-            jAlert("No Records Exists", "Natural Person");
-    } else {
-        jQuery("#naturalpersonTemplate_add").tmpl(DeletedNaturalList).appendTo("#deletedNaturalpersonRowData");
-        addDeletedNaturalDialog = $("#deletednat-dialog-form").dialog({
-            autoOpen: false,
-            height: 200,
-            width: 500,
-            resizable: false,
-            modal: true,
-            buttons: {
-                "Close": function () {
-                    addDeletedNaturalDialog.dialog("close");
-                    addDeletedNaturalDialog.dialog("destroy");
-                }
-            }
-        });
-        addDeletedNaturalDialog.dialog("open");
-    }
 }
 
-function addDeletedNatural(personGid) {
+function addExistingPerson(personGid) {
     var id = editList[0].usin;
     jQuery.ajax({
-        url: "landrecords/addnatural/" + personGid,
+        url: "landrecords/addexistingperson/" + editList[0].usin + "/" + personGid,
         async: false,
         success: function (result) {
             if (result) {
-                jAlert('Data Successfully Added', 'Natural Person');
-                if (DeletedNaturalList.length == 1) {
-                    addDeletedNaturalDialog.dialog("close");
-                    addDeletedNaturalDialog.dialog("destroy");
-                }
-                addNaturalPerson("empty");
+                jAlert('Person has been successfully added', 'Info');
+                addDeletedNaturalDialog.dialog("close");
+                addDeletedNaturalDialog.dialog("destroy");
                 editAttribute(id);
             } else {
-                jAlert('Error in Adding Data', 'Natural Person');
+                jAlert('Failed to add person', 'Error');
             }
         }
     });
@@ -2290,9 +2252,11 @@ function addPerson() {
     addPersonDialog.dialog("open");
 }
 
-function addNewNaturalPerson() {
+function addNewNaturalPerson(parentNonNaturalId, disputeId) {
     naturalAdditonalAttributes();
-    jQuery(".hidden_alias").show();
+    $(".hidden_alias").show();
+    $("#parentNonNaturalId").val(parentNonNaturalId);
+    $("#personDisputeId").val(disputeId);
 
     $.ajax({
         url: "landrecords/idtype/",
@@ -2350,7 +2314,7 @@ function addNewNaturalPerson() {
             jQuery("#person_subType").empty();
             jQuery("#person_subType").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
             jQuery.each(person_subtype, function (i, personSubtypeobj) {
-                if (personSubtypeobj.person_type_gid != 1 && personSubtypeobj.person_type_gid != 2)
+                if (personSubtypeobj.person_type_gid !== 1 && personSubtypeobj.person_type_gid !== 2)
                     jQuery("#person_subType").append(jQuery("<option></option>").attr("value", personSubtypeobj.person_type_gid).text(personSubtypeobj.personType));
             });
         }
@@ -2361,6 +2325,7 @@ function addNewNaturalPerson() {
     });
 
     document.getElementById("editNaturalPersonformID").reset();
+
     naturalPersonDialog = $("#naturalperson-dialog-form").dialog({
         autoOpen: false,
         height: 450,
@@ -2406,250 +2371,6 @@ function updateNewNaturalPerson() {
             }
         }
     });
-}
-
-function editAdminData(adminId) {
-    administratorID = adminId;
-
-    jQuery.ajax({
-        url: "landrecords/gendertype/",
-        async: false,
-        success: function (data) {
-            genderList = null;
-            genderList = data;
-        }
-    });
-
-    jQuery.ajax({
-        url: "landrecords/maritalstatus/",
-        async: false,
-        success: function (data) {
-            maritalList = null;
-            maritalList = data;
-        }
-    });
-
-    jQuery.ajax({
-        url: "landrecords/administrator/" + administratorID,
-        async: false,
-        success: function (data) {
-            jQuery("#admin_gender").empty();
-            jQuery("#admin_gender").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-            jQuery.each(genderList, function (i, genderobj) {
-                jQuery("#admin_gender").append(jQuery("<option></option>").attr("value", genderobj.genderId).text(genderobj.gender));
-
-            });
-
-            jQuery("#admin_marital_status").empty();
-            jQuery("#admin_marital_status").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
-            jQuery.each(maritalList, function (i, maritalobj) {
-                jQuery("#admin_marital_status").append(jQuery("<option></option>").attr("value", maritalobj.maritalStatusId).text(maritalobj.maritalStatus));
-
-            });
-
-            jQuery("#admin_resident").empty();
-            jQuery("#admin_resident").append(jQuery("<option></option>").attr("value", 1).text("Yes"));
-            jQuery("#admin_resident").append(jQuery("<option></option>").attr("value", 0).text("No"));
-
-            if (data != null && data != "" && data != undefined) {
-                if (data.maritalstatus != null) {
-                    jQuery("#admin_marital_status").val(data.maritalstatus.maritalStatusId);
-                }
-
-                if (data.gender != null) {
-                    jQuery("#admin_gender").val(data.gender.genderId);
-                }
-
-                jQuery("#adminId").val(adminId);
-                jQuery("#admin_fname").val(data.firstname);
-                jQuery("#admin_mname").val(data.middlename);
-                jQuery("#admin_lname").val(data.lastname);
-                jQuery("#admin_mobile").val(data.phonenumber);
-
-                if (data.age != 0) {
-                    jQuery("#admin_age").val(data.age);
-                } else {
-                    jQuery("#admin_age").val();
-                }
-
-                jQuery("#admin_resident").val(0);
-
-                if (data.resident == true) {
-                    jQuery("#admin_resident").val(1);
-                }
-
-                jQuery("#admin_citizenship").val(data.citizenship);
-                jQuery("#admin_address").val(data.address);
-            }
-        }
-    });
-
-    if (adminId == 0)
-        document.getElementById("editadminformID").reset();
-
-    adminDialog = $("#admin-dialog-form").dialog({
-        autoOpen: false,
-        height: 450,
-        width: 350,
-        resizable: false,
-        modal: true,
-        buttons: {
-            "Update": function () {
-                validateAdminData();
-            },
-            "Cancel": function () {
-                adminDialog.dialog("destroy");
-                adminDialog.dialog("close");
-            }
-        },
-        close: function () {
-            adminDialog.dialog("destroy");
-        }
-    });
-
-    adminDialog.dialog("open");
-    jQuery('.readAdmin').attr('readonly', false);
-    jQuery('.disableAdmin').attr('disabled', false);
-
-    if (read) {
-        //jQuery(".hideButton").hide();
-        $('.ui-dialog-buttonpane button:contains("Update")').button().hide();
-        jQuery('.readAdmin').attr('readonly', true);
-        jQuery('.disableAdmin').attr('disabled', true);
-    }
-}
-
-function validateAdminData() {
-    $("#editadminformID").validate({
-        rules: {
-            admin_fname: "required",
-            admin_mname: "required",
-            admin_lname: "required",
-            admin_citizenship: "required",
-            admin_address: "required",
-        },
-        messages: {
-            admin_fname: "Enter First Name",
-            admin_mname: "Enter  Middle Name",
-            admin_lname: "Enter Last Type",
-            admin_citizenship: "Enter Citizenship Details",
-            admin_address: "Enter Address",
-        }
-    });
-
-    if ($("#editadminformID").valid()) {
-        if ($('#admin_gender').val() != 0) {
-            if ($('#admin_marital_status').val() != 0) {
-                updateAdminData(administratorID);
-            } else {
-                alert("Please select Marital Status");
-            }
-        } else {
-            alert("Please select gender");
-        }
-    } else {
-        jAlert("Please Fill Mandatory fields", "Message");
-    }
-}
-
-function updateAdminData(id) {
-    var usin = editList[0].usin;
-    project = editList[0].project;
-    jQuery("#projectname_key").val(project);
-    jQuery("#admin_usin").val(usin);
-    jQuery.ajax({
-        type: "POST",
-        url: "landrecords/updateadmin/" + id,
-        async: false,
-        data: jQuery("#editadminformID").serialize(),
-        success: function (data) {
-            if (data) {
-                adminDialog.dialog("destroy");
-                editAttribute(usin);
-                jAlert('Data Sucessfully Saved', 'Admin Info');
-            } else {
-                jAlert('Request not completed');
-            }
-        },
-        error: function (XMLHttpRequest, textStatus, errorThrown) {
-            jAlert('Request not completed');
-        }
-    });
-}
-
-function addAdmin() {
-    add_adminDialog = $("#add_admin-dialog-form").dialog({
-        autoOpen: false,
-        height: 138,
-        width: 255,
-        resizable: false,
-        modal: true,
-        buttons: {
-            "Close": function () {
-                add_adminDialog.dialog("close");
-                add_adminDialog.dialog("destroy");
-            }
-        }
-    });
-    add_adminDialog.dialog("open");
-}
-
-function deleteAdmin(adminId, name) {
-    var usinid = editList[0].usin;
-    jConfirm('Are You Sure You Want To Delete : <strong>' + name + '</strong>', 'Delete Confirmation', function (response) {
-        if (response) {
-            jQuery.ajax({
-                type: 'GET',
-                url: "landrecords/deleteadmin/" + adminId,
-                success: function (result) {
-                    if (result) {
-                        jAlert('Data Successfully Deleted', 'Admin');
-                        editAttribute(usinid);
-                    } else {
-                        jAlert("Request not completed");
-                    }
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    jAlert('Request not completed');
-                }
-            });
-        }
-    });
-}
-
-function addExistingAdmin(empty) {
-    var idUsin = editList[0].usin;
-    jQuery.ajax({
-        url: "landrecords/existingadmin/" + idUsin,
-        async: false,
-        success: function (data) {
-            deletedAdminList = data;
-            jQuery("#deletedAdminTemplate").tmpl(deletedAdminList).appendTo("#deletedAdminRowData");
-        }
-    });
-
-    jQuery("#deletedAdminRowData").empty();
-
-    if (deletedAdminList.toString() == "") {
-        if (empty != "empty")
-            jAlert("No Records Exists", "Admin Info");
-    } else {
-        jQuery("#deletedAdminTemplate").tmpl(deletedAdminList).appendTo("#deletedAdminRowData");
-        addExistingAdminDialog = $("#deletedadmin-dialog-form").dialog({
-            autoOpen: false,
-            height: 200,
-            width: 500,
-            resizable: false,
-            modal: true,
-            buttons: {
-                "Close": function () {
-                    addExistingAdminDialog.dialog("close");
-                    addExistingAdminDialog.dialog("destroy");
-                }
-            },
-        });
-        addExistingAdminDialog.dialog("open");
-    }
 }
 
 function naturalPersonImage(person_gid, admin_id) {
@@ -2745,27 +2466,6 @@ function uploadNaturalImg(gid_Person, id_admin) {
     }
 }
 
-function addExisitingAdmin(adminId) {
-    var id = editList[0].usin;
-    jQuery.ajax({
-        url: "landrecords/addadmin/" + adminId,
-        async: false,
-        success: function (result) {
-            if (result) {
-                jAlert('Data Successfully Added', 'Admin Info');
-                if (deletedAdminList.length == 1) {
-                    addExistingAdminDialog.dialog("close");
-                    addExistingAdminDialog.dialog("destroy");
-                }
-                addExistingAdmin("empty");
-                editAttribute(id);
-            } else {
-                jAlert('Error in Adding Data', 'Admin Info');
-            }
-        }
-    });
-}
-
 function naturalAdditonalAttributes() {
     jQuery.ajax({
         url: "landrecords/naturalcustom/" + activeProject,
@@ -2804,24 +2504,6 @@ function naturalAdditonalAttributes() {
         }
         i = i + 2;
     }
-}
-
-function autogenerateUKA() {
-    jQuery.ajax({
-        url: "landrecords/autogenerateuka/" + activeProject,
-        async: false,
-        success: function (data) {
-            if (data) {
-                if (searchRecords != null) {
-                    spatialSearch(records_from);
-                } else {
-                    spatialRecords(records_from);
-                }
-            } else {
-                jAlert("Error in UKA Generation", "Alert");
-            }
-        }
-    });
 }
 
 function editnxtTokin(id) {
@@ -2917,7 +2599,7 @@ function editnxtTokin(id) {
     jQuery('.justread').attr('readonly', false);
 
     if (read) {
-        $('.ui-dialog-buttonpane button:contains("Update")').button().hide();
+        $('.ui-dialog-buttonpane button').button().hide();
         jQuery('.justread').attr('readonly', true);
     }
 }
@@ -3006,12 +2688,12 @@ function editDeceasedPerson(id) {
 
         deceasedPersonDialog = $("#deceased-dialog-form").dialog({
             autoOpen: false,
-            height: 275,
+            height: 320,
             width: 320,
             resizable: false,
             modal: true,
             buttons: {
-                "Update": function () {
+                "Save": function () {
                     updateDeceasedPerson(id);
                 }
             },
@@ -3027,7 +2709,7 @@ function editDeceasedPerson(id) {
         jQuery('.justread').attr('readonly', false);
 
         if (read) {
-            $('.ui-dialog-buttonpane button:contains("Update")').button().hide();
+            $('.ui-dialog-buttonpane button').button().hide();
             jQuery('.justread').attr('readonly', true);
         }
     }
@@ -3081,53 +2763,6 @@ function deleteDeceased(id, name) {
     });
 }
 
-var finalValidation = function () {
-
-    $('#validationCheck').show();
-    $(function () {
-        $("#dialog-confirm").dialog({
-            resizable: false,
-            height: 140,
-            modal: true,
-            buttons: {
-                "Validate and Update": function () {
-
-                    validationchecks();
-                    $(this).dialog("close");
-                },
-                Cancel: function () {
-                    $(this).dialog("close");
-                }
-            }
-        });
-    });
-};
-
-var validationchecks = function () {
-    var id = editList[0].usin;
-    jQuery.ajax({
-        url: "landrecords/validator/" + id,
-        async: false,
-        success: function (data) {
-            validator = data;
-            if (validator == 'Success')
-                jAlert('Data successfully validated', 'Validation Info');
-            else
-                jAlert(validator, 'Validation Error', 'Validation Error');
-        }
-    });
-
-    if (validator == 'Success') {
-        editAttrDialog.dialog("destroy");
-        $('#tabs').tabs("select", "#tabs-1");
-    }
-
-};
-
-function changeResident(val) {
-    $('#tenureclass_id').val(val.value);
-}
-
 function naturalPersonDeleteImage(person_gid, person_name) {
     var usin = editList[0].usin;
     jConfirm('Are You Sure You Want To Delete the Image of Person: <strong>' + person_name + '</strong>', 'Delete Confirmation', function (response) {
@@ -3148,6 +2783,184 @@ function naturalPersonDeleteImage(person_gid, person_name) {
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     jAlert('Request not completed');
+                }
+            });
+        }
+    });
+}
+
+function editDispute(id) {
+    if (disputeTypesList === null) {
+        jQuery.ajax({
+            url: "landrecords/disputetypes/",
+            async: false,
+            success: function (data) {
+                disputeTypesList = data;
+            }
+        });
+    }
+
+    // Reset form
+    $("#disputeId").val(id);
+    $("#disputeUsin").val(editList[0].usin);
+    $("#cbxDisputeTypes").val(0);
+    $("#txtDisputeDescription").val("");
+
+    // Fill the list
+    $("#cbxDisputeTypes").empty();
+    $("#cbxDisputeTypes").append($("<option></option>").attr("value", 0).text("Please Select"));
+    $.each(disputeTypesList, function (i, disputeType) {
+        $("#cbxDisputeTypes").append($("<option></option>").attr("value", disputeType.code).text(disputeType.name));
+    });
+
+    if (id > 0) {
+        $.ajax({
+            url: "landrecords/dispute/" + id,
+            async: false,
+            success: function (data) {
+                $("#txtDisputeDescription").val(data.description);
+                if (data.disputeType !== null) {
+                    $("#cbxDisputeTypes").val(data.disputeType.code);
+                }
+            }
+        });
+    }
+
+    disputeDialog = $("#dispute-dialog-form").dialog({
+        autoOpen: false,
+        height: 400,
+        width: 450,
+        resizable: false,
+        modal: true,
+        buttons: {
+            "Save": function () {
+                updateDispute();
+            }
+        },
+        close: function () {
+            disputeDialog.dialog("destroy");
+        }
+    });
+
+    disputeDialog.dialog("open");
+}
+
+function updateDispute() {
+    if ($("#cbxDisputeTypes").val() === "" || $("#cbxDisputeTypes").val() === "0") {
+        jAlert("Select dispute type");
+        return;
+    }
+
+    jQuery.ajax({
+        type: "POST",
+        url: "landrecords/updatedispute",
+        async: false,
+        data: $("#formDispute").serialize(),
+        success: function (data) {
+            if (data) {
+                if (data === RESPONSE_OK) {
+                    disputeDialog.dialog("destroy");
+                    disputeDialog.dialog("close");
+                    editAttribute(editList[0].usin);
+                    jAlert('Data Sucessfully Saved', 'Dispute');
+                } else {
+                    jAlert(data, 'Error');
+                }
+            } else {
+                jAlert('Failed to save dispute');
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to save dispute.');
+        }
+    });
+}
+
+function deleteDispute(id) {
+    jConfirm('Are you sure you want to delete dispute?', 'Delete Confirmation', function (response) {
+        if (response) {
+            $.ajax({
+                url: "landrecords/deletedispute/" + id,
+                async: false,
+                success: function (result) {
+                    if (result === RESPONSE_OK) {
+                        editAttribute(editList[0].usin);
+                        jAlert('Dispute has been successfully deleted', 'Info');
+                    } else {
+                        jAlert(result, 'Error');
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to delete dispute');
+                }
+            });
+        }
+    });
+}
+
+function showResolveDispute(id) {
+    $("#resolveDisputeId").val(id);
+    $("#resolutionText").val("");
+
+    disputeResolveDialog = $("#dispute-resolve-dialog-form").dialog({
+        autoOpen: false,
+        height: 350,
+        width: 450,
+        resizable: false,
+        modal: true,
+        buttons: {
+            "Save": function () {
+                resolveDispute();
+            }
+        },
+        close: function () {
+            disputeResolveDialog.dialog("destroy");
+        }
+    });
+
+    disputeResolveDialog.dialog("open");
+}
+
+function resolveDispute() {
+    $.ajax({
+        type: "POST",
+        url: "landrecords/resolvedispute",
+        async: false,
+        data: $("#formResolveDispute").serialize(),
+        success: function (result) {
+            if (result === RESPONSE_OK) {
+                disputeResolveDialog.dialog("destroy");
+                disputeResolveDialog.dialog("close");
+                editAttribute(editList[0].usin);
+                jAlert('Dispute has been successfully resolved', 'Info');
+            } else {
+                jAlert(result, 'Error');
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to delete dispute');
+        }
+    });
+}
+
+function deleteDisputingParty(disputeId, partyId) {
+    var usinid = editList[0].usin;
+
+    jConfirm('Are you sure you want to delete disputing person?', 'Confirmation', function (response) {
+        if (response) {
+            jQuery.ajax({
+                type: 'GET',
+                url: "landrecords/deleteDisputant/" + disputeId + "/" + partyId,
+                success: function (result) {
+                    if (result) {
+                        editAttribute(usinid);
+                        jAlert('Disputant has been successfully deleted', 'Info');
+                    } else {
+                        jAlert('Failed to delete disputant', 'Info');
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to delete disputant', 'Info');
                 }
             });
         }

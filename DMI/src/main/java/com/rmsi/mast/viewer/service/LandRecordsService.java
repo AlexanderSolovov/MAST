@@ -10,6 +10,8 @@ import com.rmsi.mast.studio.domain.AttributeCategory;
 import com.rmsi.mast.studio.domain.AttributeValues;
 import com.rmsi.mast.studio.domain.Citizenship;
 import com.rmsi.mast.studio.domain.ClaimType;
+import com.rmsi.mast.studio.domain.Dispute;
+import com.rmsi.mast.studio.domain.DisputeType;
 import com.rmsi.mast.studio.domain.DocumentType;
 import com.rmsi.mast.studio.domain.EducationLevel;
 import com.rmsi.mast.studio.domain.Gender;
@@ -53,14 +55,6 @@ public interface LandRecordsService {
     List<SpatialUnitTable> findAllSpatialUnit(String defaultProject);
 
     /**
-     * @return Approve Status and maintain History
-     * @param Usin and User_id
-     *
-     */
-    @Transactional
-    boolean updateApprove(Long id, long userid);
-
-    /**
      * @return Reject Status and maintain History
      * @param Usin and User_id
      *
@@ -95,6 +89,17 @@ public interface LandRecordsService {
      */
     List<SpatialUnitTable> findSpatialUnitbyId(Long id);
 
+    SpatialUnitTable getSpatialUnit(Long id);
+    
+    @Transactional
+    boolean referClaim(SpatialUnitTable claim, long userId);
+    
+    @Transactional
+    boolean makeClaimValidated(SpatialUnitTable claim, long userId);
+    
+    @Transactional
+    boolean approveClaim(SpatialUnitTable claim, long userId);
+    
     /**
      * @return spatial Unit result from spatial_unit Table
      *
@@ -178,6 +183,8 @@ public interface LandRecordsService {
      *
      */
     List<NonNaturalPerson> nonnaturalPersonById(Long id);
+    
+    NonNaturalPerson getNonNaturalPersonBy(Long id);
 
     /**
      * @return Boolean
@@ -187,7 +194,7 @@ public interface LandRecordsService {
      *
      */
     @Transactional
-    boolean editNonNatural(NonNaturalPerson nonnaturalPerson);
+    NonNaturalPerson editNonNatural(NonNaturalPerson nonnaturalPerson);
 
     /**
      * @return Share Object
@@ -203,7 +210,7 @@ public interface LandRecordsService {
      *
      */
     @Transactional
-    boolean edittenure(SocialTenureRelationship socialTenureRelationship);
+    SocialTenureRelationship edittenure(SocialTenureRelationship socialTenureRelationship);
 
     /**
      * @return Person Object
@@ -232,6 +239,8 @@ public interface LandRecordsService {
      *
      */
     List<SocialTenureRelationship> findSocialTenureByGid(Integer id);
+    
+    SocialTenureRelationship getSocialTenure(Integer id);
 
     /**
      * @return All shareType
@@ -246,6 +255,14 @@ public interface LandRecordsService {
      */
     List<SourceDocument> findMultimediaByUsin(Long id);
 
+    List<Dispute> getDisputes(long usin);
+    
+    List<DisputeType> getDisputeTypes();
+    
+    DisputeType getDisputeType(int code);
+    
+    Dispute getDispute(long id);
+    
     /**
      * @return All SourceDocument
      *
@@ -701,6 +718,8 @@ public interface LandRecordsService {
      * @return list<usin> to generate UKA
      */
     List<Long> findUsinforUKAGeneration(String project, String hamletCode);
+    
+    String findNextUkaNumber(String ukaPrefix);
 
     /**
      * @update Uka value
@@ -766,4 +785,16 @@ public interface LandRecordsService {
     List<IdType> getIdTypes();
     
     IdType getIdType(int code);
+    
+    @Transactional
+    Dispute updateDispute(Dispute dispute);
+    
+    @Transactional
+    boolean deleteDispute(Dispute dispute);
+    
+    @Transactional
+    boolean resolveDispute(Dispute dispute);
+    
+    @Transactional
+    boolean deleteDisputant(Long disputeId, Long partyId);
 }

@@ -26,6 +26,10 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
 
 	List<SpatialUnitTable> findSpatialUnitById(Long id);
 
+        String findBiggestUkaNumber(String ukaPrefix);
+        
+        SpatialUnitTable getSpatialUnit(Long id);
+        
 	String findukaNumberByUsin(Long id);
 
 	boolean updateFinal(Long id);

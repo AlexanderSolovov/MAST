@@ -32,6 +32,9 @@ ALTER TABLE public.project_hamlets
   ADD COLUMN hamlet_leader_name character varying(500);
 COMMENT ON COLUMN public.project_hamlets.hamlet_leader_name IS 'Hamlet leader name(s)';
 
+UPDATE public.project_hamlets SET hamlet_leader_name = '';
+UPDATE project_region SET district_name='Iringa (Rural)' WHERE district_name='Iringa (Rural)';
+
 -- ref data
 CREATE TABLE public.claim_type
 (
@@ -229,6 +232,7 @@ COMMENT ON COLUMN public.spatialunit_personwithinterest.relationship_type IS 'Re
 
 -- Ownership
 
+ALTER TABLE public.social_tenure_relationship ALTER COLUMN person_gid DROP NOT NULL;
 ALTER TABLE public.social_tenure_relationship ADD COLUMN relationship_type integer;
 ALTER TABLE public.social_tenure_relationship ADD COLUMN cert_number character varying(30);
 ALTER TABLE public.social_tenure_relationship ADD COLUMN juridical_area double precision;
@@ -265,15 +269,16 @@ DECLARE
   village_code character varying(10);
 
 BEGIN
-   IF (NEW.current_workflow_status_id = 2 AND NEW.claim_type = 'newClaim' AND EXISTS(SELECT 1 FROM public.social_tenure_relationship WHERE cert_number IS NULL AND usin = NEW.usin)) THEN
+   IF (NEW.current_workflow_status_id = 2 AND NEW.claim_type in ('newClaim','existingClaim') AND EXISTS(SELECT 1 FROM public.social_tenure_relationship WHERE (cert_number IS NULL OR cert_number = '') AND usin = NEW.usin AND isactive = 't')) THEN
 
-      SELECT pa.village_code INTO village_code FROM public.project_area pa WHERE pa.name = NEW.project_name LIMIT 1;
+      SELECT upper(pa.village_code) INTO village_code FROM public.project_area pa WHERE pa.name = NEW.project_name LIMIT 1;
       
       IF(village_code IS NULL) THEN
 	RAISE EXCEPTION 'Village code must be assigned in the project settings';
       ELSE
         SELECT nextval('ccro_number_seq') INTO ccro_number;
-        UPDATE public.social_tenure_relationship SET cert_number = village_code || '/' || ccro_number, file_number = 'IRD/HW/' || ccro_number WHERE cert_number IS NULL AND usin = NEW.usin;
+        UPDATE public.social_tenure_relationship SET cert_number = village_code || '/' || ccro_number, ccro_issue_date = now(), file_number = 'IRD/HW/' || ccro_number 
+	WHERE (cert_number IS NULL OR cert_number = '') AND usin = NEW.usin AND isactive = 't';
       END IF;
       
    END IF; 
@@ -367,7 +372,7 @@ CREATE TABLE public.dispute
    resolution_text text,
    resolution_date date,
    status int NOT NULL DEFAULT 1, 
-   deleted boolean DEFAULT true,
+   deleted boolean DEFAULT false,
    CONSTRAINT dispute_pk_id PRIMARY KEY (id), 
    CONSTRAINT dispute_fk_spatial_unit FOREIGN KEY (usin) REFERENCES public.spatial_unit (usin) ON UPDATE NO ACTION ON DELETE CASCADE, 
    CONSTRAINT dispute_fk_dispute_type FOREIGN KEY (dispute_type) REFERENCES public.dispute_type (code) ON UPDATE NO ACTION ON DELETE NO ACTION, 

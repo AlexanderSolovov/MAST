@@ -1,5 +1,6 @@
 package com.rmsi.mast.viewer.service.impl;
 
+import com.ibm.icu.util.Calendar;
 import com.rmsi.mast.studio.dao.AcquisitionTypeDao;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +14,9 @@ import com.rmsi.mast.studio.dao.AttributeCategoryDAO;
 import com.rmsi.mast.studio.dao.AttributeMasterDAO;
 import com.rmsi.mast.studio.dao.AttributeValueFetchDAO;
 import com.rmsi.mast.studio.dao.ClaimTypeDao;
+import com.rmsi.mast.studio.dao.DisputeDao;
+import com.rmsi.mast.studio.dao.DisputeStatusDao;
+import com.rmsi.mast.studio.dao.DisputeTypeDao;
 import com.rmsi.mast.studio.dao.DocumentTypeDao;
 import com.rmsi.mast.studio.dao.GenderDAO;
 import com.rmsi.mast.studio.dao.GroupTypeDAO;
@@ -40,6 +44,9 @@ import com.rmsi.mast.studio.domain.AttributeCategory;
 import com.rmsi.mast.studio.domain.AttributeValues;
 import com.rmsi.mast.studio.domain.Citizenship;
 import com.rmsi.mast.studio.domain.ClaimType;
+import com.rmsi.mast.studio.domain.Dispute;
+import com.rmsi.mast.studio.domain.DisputeStatus;
+import com.rmsi.mast.studio.domain.DisputeType;
 import com.rmsi.mast.studio.domain.DocumentType;
 import com.rmsi.mast.studio.domain.EducationLevel;
 import com.rmsi.mast.studio.domain.Gender;
@@ -83,6 +90,7 @@ import com.rmsi.mast.studio.mobile.dao.NonNaturalPersonDao;
 import com.rmsi.mast.studio.mobile.dao.SpatialUnitDao;
 import com.rmsi.mast.studio.mobile.dao.StatusDao;
 import com.rmsi.mast.studio.mobile.dao.SurveyProjectAttributeDao;
+import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.dao.LandRecordsDao;
 import com.rmsi.mast.viewer.dao.PersonAdministratorDao;
 import com.rmsi.mast.viewer.dao.SpatialStatusDao;
@@ -91,6 +99,7 @@ import com.rmsi.mast.viewer.dao.SpatialUnitPersonAdministratorDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitPersonWithInterestDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitTempDao;
 import com.rmsi.mast.viewer.service.LandRecordsService;
+import java.util.Locale;
 
 @Service
 public class LandRecordsServiceImpl implements LandRecordsService {
@@ -204,43 +213,44 @@ public class LandRecordsServiceImpl implements LandRecordsService {
 
     @Autowired
     private ClaimTypeDao claimTypeDao;
-    
+
     @Autowired
     private AcquisitionTypeDao acquisitionTypeDao;
-    
+
     @Autowired
     private RelationshipTypeDao relationshipTypeDao;
-    
+
     @Autowired
     private IdTypeDao idTypeDao;
-    
+
     @Autowired
     private DocumentTypeDao documentTypeDao;
-    
+
+    @Autowired
+    private DisputeDao disputeDao;
+
+    @Autowired
+    private DisputeTypeDao disputeTypeDao;
+
+    @Autowired
+    private DisputeStatusDao disputeStatusDao;
+
     @Override
     public List<SpatialUnitTable> findAllSpatialUnit(String defaultProject) {
         return landRecordsDao.findallspatialUnit(defaultProject);
     }
 
-    @Override
-    public boolean updateApprove(Long id, long userid) {
-
+    public void updateStatusHistory(Long id, long userid, int statusCode) {
         try {
-
             SpatialUnitStatusHistory spatialUnitStatusHistory = new SpatialUnitStatusHistory();
-
             spatialUnitStatusHistory.setStatus_change_time(new Date());
             spatialUnitStatusHistory.setUserid(userid);
             spatialUnitStatusHistory.setUsin(id);
-            spatialUnitStatusHistory.setWorkflow_status_id(4);
-
+            spatialUnitStatusHistory.setWorkflow_status_id(statusCode);
             sUnitHistoryDAO.makePersistent(spatialUnitStatusHistory);
         } catch (Exception e) {
-
             logger.error(e);
         }
-
-        return landRecordsDao.updateApprove(id);
     }
 
     @Override
@@ -249,25 +259,51 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public List<IdType> getIdTypes(){
+    public List<IdType> getIdTypes() {
         return idTypeDao.findAll();
     }
-    
+
     @Override
-    public IdType getIdType(int code){
+    public IdType getIdType(int code) {
         return idTypeDao.findById(code, false);
     }
-    
+
     @Override
-    public List<ClaimType> getClaimTypes(){
+    public List<ClaimType> getClaimTypes() {
         return claimTypeDao.findAll();
     }
-    
+
     @Override
     public List<SpatialUnitTable> findSpatialUnitbyId(Long id) {
         return landRecordsDao.findSpatialUnitById(id);
     }
 
+    @Override
+    public SpatialUnitTable getSpatialUnit(Long id) {
+        return landRecordsDao.getSpatialUnit(id);
+    }
+
+    @Override
+    public boolean referClaim(SpatialUnitTable claim, long userId) {
+        claim.setStatus(statusDao.getStatusById(Status.STATUS_REFERRED));
+        updateStatusHistory(claim.getUsin(), userId, Status.STATUS_REFERRED);
+        return update(claim);
+    }
+
+    @Override
+    public boolean makeClaimValidated(SpatialUnitTable claim, long userId) {
+        claim.setStatus(statusDao.getStatusById(Status.STATUS_VALIDATED));
+        updateStatusHistory(claim.getUsin(), userId, Status.STATUS_VALIDATED);
+        return update(claim);
+    }
+
+    @Override
+    public boolean approveClaim(SpatialUnitTable claim, long userId){
+        claim.setStatus(statusDao.getStatusById(Status.STATUS_APPROVED));
+        updateStatusHistory(claim.getUsin(), userId, Status.STATUS_APPROVED);
+        return update(claim);
+    }
+    
     @Override
     public List<SpatialUnitTable> findAllSpatialUnitlist() {
         return landRecordsDao.findAll();
@@ -283,7 +319,6 @@ public class LandRecordsServiceImpl implements LandRecordsService {
             logger.error(e);
             return false;
         }
-
     }
 
     @Override
@@ -353,16 +388,38 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public boolean editNonNatural(NonNaturalPerson nonnaturalPerson) {
+    public NonNaturalPerson getNonNaturalPersonBy(Long id) {
+        return nonNaturalPersonDao.findById(id, false);
+    }
+
+    @Override
+    public NonNaturalPerson editNonNatural(NonNaturalPerson nonnaturalPerson) {
         try {
-            nonNaturalPersonDao.makePersistent(nonnaturalPerson);
-            return true;
+            return nonNaturalPersonDao.makePersistent(nonnaturalPerson);
         } catch (Exception e) {
-
             logger.error(e);
-            return false;
+            return null;
         }
+    }
 
+    @Override
+    public List<Dispute> getDisputes(long usin) {
+        return disputeDao.findActiveByPropId(usin);
+    }
+
+    @Override
+    public Dispute getDispute(long id) {
+        return disputeDao.findById(id, false);
+    }
+
+    @Override
+    public List<DisputeType> getDisputeTypes() {
+        return disputeTypeDao.findAll();
+    }
+
+    @Override
+    public DisputeType getDisputeType(int code) {
+        return disputeTypeDao.findById(code, false);
     }
 
     @Override
@@ -378,14 +435,12 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public boolean edittenure(SocialTenureRelationship socialTenureRelationship) {
+    public SocialTenureRelationship edittenure(SocialTenureRelationship socialTenureRelationship) {
         try {
-            socialTenureRelationship = socialTenureRelationshipDAO.makePersistent(socialTenureRelationship);
-            return true;
+            return socialTenureRelationshipDAO.makePersistent(socialTenureRelationship);
         } catch (Exception e) {
-
             logger.error(e);
-            return false;
+            return null;
         }
     }
 
@@ -407,6 +462,11 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     @Override
     public List<SocialTenureRelationship> findSocialTenureByGid(Integer id) {
         return socialTenureRelationshipDAO.findByGid(id);
+    }
+
+    @Override
+    public SocialTenureRelationship getSocialTenure(Integer id) {
+        return socialTenureRelationshipDAO.getSocialTenure(id);
     }
 
     @Override
@@ -432,11 +492,104 @@ public class LandRecordsServiceImpl implements LandRecordsService {
             sourceDocumentDAO.makePersistent(sourceDocument);
             return true;
         } catch (Exception e) {
-
             logger.error(e);
             return false;
         }
+    }
 
+    @Override
+    public Dispute updateDispute(Dispute dispute) {
+        try {
+            dispute = disputeDao.makePersistent(dispute);
+            SpatialUnitTable parcel = findSpatialUnitbyId(dispute.getUsin()).get(0);
+
+            // Check for parcel to have new or referred status and be new claim or disputed
+            if ((parcel.getStatus().getWorkflowStatusId() == Status.STATUS_NEW
+                    || parcel.getStatus().getWorkflowStatusId() != Status.STATUS_REFERRED)
+                    && parcel.getClaimType().getCode().equals(ClaimType.CODE_NEW)) {
+                parcel.setClaimType(claimTypeDao.findById(ClaimType.CODE_DISPUTED, false));
+                parcel.setStatus(statusDao.getStatusById(Status.STATUS_REFERRED));
+                update(parcel);
+            }
+
+            return dispute;
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean deleteDispute(Dispute dispute) {
+        try {
+            dispute.setDeleted(true);
+            disputeDao.makePersistent(dispute);
+            SpatialUnitTable parcel = findSpatialUnitbyId(dispute.getUsin()).get(0);
+
+            // Check for parcel to have new or referred status and be new claim or disputed
+            if (parcel.getStatus().getWorkflowStatusId() == Status.STATUS_REFERRED) {
+                parcel.setStatus(statusDao.getStatusById(Status.STATUS_NEW));
+            }
+            if (parcel.getClaimType().getCode().equals(ClaimType.CODE_DISPUTED)) {
+                parcel.setClaimType(claimTypeDao.findById(ClaimType.CODE_NEW, false));
+            }
+
+            update(parcel);
+            return true;
+        } catch (Exception e) {
+            logger.error(e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean resolveDispute(Dispute dispute) {
+        try {
+            dispute.setStatus(disputeStatusDao.findById(DisputeStatus.STATUS_RESOLVED, false));
+            dispute.setResolutionDate(Calendar.getInstance().getTime());
+            disputeDao.makePersistent(dispute);
+
+            SpatialUnitTable parcel = findSpatialUnitbyId(dispute.getUsin()).get(0);
+
+            // Check for parcel to have new or referred status and be new claim or disputed
+            if (parcel.getStatus().getWorkflowStatusId() == Status.STATUS_REFERRED) {
+                parcel.setStatus(statusDao.getStatusById(Status.STATUS_NEW));
+            }
+            if (parcel.getClaimType().getCode().equals(ClaimType.CODE_DISPUTED)) {
+                parcel.setClaimType(claimTypeDao.findById(ClaimType.CODE_NEW, false));
+            }
+
+            update(parcel);
+            return true;
+        } catch (Exception e) {
+            logger.error(e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteDisputant(Long disputeId, Long partyId) {
+        try {
+            Dispute dispute = disputeDao.findById(disputeId, false);
+            if (dispute == null) {
+                return false;
+            }
+
+            if (dispute.getDisputingPersons() != null && dispute.getDisputingPersons().size() > 0) {
+                for (int i = 0; i < dispute.getDisputingPersons().size(); i++) {
+                    if (dispute.getDisputingPersons().get(i).getPerson_gid() == partyId) {
+                        dispute.getDisputingPersons().remove(i);
+                        break;
+                    }
+                }
+                disputeDao.makePersistent(dispute);
+            }
+
+            return true;
+        } catch (Exception e) {
+            logger.error(e);
+            return false;
+        }
     }
 
     @Override
@@ -526,52 +679,38 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public List<AcquisitionType> findAllAcquisitionTypes(){
+    public List<AcquisitionType> findAllAcquisitionTypes() {
         return acquisitionTypeDao.findAll();
     }
-    
+
     @Override
-    public List<DocumentType> getDocumentTypes(){
+    public List<DocumentType> getDocumentTypes() {
         return documentTypeDao.findAll();
     }
-    
-    @Override 
-    public DocumentType getDocumentType(long code){
+
+    @Override
+    public DocumentType getDocumentType(long code) {
         return documentTypeDao.findById(code, false);
     }
-    
+
     @Override
-    public AcquisitionType findAcquisitionType(int code){
+    public AcquisitionType findAcquisitionType(int code) {
         return acquisitionTypeDao.findById(code, false);
     }
-    
+
     @Override
-    public List<RelationshipType> findAllRelationshipTypes(){
+    public List<RelationshipType> findAllRelationshipTypes() {
         return relationshipTypeDao.findAll();
     }
-    
+
     @Override
-    public RelationshipType findRelationshipType(Long code){
+    public RelationshipType findRelationshipType(Long code) {
         return relationshipTypeDao.findById(code, false);
     }
-    
+
     @Override
     public boolean rejectStatus(Long id, long userid) {
-        try {
-
-            SpatialUnitStatusHistory spatialUnitStatusHistory = new SpatialUnitStatusHistory();
-
-            spatialUnitStatusHistory.setStatus_change_time(new Date());
-            spatialUnitStatusHistory.setUserid(userid);
-            spatialUnitStatusHistory.setUsin(id);
-            spatialUnitStatusHistory.setWorkflow_status_id(5);
-
-            sUnitHistoryDAO.makePersistent(spatialUnitStatusHistory);
-        } catch (Exception e) {
-
-            logger.error(e);
-        }
-
+        updateStatusHistory(id, userid, Status.STATUS_DENIED);
         return landRecordsDao.rejectStatus(id);
     }
 
@@ -746,12 +885,12 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public List<SpatialUnitTable> search(String usinStr, String ukaNumber, 
-            String projname, String dateto, String datefrom, 
+    public List<SpatialUnitTable> search(String usinStr, String ukaNumber,
+            String projname, String dateto, String datefrom,
             Long status, String claimType, Integer startpos) {
         return landRecordsDao.search(usinStr, ukaNumber, projname, dateto, datefrom, status, claimType, startpos);
     }
-    
+
     @Override
     public ArrayList<Long> findOwnerPersonByUsin(Long id) {
         List<SocialTenureRelationship> socailTenure = socialTenureRelationshipDAO.findbyUsin(id);
@@ -883,10 +1022,10 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public SpatialunitPersonwithinterest getPoi(Long id){
+    public SpatialunitPersonwithinterest getPoi(Long id) {
         return spatialUnitPersonWithInterestDao.findById(id, false);
     }
-    
+
     @Override
     public List<SpatialUnitTemp> findSpatialUnitforUKAGeneration(
             String project) {
@@ -901,6 +1040,22 @@ public class LandRecordsServiceImpl implements LandRecordsService {
             logger.error(e);
         }
 
+    }
+
+    @Override
+    public String findNextUkaNumber(String ukaPrefix) {
+        try {
+            String uka = landRecordsDao.findBiggestUkaNumber(ukaPrefix);
+            if (StringUtils.isEmpty(uka)) {
+                return ukaPrefix + "1";
+            } else {
+                String number = uka.substring(ukaPrefix.length());
+                return ukaPrefix + Integer.toString(Integer.parseInt(number) + 1);
+            }
+        } catch (Exception e) {
+            logger.error(e);
+            return ukaPrefix + "1";
+        }
     }
 
     @Override
