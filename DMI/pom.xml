@@ -6,12 +6,13 @@
     <artifactId>Mast</artifactId>
     <name>Mast</name>
     <packaging>war</packaging>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <properties>
         <org.springframework.version>4.1.2.RELEASE</org.springframework.version>
         <org.springframework.security.version>3.2.5.RELEASE</org.springframework.security.version>
         <org.slf4j.version>1.7.10</org.slf4j.version>
         <hibernate.version>5.1.0.Final</hibernate.version>
+        <geotools.version>14.1</geotools.version>
     </properties>
     <dependencies>
         <dependency>
@@ -263,11 +264,16 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.birt.runtime.3_7_1</groupId>
-            <artifactId>org.eclipse.birt.runtime</artifactId>
-            <version>3.7.1</version>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.4.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-fonts</artifactId>
+            <version>6.0.0</version>
+        </dependency>
+        
         <dependency>
             <groupId>net.sf.opencsv</groupId>
             <artifactId>opencsv</artifactId>
@@ -334,6 +340,37 @@
             <version>4.1.2.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-swing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-image</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-render</artifactId>
+            <version>13.2</version>
+            <type>jar</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-wms</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        
     </dependencies>
 
     <repositories>
@@ -416,6 +453,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <attachClasses>true</attachClasses>
+                </configuration>
             </plugin>
                     
             <plugin>
@@ -457,6 +497,7 @@
                             <warName>mast</warName>
                             <!--outputDirectory>C:\Tomcat\webapps</outputDirectory-->
                             <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/org.apache.xerces-2.9.0.jar,WEB-INF/lib/org.apache.xerces-2.9.0-SNAPSHOT.jar</packagingExcludes>
+                            <attachClasses>true</attachClasses>
                         </configuration>
                     </plugin>
                     <plugin>

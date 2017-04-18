@@ -1,6 +1,5 @@
 package com.rmsi.mast.viewer.service.impl;
 
-import com.ibm.icu.util.Calendar;
 import com.rmsi.mast.studio.dao.AcquisitionTypeDao;
 import java.util.ArrayList;
 import java.util.Date;
@@ -73,7 +72,10 @@ import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.domain.TenureClass;
 import com.rmsi.mast.studio.domain.Unit;
 import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
+import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
+import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitStatusHistory;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTemp;
@@ -99,6 +101,7 @@ import com.rmsi.mast.viewer.dao.SpatialUnitPersonAdministratorDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitPersonWithInterestDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitTempDao;
 import com.rmsi.mast.viewer.service.LandRecordsService;
+import java.util.Calendar;
 import java.util.Locale;
 
 @Service
@@ -283,6 +286,11 @@ public class LandRecordsServiceImpl implements LandRecordsService {
         return landRecordsDao.getSpatialUnit(id);
     }
 
+    @Override
+    public SpatialUnitGeom getParcelGeometry(long usin){
+        return landRecordsDao.getParcelGeometry(usin);
+    }
+    
     @Override
     public boolean referClaim(SpatialUnitTable claim, long userId) {
         claim.setStatus(statusDao.getStatusById(Status.STATUS_REFERRED));
@@ -1200,4 +1208,18 @@ public class LandRecordsServiceImpl implements LandRecordsService {
         return sourceDocumentDAO.checkPersonImage(id);
     }
 
+    @Override
+    public List<ClaimSummary> getClaimsForAdjudicationForms(Long startUsin, Long endUsin, int statusId, String projectName){
+        return landRecordsDao.getClaimsSummary(startUsin, endUsin, projectName, statusId, ClaimType.CODE_NEW);
+    }
+    
+    @Override
+    public List<ClaimSummary> getClaimsForCcro(Long startUsin, Long endUsin, String projectName){
+        return landRecordsDao.getClaimsSummary(startUsin, endUsin, projectName, Status.STATUS_APPROVED, ClaimType.CODE_NEW);
+    }
+    
+    @Override
+    public ProjectDetails getProjectDetails(String projectName){
+        return landRecordsDao.getProjectDetails(projectName);
+    }
 }

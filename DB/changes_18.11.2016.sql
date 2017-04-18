@@ -577,4 +577,169 @@ INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_se
 VALUES ((select max(id)+1 from public.attribute_options), 'Mining', 16, 'Maeneo ya madini', 18);
 
 
+-- Report views
 
+-- POI
+
+CREATE OR REPLACE VIEW public.view_pois AS
+select 
+  p.id,
+  p.usin,
+  p.person_name,
+  rt.name_other_lang as relationship_type,
+  (case when p.dob is null then null else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
+  g.gender_sw as gender
+  
+from 
+	(spatialunit_personwithinterest p left join relationship_type rt on p.relationship_type = rt.code)
+	left join gender g on p.gender_id = g.gender_id;
+
+-- natural persons
+
+CREATE OR REPLACE VIEW public.view_natural_persons AS
+select 
+  p.gid,
+  p.active as is_active,
+  trim(p.first_name) as first_name,
+  p.last_name,
+  p.middle_name,
+  pt.person_type_sw as person_type,
+  g.gender_sw as gender,
+  ms.maritalstatus_sw as marital_status,
+  c.citizenname_sw as citizenship,
+  p.mobile,
+  p.id_number,
+  p.share,
+  it.name_other_lang as id_type,
+  (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
+  (case when p.resident_of_village then 'Ndiyo' else 'Hapana' end) as resident
+
+from 
+	((((
+	natural_person p left join person_type pt on p.personsub_type = pt.person_type_gid)
+	left join gender g on p.gender = g.gender_id)
+	left join marital_status ms on p.marital_status = ms.maritalstatus_id)
+	left join citizenship c on p.citizenship_id = c.id)
+	left join id_type it on p.id_type = it.code
+
+where p.active;
+
+-- non natural person with right
+
+CREATE OR REPLACE VIEW public.view_non_natural_persons_with_right AS
+select 
+  r.usin,
+  p.non_natural_person_gid as gid,
+  trim(p.instutution_name) as instutution_name,
+  p.address,
+  p.phone_number,
+  gt.group_value_sw as institution_type,
+  p.poc_gid as rep_gid
+
+from 
+	social_tenure_relationship r inner join (
+	non_natural_person p left join group_type gt on p.group_type = gt.group_id
+	) on r.person_gid = p.non_natural_person_gid
+
+where r.isactive and p.active
+
+order by trim(p.instutution_name);
+
+-- natural person with right
+
+CREATE OR REPLACE VIEW public.view_natural_persons_with_right AS
+select 
+  p.gid,
+  p.active as is_active,
+  r.usin,
+  trim(p.first_name) as first_name,
+  p.last_name,
+  p.middle_name,
+  pt.person_type_sw as person_type,
+  g.gender_sw as gender,
+  ms.maritalstatus_sw as marital_status,
+  c.citizenname_sw as citizenship,
+  p.mobile,
+  p.id_number,
+  p.share,
+  it.name_other_lang as id_type,
+  (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
+  (case when p.resident_of_village then 'Ndiyo' else 'Hapana' end) as resident
+
+from 
+	social_tenure_relationship r inner join (
+	((((
+	natural_person p left join person_type pt on p.personsub_type = pt.person_type_gid)
+	left join gender g on p.gender = g.gender_id)
+	left join marital_status ms on p.marital_status = ms.maritalstatus_id)
+	left join citizenship c on p.citizenship_id = c.id)
+	left join id_type it on p.id_type = it.code
+	) on r.person_gid = p.gid
+
+where r.isactive and p.active
+
+order by trim(p.first_name);
+
+-- claims
+
+CREATE OR REPLACE VIEW public.view_claims AS
+select 
+  su.usin, 
+  su.usin_str, 
+  su.uka_propertyno as uka, 
+  round((st_area(st_transform(su.the_geom,32636))*0.000247105)::numeric, 3) as acres,
+  h.hamlet_name_second_language as hamlet_name, 
+  ux.land_use_type_sw as existing_use, 
+  up.land_use_type_sw as proposed_use, 
+  lt.landtype_value_sw as land_type,
+  su.neighbor_north, 
+  su.neighbor_south, 
+  su.neighbor_east, 
+  su.neighbor_west,
+  su.witness_1 as adjudicator1,
+  su.witness_2 as adjudicator2,
+  su.survey_date as application_date,
+  su.current_workflow_status_id as status_id,
+  su.project_name,
+  su.claim_type,
+  sur.tenure_class,
+  sur.ownership_type,
+  sur.duration,
+  sur.cert_date,
+  sur.cert_number,
+  sur.acquisition_type,
+  sur.file_number,
+  sur.relationship_type,
+  u.name as recorder
+
+from (((((
+	spatial_unit su left join project_hamlets h on su.hamlet_id = h.id) 
+	left join land_use_type ux on su.existing_use = ux.use_type_id) 
+	left join land_use_type up on su.proposed_use = up.use_type_id)
+	left join land_type lt on su.type_name::integer = lt.landtype_id)
+	left join users u on su.userid = u.id)
+	left join (
+		select 
+		  distinct on (r.usin)
+		  r.usin,
+		  t.tenure_class,
+		  sh.share_type_sw as ownership_type,
+		  r.tenure_duration as duration,
+		  r.ccro_issue_date as cert_date,
+		  r.cert_number,
+		  a.name_other_lang as acquisition_type,
+		  r.file_number,
+		  rt.name_other_lang as relationship_type
+
+		from (((
+			social_tenure_relationship r left join acquisition_type a on r.acquisition_type = a.code) 
+			left join relationship_type rt on r.relationship_type = rt.code)
+			left join share_type sh on r.share = sh.gid)
+			left join tenure_class t on r.tenureclass_id = t.tenureclass_id
+
+		where r.isactive
+	) sur on su.usin = sur.usin
+
+where su.active
+
+order by h.hamlet_name_second_language;

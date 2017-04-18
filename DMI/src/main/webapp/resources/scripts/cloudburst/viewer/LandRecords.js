@@ -2967,6 +2967,29 @@ function deleteDisputingParty(disputeId, partyId) {
     });
 }
 
+function printDenialLetter(usin){
+    window.open("landrecords/denialletter/" + usin, 'Report', 'height=500,width=950,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=false');
+}
+
+function generateAdjudicationForm(usin){
+    $.ajax({
+        type: "GET",
+        url: "landrecords/checkvcdate/" + activeProject,
+        async: false,
+        success: function (result) {
+            if (result === RESPONSE_OK) {
+                var w = window.open("landrecords/adjudicationform/" + usin, 'AdjudicationForm', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+                if (window.focus) {w.focus();}
+            } else {
+                jAlert(result, 'Error');
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to validate Village Council date');
+        }
+    });
+}
+
 function formatDate(intDate) {
     return jQuery.datepicker.formatDate('yy-mm-dd', new Date(parseInt(intDate)));
 }

@@ -10,8 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import com.rmsi.mast.studio.dao.hibernate.GenericHibernateDAO;
 import com.rmsi.mast.studio.domain.Status;
+import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
+import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.viewer.dao.LandRecordsDao;
+import com.vividsolutions.jts.geom.Geometry;
 
 @Repository
 public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTable, Long>
@@ -160,12 +164,55 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
             return null;
         }
     }
-    
+
     @Override
-    public String findBiggestUkaNumber(String ukaPrefix){
+    public List<ClaimSummary> getClaimsSummary(Long startUsin, Long endUsin, String projectName, int statusId, String claimType) {
+        try {
+            Query query = getEntityManager().createQuery("Select cs from ClaimSummary cs where "
+                    + "cs.usin between :startUsin and :endUsin "
+                    + "and cs.projectName = :projectName "
+                    + "and (:statusId = 0 or cs.statusId = :statusId) "
+                    + "and cs.claimType = :claimType");
+
+            return query.setParameter("startUsin", startUsin)
+                    .setParameter("endUsin", endUsin)
+                    .setParameter("projectName", projectName)
+                    .setParameter("claimType", claimType)
+                    .setParameter("statusId", statusId)
+                    .getResultList();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @Override
+    public ProjectDetails getProjectDetails(String projectName) {
+        try {
+            Query query = getEntityManager().createQuery("Select p from ProjectDetails p where p.name = :projectName");
+            return (ProjectDetails) query.setParameter("projectName", projectName).getSingleResult();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @Override
+    public String findBiggestUkaNumber(String ukaPrefix) {
         try {
             Query query = getEntityManager().createQuery("Select max(su.propertyno) from SpatialUnitTable su where su.propertyno like :ukaPrefix");
-            return (String)query.setParameter("ukaPrefix", ukaPrefix + "%").getSingleResult();
+            return (String) query.setParameter("ukaPrefix", ukaPrefix + "%").getSingleResult();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @Override
+    public SpatialUnitGeom getParcelGeometry(long usin) {
+        try {
+            Query query = getEntityManager().createQuery("Select su from SpatialUnitGeom su where su.usin = :usin");
+            return (SpatialUnitGeom) query.setParameter("usin", usin).getSingleResult();
         } catch (Exception e) {
             logger.error(e);
             return null;

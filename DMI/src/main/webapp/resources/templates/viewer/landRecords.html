@@ -207,7 +207,7 @@
                         {{/if}}
                                 
                         {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_VALIDATED}}
-                            <a href="#" title="Generate adjudication form" onclick="javascript:adjudicationFormDialog('${usin}','${status.workflowStatusId}');" class="ga"></a>
+                            <a href="#" title="Generate adjudication form" onclick="javascript:generateAdjudicationForm(${usin});" class="ga"></a>
                         {{/if}}
          
                         {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_APPROVED}}

@@ -37,7 +37,10 @@ import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.domain.TenureClass;
 import com.rmsi.mast.studio.domain.Unit;
 import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
+import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
+import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTemp;
 import com.rmsi.mast.studio.domain.fetch.SpatialunitDeceasedPerson;
@@ -90,6 +93,8 @@ public interface LandRecordsService {
     List<SpatialUnitTable> findSpatialUnitbyId(Long id);
 
     SpatialUnitTable getSpatialUnit(Long id);
+    
+    SpatialUnitGeom getParcelGeometry(long usin);
     
     @Transactional
     boolean referClaim(SpatialUnitTable claim, long userId);
@@ -797,4 +802,10 @@ public interface LandRecordsService {
     
     @Transactional
     boolean deleteDisputant(Long disputeId, Long partyId);
+   
+    List<ClaimSummary> getClaimsForAdjudicationForms(Long startUsin, Long endUsin, int statusId, String projectName);
+    
+    List<ClaimSummary> getClaimsForCcro(Long startUsin, Long endUsin, String projectName);
+    
+    ProjectDetails getProjectDetails(String projectName);
 }

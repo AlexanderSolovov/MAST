@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,9 +86,14 @@ import com.rmsi.mast.studio.domain.DocumentType;
 import com.rmsi.mast.studio.domain.IdType;
 import com.rmsi.mast.studio.domain.Project;
 import com.rmsi.mast.studio.domain.RelationshipType;
+import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.util.DateUtils;
 import com.rmsi.mast.studio.util.StringUtils;
-import org.apache.log4j.Priority;
+import com.rmsi.mast.viewer.report.ReportsSerivce;
+import java.net.URLEncoder;
+import javax.servlet.ServletOutputStream;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperPrint;
 
 @Controller
 public class LandRecordsController {
@@ -104,6 +108,7 @@ public class LandRecordsController {
 
     @Autowired
     private LandRecordsService landRecordsService;
+
     @Autowired
     private SpatialUnitService spatialUnitService;
 
@@ -112,6 +117,9 @@ public class LandRecordsController {
 
     @Autowired
     private DisputeStatusDao disputeStatusDao;
+
+    @Autowired
+    private ReportsSerivce reportsService;
 
     public static final String RESPONSE_OK = "OK";
 
@@ -1332,6 +1340,80 @@ public class LandRecordsController {
             out.write(data);
             out.flush();
             out.close();
+
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/denialletter/{usin}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getDenialLetter(@PathVariable Long usin, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getDenialLetter(usin), "DenialLetter", response);
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/adjudicationform/{usin}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getAdjudicationForm(@PathVariable Long usin, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
+            if (claim != null) {
+                
+                writeReport(reportsService.getAdjudicationForms(claim.getProject(), usin, usin, getApplicationUrl(request)), "AdjudicationForm", response);
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/adjudicationforms/{projectName}/{startUsin}/{endUsin}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getAdjudicationForms(@PathVariable String projectName, @PathVariable Long startUsin, @PathVariable Long endUsin, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getAdjudicationForms(projectName, startUsin, endUsin, getApplicationUrl(request)), "AdjudicationForms", response);
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/checkvcdate/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public String checkVillageCouncilDate(@PathVariable String projectName) {
+        try {
+            ProjectDetails project = landRecordsService.getProjectDetails(projectName);
+            if (project == null || project.getVcMeetingDate() == null) {
+                return "Set Village Council meeting date in the project configuration.";
+            }
+            return RESPONSE_OK;
+        } catch (Exception e) {
+            logger.error(e);
+            return "Failed to check Village Council date.";
+        }
+    }
+
+    private String getApplicationUrl(HttpServletRequest r) {
+        try {
+            String appUrl = r.getRequestURL().substring(0, r.getRequestURL().length() - r.getRequestURI().length() + r.getContextPath().length());
+            // JasperREports has issues with HTTPS protocol when generating output in PDF format. 
+            // So, try to replace https to http for workaround
+            appUrl = appUrl.replace("https:", "http:").replace(":8181", ":8080").replace(":443", "");
+            return appUrl;
+        } catch (Exception e) {
+            logger.error(e);
+            return "";
+        }
+    }
+    
+    private void writeReport(JasperPrint report, String name, HttpServletResponse response) {
+        try {
+            if (report == null) {
+                return;
+            }
+            if (StringUtils.isEmpty(name)) {
+                name = "report";
+            }
+            response.setHeader("Content-Type", "application/pdf");
+            response.addHeader("Content-disposition", "inline; filename=" + name + ".pdf");
+            try (ServletOutputStream out = response.getOutputStream()) {
+                JasperExportManager.exportReportToPdfStream(report, out);
+                out.flush();
+            }
 
         } catch (Exception e) {
             logger.error(e);

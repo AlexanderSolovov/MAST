@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import com.ibm.icu.text.SimpleDateFormat;
 import com.rmsi.mast.studio.dao.DisputeDao;
 import com.rmsi.mast.studio.dao.DocumentTypeDao;
 import com.rmsi.mast.studio.domain.AttributeMaster;
@@ -50,8 +49,9 @@ import com.rmsi.mast.studio.mobile.service.UserDataService;
 import com.rmsi.mast.studio.mobile.transferobjects.Attribute;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.service.UserService;
+import com.rmsi.mast.studio.util.StringUtils;
 import java.lang.reflect.Type;
-import org.apache.commons.lang.StringUtils;
+import java.text.SimpleDateFormat;
 
 @RestController
 public class MobileDataController {

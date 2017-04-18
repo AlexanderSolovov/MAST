@@ -2,7 +2,6 @@ package com.rmsi.mast.studio.web.mvc;
 
 import java.util.ArrayList;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,10 +43,10 @@ import com.rmsi.mast.studio.service.RoleService;
 import com.rmsi.mast.studio.service.UnitService;
 import com.rmsi.mast.studio.service.UserService;
 import com.rmsi.mast.studio.util.SaveProject;
+import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.service.LandRecordsService;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.apache.commons.lang.StringUtils;
 
 @Controller
 public class ProjectController {

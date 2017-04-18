@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +77,7 @@ import com.rmsi.mast.studio.mobile.transferobjects.PersonOfInterest;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.mobile.transferobjects.Right;
 import com.rmsi.mast.studio.util.GeometryConversion;
+import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.dao.SpatialUnitDeceasedPersonDao;
 import java.util.IdentityHashMap;
 
@@ -796,13 +796,13 @@ public class UserDataServiceImpl implements UserDataService {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             long parentUid = naturalPerson.getPerson_gid();
 
-            if (StringUtils.isNotEmpty(naturalPerson.getFirstName())) {
+            if (!StringUtils.isEmpty(naturalPerson.getFirstName())) {
                 addAttribute(1, project, parentUid, naturalPerson.getFirstName(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getLastName())) {
+            if (!StringUtils.isEmpty(naturalPerson.getLastName())) {
                 addAttribute(2, project, parentUid, naturalPerson.getLastName(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getMiddleName())) {
+            if (!StringUtils.isEmpty(naturalPerson.getMiddleName())) {
                 addAttribute(3, project, parentUid, naturalPerson.getMiddleName(), attribsList);
             }
             if (naturalPerson.getGender() != null) {
@@ -810,16 +810,16 @@ public class UserDataServiceImpl implements UserDataService {
                         attributeOptionsDao.getAttributeOptionsId(4, (int) naturalPerson.getGender().getGenderId()),
                         attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getMobile())) {
+            if (!StringUtils.isEmpty(naturalPerson.getMobile())) {
                 addAttribute(5, project, parentUid, naturalPerson.getMobile(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getIdentity())) {
+            if (!StringUtils.isEmpty(naturalPerson.getIdentity())) {
                 addAttribute(30, project, parentUid, naturalPerson.getIdentity(), attribsList);
             }
             if (naturalPerson.getAge() != 0) {
                 addAttribute(21, project, parentUid, Integer.toString(naturalPerson.getAge()), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getOccupation())) {
+            if (!StringUtils.isEmpty(naturalPerson.getOccupation())) {
                 addAttribute(19, project, parentUid, naturalPerson.getOccupation(), attribsList);
             }
             if (naturalPerson.getEducation() != null) {
@@ -827,13 +827,13 @@ public class UserDataServiceImpl implements UserDataService {
                         attributeOptionsDao.getAttributeOptionsId(20, (int) naturalPerson.getEducation().getLevelId()),
                         attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getTenure_Relation())) {
+            if (!StringUtils.isEmpty(naturalPerson.getTenure_Relation())) {
                 addAttribute(25, project, parentUid, naturalPerson.getTenure_Relation(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getHouseholdRelation())) {
+            if (!StringUtils.isEmpty(naturalPerson.getHouseholdRelation())) {
                 addAttribute(26, project, parentUid, naturalPerson.getHouseholdRelation(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getWitness())) {
+            if (!StringUtils.isEmpty(naturalPerson.getWitness())) {
                 addAttribute(27, project, parentUid, naturalPerson.getWitness(), attribsList);
             }
             if (naturalPerson.getMarital_status() != null) {
@@ -844,7 +844,7 @@ public class UserDataServiceImpl implements UserDataService {
             if (naturalPerson.getOwner() != null) {
                 addAttribute(40, project, parentUid, naturalPerson.getOwner().toString(), attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getAdministator())) {
+            if (!StringUtils.isEmpty(naturalPerson.getAdministator())) {
                 addAttribute(41, project, parentUid, naturalPerson.getAdministator(), attribsList);
             }
             if (naturalPerson.getCitizenship_id() != null) {
@@ -860,7 +860,7 @@ public class UserDataServiceImpl implements UserDataService {
                         attributeOptionsDao.getAttributeOptionsId(54, (int) naturalPerson.getPersonSubType().getPerson_type_gid()),
                         attribsList);
             }
-            if (StringUtils.isNotEmpty(naturalPerson.getIdNumber())) {
+            if (!StringUtils.isEmpty(naturalPerson.getIdNumber())) {
                 addAttribute(310, project, parentUid, naturalPerson.getIdNumber(), attribsList);
             }
             if (naturalPerson.getDob() != null) {
