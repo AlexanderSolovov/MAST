@@ -1,6 +1,10 @@
 package com.rmsi.mast.studio.domain.fetch;
 
+import com.rmsi.mast.studio.domain.PersonType;
+import com.rmsi.mast.studio.domain.ShareType;
+import com.rmsi.mast.studio.util.StringUtils;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -80,6 +84,9 @@ public class ClaimSummary implements Serializable {
     @Column(name = "tenure_class")
     private String tenureClass;
 
+    @Column(name = "ownership_type_id")
+    private int ownershipTypeId;
+
     @Column(name = "ownership_type")
     private String ownershipType;
 
@@ -106,21 +113,21 @@ public class ClaimSummary implements Serializable {
     private String recorder;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name="usin")
+    @JoinColumn(name = "usin")
     List<PersonWithRightSummary> naturalOwners;
-    
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name="usin")
+    @JoinColumn(name = "usin")
     List<InstitutionSummary> nonNaturalOwners;
-    
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name="usin")
+    @JoinColumn(name = "usin")
     List<Poi> pois;
-    
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name="usin")
+    @JoinColumn(name = "usin")
     List<SpatialunitDeceasedPerson> deceasedPersons;
-    
+
     public ClaimSummary() {
     }
 
@@ -131,7 +138,7 @@ public class ClaimSummary implements Serializable {
     public void setUsin(long usin) {
         this.usin = usin;
     }
-    
+
     public String getUka() {
         return uka;
     }
@@ -284,6 +291,14 @@ public class ClaimSummary implements Serializable {
         this.ownershipType = ownershipType;
     }
 
+    public int getOwnershipTypeId() {
+        return ownershipTypeId;
+    }
+
+    public void setOwnershipTypeId(int ownershipTypeId) {
+        this.ownershipTypeId = ownershipTypeId;
+    }
+
     public Double getDuration() {
         return duration;
     }
@@ -343,7 +358,7 @@ public class ClaimSummary implements Serializable {
     public List<PersonWithRightSummary> getNaturalOwners() {
         return naturalOwners;
     }
-   
+
     public void setNaturalOwners(List<PersonWithRightSummary> naturalOwners) {
         this.naturalOwners = naturalOwners;
     }
@@ -359,7 +374,7 @@ public class ClaimSummary implements Serializable {
     public List<Poi> getPois() {
         return pois;
     }
-    
+
     public void setPois(List<Poi> pois) {
         this.pois = pois;
     }
@@ -367,8 +382,118 @@ public class ClaimSummary implements Serializable {
     public List<SpatialunitDeceasedPerson> getDeceasedPersons() {
         return deceasedPersons;
     }
-    
+
     public void setDeceasedPersons(List<SpatialunitDeceasedPerson> deceasedPersons) {
         this.deceasedPersons = deceasedPersons;
+    }
+
+    public List<PersonWithRightSummary> getPersonsForSignature() {
+        ArrayList<PersonWithRightSummary> persons = new ArrayList<>();
+
+        if (getNaturalOwners() == null || getNaturalOwners().size() < 1) {
+            return persons;
+        }
+
+        if (getOwnershipTypeId() == ShareType.SHARE_GUARDIAN) {
+            for (PersonWithRightSummary person : getNaturalOwners()) {
+                if (person.getPersonTypeId() != PersonType.TYPE_OWNER) {
+                    persons.add(person);
+                }
+            }
+            return persons;
+        } else {
+            return getNaturalOwners();
+        }
+    }
+
+    public String getOwnerNames() {
+        if ((getNaturalOwners() == null || getNaturalOwners().size() < 1)
+                && (getNonNaturalOwners() == null || getNonNaturalOwners().size() < 1)) {
+            return "";
+        }
+
+        String names = "";
+        String owners = "";
+        String ownersWithShare = "";
+        String guardians = "";
+        String administrators = "";
+        String deceased = "";
+
+        // Find owners, guardians and admins
+        if (getNaturalOwners() != null && getNaturalOwners().size() > 0) {
+            for (int i = 0; i < getNaturalOwners().size(); i++) {
+
+                PersonWithRightSummary person = getNaturalOwners().get(i);
+
+                if (person.getPersonTypeId() == PersonType.TYPE_OWNER) {
+                    String share = StringUtils.empty(person.getShare()).trim();
+                    String owner = "";
+                    
+                    if (!share.endsWith("%")) {
+                        share = share + "%";
+                    }
+
+                    if (owners.length() > 0) {
+                        // Check if last owner
+                        if (i + 1 == getNaturalOwners().size() || getNaturalOwners().get(i + 1).getPersonTypeId() != PersonType.TYPE_OWNER) {
+                            owner = " na <b>" + person.getFullName() + "</b>";
+                            owners = owners + owner;
+                        } else {
+                            owner = ", <b>" + person.getFullName() + "</b>";
+                            owners = owners + owner;
+                        }
+                    } else {
+                        owner = "<b>" + person.getFullName() + "</b>";
+                        owners = owner;
+                    }
+
+                    ownersWithShare = ownersWithShare + owner + " (<b>" + share + "</b>)";
+                } else if (person.getPersonTypeId() == PersonType.TYPE_GUARDIAN) {
+                    if (guardians.length() > 0) {
+                        guardians = guardians + ", <b>" + person.getFullName() + "</b>";
+                    } else {
+                        guardians = "<b>" + person.getFullName() + "</b>";
+                    }
+                } else if (person.getPersonTypeId() == PersonType.TYPE_ADMINISTRATOR) {
+                    if (administrators.length() > 0) {
+                        administrators = administrators + ", <b>" + person.getFullName() + "</b>";
+                    } else {
+                        administrators = "<b>" + person.getFullName() + "</b>";
+                    }
+                }
+            }
+        } else if (getNonNaturalOwners() != null && getNonNaturalOwners().size() > 0) {
+            for (InstitutionSummary nonPerson : getNonNaturalOwners()) {
+                if (owners.length() > 0) {
+                    owners = owners + ", <b>" + StringUtils.empty(nonPerson.getInstututionName()) + "</b>";
+                } else {
+                    owners = "<b>" + StringUtils.empty(nonPerson.getInstututionName()) + "</b>";
+                }
+            }
+        }
+
+        // Find deceased persons
+        if (getDeceasedPersons() != null && getDeceasedPersons().size() > 0) {
+            for (SpatialunitDeceasedPerson dPerson : getDeceasedPersons()) {
+                if (deceased.length() > 0) {
+                    deceased = deceased + ", <b>" + dPerson.getFullName() + "</b>";
+                } else {
+                    deceased = "<b>" + dPerson.getFullName() + "</b>";
+                }
+            }
+        }
+
+        if (getOwnershipTypeId() == ShareType.SHARE_SINGLE || getOwnershipTypeId() == ShareType.SHARE_INSTITUTION) {
+            names = owners + " (humu ndani akirejewa kama \"Mkazi\")";
+        } else if (getOwnershipTypeId() == ShareType.SHARE_MULTIPLE_JOINT) {
+            names = owners + " (humu ndani wakirejewa kama \"Wakazi\")";
+        } else if (getOwnershipTypeId() == ShareType.SHARE_MULTIPLE_COMMON) {
+            names = ownersWithShare + " kwa umiliki wa hisa (humu ndani wakirejewa kama \"Wakazi\")";
+        } else if (getOwnershipTypeId() == ShareType.SHARE_GUARDIAN) {
+            names = guardians + " msimamizi mlezi wa " + owners + " (humu ndani akirejewa kama \"Mkazi\")";
+        } else if (getOwnershipTypeId() == ShareType.SHARE_ADMINISTRATOR) {
+            names = administrators + " ambaye ni msimamizi wa mirathi ya Marehemu " + deceased;
+        }
+        return names;
     }
 }

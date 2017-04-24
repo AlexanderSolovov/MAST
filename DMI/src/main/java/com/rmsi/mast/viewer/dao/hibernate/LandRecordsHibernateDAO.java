@@ -9,13 +9,17 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.rmsi.mast.studio.dao.hibernate.GenericHibernateDAO;
+import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.RegistryBook;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
+import com.rmsi.mast.studio.util.ClaimsSorter;
 import com.rmsi.mast.viewer.dao.LandRecordsDao;
 import com.vividsolutions.jts.geom.Geometry;
+import java.util.Collections;
 
 @Repository
 public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTable, Long>
@@ -166,26 +170,70 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
     }
 
     @Override
-    public List<ClaimSummary> getClaimsSummary(Long startUsin, Long endUsin, String projectName, int statusId, String claimType) {
+    public List<ClaimSummary> getClaimsSummary(Long usin, int startRecord, int endRecord, String projectName, int statusId, String claimType) {
         try {
             Query query = getEntityManager().createQuery("Select cs from ClaimSummary cs where "
-                    + "cs.usin between :startUsin and :endUsin "
+                    + "(cs.usin = :usin or :usin = 0) "
                     + "and cs.projectName = :projectName "
                     + "and (:statusId = 0 or cs.statusId = :statusId) "
                     + "and cs.claimType = :claimType");
 
-            return query.setParameter("startUsin", startUsin)
-                    .setParameter("endUsin", endUsin)
+            List<ClaimSummary> claims
+                    = query.setParameter("usin", usin)
                     .setParameter("projectName", projectName)
                     .setParameter("claimType", claimType)
                     .setParameter("statusId", statusId)
                     .getResultList();
+
+            if (claims != null && claims.size() > 0) {
+                if (claims.size() > 1) {
+                    // Sort by owner name, assuming that list already sorted by hamlets
+                    Collections.sort(claims, new ClaimsSorter());
+                }
+                
+                if(startRecord > endRecord){
+                    int tmpNumber = endRecord;
+                    endRecord = startRecord;
+                    startRecord = tmpNumber;
+                }
+                
+                if (startRecord > 1 || endRecord < claims.size()) {
+                    // return requested range
+                    if(startRecord > claims.size()){
+                        return null;
+                    }
+                    
+                    startRecord = startRecord - 1;
+                    
+                    if(startRecord < 0){
+                        startRecord = 0;
+                    }
+                    
+                    if(endRecord > claims.size()){
+                        endRecord = claims.size();
+                    }
+                    
+                    return claims.subList(startRecord, endRecord);
+                }
+            }
+            return claims;
         } catch (Exception e) {
             logger.error(e);
             return null;
         }
     }
 
+    @Override
+    public List<RegistryBook> getRegistryBook(String projectName, long usin){
+        try {
+            Query query = getEntityManager().createQuery("Select rb from RegistryBook rb where rb.projectName = :projectName and (:usin = 0L or rb.usin = :usin)");
+            return query.setParameter("projectName", projectName).setParameter("usin", usin).getResultList();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+    
     @Override
     public ProjectDetails getProjectDetails(String projectName) {
         try {

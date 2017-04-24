@@ -22,15 +22,6 @@ Cloudburst.Viewer = OpenLayers.Class({
 
         $('#_loader').hide();
         $('#maptips').hide();
-        //Aparesh 
-        var $tabs = $("#tab").tabs({
-            tabTemplate: "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close'>Remove Tab</span></li>"
-        });
-
-        $("#tab span.ui-icon-close").live("click", function () {
-            var index = $("li", $tabs).index($(this).parent());
-            $tabs.tabs("remove", index);
-        });
 
         //End 
 
@@ -621,19 +612,29 @@ function ScaleRangeView() {
 }
 
 jQuery(document).ready(function () {
+    $("#mainTabs").tabs();
     $.ajaxSetup({cache: false});
-    var $mapitems = $("#tab1")
-    $mapitems.click(function (event) {
+    
+    $("#tab1").click(function (event) {
         $('#sidebar').show();
         $('#collapse').show();
     });
-    var $itemsland = $("#tab2")
-    $itemsland.click(function (event) {
-        $("#defaultbutton").css("visibility", "hidden");
+    $("#tab2").click(function (event) {
         var landRecords = new LandRecords("landRecords");
-        $('#sidebar').hide();
-        $('#collapse').hide();
-        $('#bottomstatusbar').hide();
+        hideMapComponents();
+    });
+    $("#tab3").click(function (event) {
+        hideMapComponents();
+    });
+    $("#tab4").click(function (event) {
+        hideMapComponents();
+        $("#reportsAccordion").accordion();
     });
     var landRecords = new LandRecords("landRecords");
 });
+
+function hideMapComponents() {
+    $('#sidebar').hide();
+    $('#collapse').hide();
+    $('#bottomstatusbar').hide();
+}

@@ -88,6 +88,7 @@ import com.rmsi.mast.studio.domain.Project;
 import com.rmsi.mast.studio.domain.RelationshipType;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.util.DateUtils;
+import com.rmsi.mast.studio.util.FileUtils;
 import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.report.ReportsSerivce;
 import java.net.URLEncoder;
@@ -1047,8 +1048,7 @@ public class LandRecordsController {
                     }
 
                     String uploadFileName = null;
-                    String tmpDirPath = request.getSession().getServletContext().getRealPath(File.separator);
-                    String outDirPath = tmpDirPath.replace("mast", "") + "resources" + File.separator + "documents" + File.separator + projectName + File.separator + "webupload";
+                    String outDirPath = FileUtils.getFielsFolder(request) + "resources" + File.separator + "documents" + File.separator + projectName + File.separator + "webupload";
                     File outDir = new File(outDirPath);
                     boolean exists = outDir.exists();
 
@@ -1327,10 +1327,8 @@ public class LandRecordsController {
     public void download(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
 
         SourceDocument doc = landRecordsService.getDocumentbyGid(id);
-        String fileName = doc.getScanedSourceDoc();
-        String fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
-        //Object path_temp = request.getSession().getServletContext().getRealPath(File.separator);
-        String filepath = request.getSession().getServletContext().getRealPath(File.separator).replace("mast", "") + doc.getLocScannedSourceDoc() + File.separator + id + "." + fileType;
+        String filepath = FileUtils.getFielsFolder(request) + doc.getLocScannedSourceDoc() + 
+                File.separator + id + "." + FileUtils.getFileExtension(doc.getScanedSourceDoc());
         Path path = Paths.get(filepath);
         try {
             byte[] data = Files.readAllBytes(path);
@@ -1358,20 +1356,62 @@ public class LandRecordsController {
         try {
             SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
             if (claim != null) {
-                
-                writeReport(reportsService.getAdjudicationForms(claim.getProject(), usin, usin, getApplicationUrl(request)), "AdjudicationForm", response);
+                writeReport(reportsService.getAdjudicationForms(claim.getProject(), usin, 1, 1, getApplicationUrl(request)), "AdjudicationForm", response);
             }
         } catch (Exception e) {
             logger.error(e);
         }
     }
 
-    @RequestMapping(value = "/viewer/landrecords/adjudicationforms/{projectName}/{startUsin}/{endUsin}", method = RequestMethod.GET)
+    @RequestMapping(value = "/viewer/landrecords/adjudicationforms/{projectName}/{startRecord}/{endRecord}", method = RequestMethod.GET)
     @ResponseBody
-    public void getAdjudicationForms(@PathVariable String projectName, @PathVariable Long startUsin, @PathVariable Long endUsin, HttpServletRequest request, HttpServletResponse response) {
-        writeReport(reportsService.getAdjudicationForms(projectName, startUsin, endUsin, getApplicationUrl(request)), "AdjudicationForms", response);
+    public void getAdjudicationForms(@PathVariable String projectName, @PathVariable int startRecord, @PathVariable int endRecord, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getAdjudicationForms(projectName, 0L, startRecord, endRecord, getApplicationUrl(request)), "AdjudicationForms", response);
     }
 
+    @RequestMapping(value = "/viewer/landrecords/ccroform/{usin}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getCcroForm(@PathVariable Long usin, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
+            if (claim != null) {
+                writeReport(reportsService.getCcroForms(claim.getProject(), usin, 1, 1, getApplicationUrl(request)), "CcroForm", response);
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+    
+    @RequestMapping(value = "/viewer/landrecords/ccroforms/{projectName}/{startRecord}/{endRecord}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getCcroForms(@PathVariable String projectName, @PathVariable int startRecord, @PathVariable int endRecord, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getCcroForms(projectName, 0L, startRecord, endRecord, getApplicationUrl(request)), "CcroForms", response);
+    }
+    
+    @RequestMapping(value = "/viewer/landrecords/districtregbook/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getDistrictRegistryBook(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getDistrictRegistryBook(projectName), "DistrictRegistryBook", response);
+    }
+    
+    @RequestMapping(value = "/viewer/landrecords/villageregbook/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getVillageRegistryBook(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getVillageRegistryBook(projectName), "VillageRegistryBook", response);
+    }
+    
+    @RequestMapping(value = "/viewer/landrecords/villageissuancebook/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getVillageIssuanceBook(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getVillageIssuanceBook(projectName), "VillageIssuanceBook", response);
+    }
+    
+    @RequestMapping(value = "/viewer/landrecords/transactionsheet/{usin}/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getTransactionSheet(@PathVariable long usin, @PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getTransactionSheet(projectName, usin), "TransactionSheet", response);
+    }
+    
     @RequestMapping(value = "/viewer/landrecords/checkvcdate/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public String checkVillageCouncilDate(@PathVariable String projectName) {
@@ -1399,7 +1439,7 @@ public class LandRecordsController {
             return "";
         }
     }
-    
+
     private void writeReport(JasperPrint report, String name, HttpServletResponse response) {
         try {
             if (report == null) {
@@ -1423,23 +1463,48 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/personphoto/{id}", method = RequestMethod.GET)
     @ResponseBody
     public void getPersonPhoto(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
-
-        SourceDocument doc = landRecordsService.getdocumentByPerson(id);
-        String fileName = doc.getScanedSourceDoc();
-        String fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
-        String filepath = request.getSession().getServletContext().getRealPath(File.separator).replace("mast", "")
-                + doc.getLocScannedSourceDoc() + File.separator
-                + doc.getGid() + "." + fileType;
-        Path path = Paths.get(filepath);
         try {
+            SourceDocument doc = landRecordsService.getdocumentByPerson(id);
+            if(doc == null || !doc.isActive()){
+                writeEmptyImage(request, response);
+                return;
+            }
+            
+            String fileType = FileUtils.getFileExtension(doc.getScanedSourceDoc());
+            String filepath = FileUtils.getFielsFolder(request) + doc.getLocScannedSourceDoc() + File.separator + doc.getGid() + "." + fileType;
+            Path path = Paths.get(filepath);
+
+            if(!path.toFile().exists()){
+                writeEmptyImage(request, response);
+                return;
+            }
+            
             byte[] data = Files.readAllBytes(path);
 
             response.setContentLength(data.length);
-            OutputStream out = response.getOutputStream();
-            out.write(data);
-            out.flush();
-            out.close();
-
+            response.setHeader("Content-Type", "image/jpeg");
+            response.addHeader("Content-disposition", "inline; inline; filename=\"photo.jpeg\"");
+            
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(data);
+                out.flush();
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+    
+    public void writeEmptyImage(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            byte[] data = Files.readAllBytes(Paths.get(request.getSession().getServletContext().getRealPath("/resources/images/pixel.png")));
+            response.setContentLength(data.length);
+            response.setHeader("Content-Type", "image/png");
+            response.addHeader("Content-disposition", "inline; inline; filename=\"photo.png\"");
+            
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(data);
+                out.flush();
+            }
         } catch (Exception e) {
             logger.error(e);
         }
@@ -1880,7 +1945,6 @@ public class LandRecordsController {
     @ResponseBody
     public String uploadNaturalImage(MultipartHttpServletRequest request, HttpServletResponse response, Principal principal) {
         try {
-
             Long usin = 0l;
             String document_name = "";
             String document_comments = "";
@@ -1928,26 +1992,15 @@ public class LandRecordsController {
                 if (sourceDocument1 == null) {
                     sourceDocument1 = new SourceDocument();
                 }
-                String fileExtension = originalFileName.substring(originalFileName.indexOf(".") + 1, originalFileName.length()).toLowerCase();
+                String fileExtension = FileUtils.getFileExtension(originalFileName);
 
-                if (originalFileName != "") {
+                if (!"".equals(originalFileName)) {
                     document = mpFile.getBytes();
                 }
+                
                 String uploadFileName = null;
-
-                String tmpDirPath = request.getSession().getServletContext().getRealPath(File.separator);
-
-                String outDirPath = tmpDirPath.replace("mast", "") + "resources" + File.separator + "documents" + File.separator + projectName + File.separator + "multimedia";
-
-                File outDir = new File(outDirPath);
-                boolean exists = outDir.exists();
-                if (!exists) {
-                    boolean success = (new File(outDirPath)).mkdirs();
-
-                }
-
+                String outDirPath = FileUtils.getFielsFolder(request) + "resources" + File.separator + "documents" + File.separator + projectName + File.separator + "multimedia";
                 sourceDocument1.setScanedSourceDoc(originalFileName);
-
                 uploadFileName = ("resources/documents/" + projectName + "/multimedia");
 
                 sourceDocument1.setLocScannedSourceDoc(uploadFileName);
@@ -1977,18 +2030,12 @@ public class LandRecordsController {
                     uploadfile.write(document);
                     uploadfile.flush();
                     uploadfile.close();
-                    //use it for compression if needed
-                    // return compressPicture(outDirPath,id,fileExtension);
                     return "Success";
-
                 } catch (Exception e) {
-
                     logger.error(e);
                     return "Error";
                 }
-
             }
-
         } catch (Exception e) {
             logger.error(e);
             return "Error";
@@ -2826,124 +2873,6 @@ public class LandRecordsController {
             return false;
         }
 
-    }
-
-    @RequestMapping(value = "/viewer/landrecords/ccronew/{usin}", method = RequestMethod.GET)
-    @ResponseBody
-    public CcroDto ccroDetails(@PathVariable Long usin) {
-        CcroDto tmpdto = new CcroDto();
-        HashMap<String, String> personUrl = new HashMap<String, String>(); // for url against person
-        List<String> admin = new ArrayList<String>(); // for admin name
-        List<String> name = new ArrayList<String>(); // for natural person name
-        String institute = ""; // for institute name
-        List<String> sharepercentage = new ArrayList<String>(); // for share percentage in case multiple tenancy
-        List<String> guardianName = new ArrayList<String>(); // for Guardian List
-        List<String> guardianUrl = new ArrayList<String>(); // for guardian Url
-
-        SpatialUnitTable spa = landRecordsService.findSpatialUnitbyId(usin).get(0);
-        ProjectArea projectArea = landRecordsService.findProjectArea(spa.getProject()).get(0);
-        List<SocialTenureRelationship> socialtenure = landRecordsService.findAllSocialTenureByUsin(usin);
-        HashMap<String, Long> personalogGid = new HashMap<String, Long>();
-
-        for (int i = 0; i < socialtenure.size(); i++) {
-            Person person = socialtenure.get(i).getPerson_gid();
-            if (person.getPerson_type_gid().getPerson_type_gid() == 1) {
-                NaturalPerson naturalPerson = landRecordsService.naturalPersonById(person.getPerson_gid()).get(0);
-                if (naturalPerson.getPersonSubType().getPerson_type_gid() == 3) {
-                    SourceDocument sourceDocument = landRecordsService.getdocumentByPerson(naturalPerson.getPerson_gid());
-                    String personname = naturalPerson.getFirstName() + " " + naturalPerson.getLastName();
-                    if (naturalPerson.getMiddleName() != null) {
-                        personname = naturalPerson.getFirstName() + " " + naturalPerson.getMiddleName() + " " + naturalPerson.getLastName();
-                    }
-                    personUrl.put(personname, "Url");
-                    name.add(personname);
-
-                    personalogGid.put(personname, naturalPerson.getPerson_gid());
-
-                    sharepercentage.add(socialtenure.get(i).getSharePercentage() + "%");
-                    if (sourceDocument != null && sourceDocument.isActive()) {
-
-                        String fileName = sourceDocument.getScanedSourceDoc();
-                        String fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
-                        personUrl.put(personname, sourceDocument.getLocScannedSourceDoc() + "/" + sourceDocument.getGid() + "." + fileType);
-                    }
-
-                } else if (naturalPerson.getPersonSubType().getPerson_type_gid() == 4) {
-                    String personname = naturalPerson.getFirstName() + " " + naturalPerson.getLastName();
-                    if (naturalPerson.getMiddleName() != null) {
-                        personname = naturalPerson.getFirstName() + " " + naturalPerson.getMiddleName() + " " + naturalPerson.getLastName();
-                    }
-                    admin.add(personname);
-                } else if (naturalPerson.getPersonSubType().getPerson_type_gid() == 5) {
-
-                    String personname = naturalPerson.getFirstName() + " " + naturalPerson.getLastName();
-                    if (naturalPerson.getMiddleName() != null) {
-                        personname = naturalPerson.getFirstName() + " " + naturalPerson.getMiddleName() + " " + naturalPerson.getLastName();
-                    }
-                    guardianName.add(personname);
-                    SourceDocument sourceDocument = landRecordsService.getdocumentByPerson(naturalPerson.getPerson_gid());
-                    guardianUrl.add("Url");
-                    if (sourceDocument != null && sourceDocument.isActive()) {
-
-                        String fileName = sourceDocument.getScanedSourceDoc();
-                        String fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
-                        guardianUrl.add(sourceDocument.getLocScannedSourceDoc() + "/" + sourceDocument.getGid() + "." + fileType);
-                    }
-
-                }
-
-            } else if (person.getPerson_type_gid().getPerson_type_gid() == 2) {
-                NonNaturalPerson nonNaturalPerson = landRecordsService.nonnaturalPersonById(person.getPerson_gid()).get(0);
-                NaturalPerson naturalPerson = landRecordsService.naturalPersonById(nonNaturalPerson.getPoc_gid()).get(0);
-                SourceDocument sourceDocument = landRecordsService.getdocumentByPerson(naturalPerson.getPerson_gid());
-                String personname = naturalPerson.getFirstName() + " " + naturalPerson.getLastName();
-                if (naturalPerson.getMiddleName() != null) {
-                    personname = naturalPerson.getFirstName() + " " + naturalPerson.getMiddleName() + " " + naturalPerson.getLastName();
-                }
-                personUrl.put(personname, "Url");
-                name.add(personname);
-                institute = nonNaturalPerson.getInstitutionName();
-                if (sourceDocument != null && sourceDocument.isActive()) {
-
-                    String fileName = sourceDocument.getScanedSourceDoc();
-                    String fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
-                    personUrl.put(personname, sourceDocument.getLocScannedSourceDoc() + "/" + sourceDocument.getGid() + "." + fileType);
-                }
-
-            }
-
-        }
-
-        try {
-            tmpdto.setPersonName_url(personUrl);
-            tmpdto.setInstitute(institute);
-            tmpdto.setName(name);
-            tmpdto.setPerson_type(socialtenure.get(0).getPerson_gid().getPerson_type_gid().getPerson_type_gid());
-            tmpdto.setOwnership(socialtenure.get(0).getShare_type().getGid());
-            tmpdto.setDlo(projectArea.getDistrictOfficer());
-            tmpdto.setVillagechairman(projectArea.getVillageChairman());
-            tmpdto.setVillageexecutive(projectArea.getApprovingExecutive());
-            tmpdto.setNeighbour_east(spa.getNeighbor_east());
-            tmpdto.setNeighbour_north(spa.getNeighbor_north());
-            tmpdto.setNeighbour_south(spa.getNeighbor_south());
-            tmpdto.setNeighbour_west(spa.getNeighbor_west());
-            tmpdto.setHamlet(spa.getHamlet_Id().getHamletName());
-            tmpdto.setProposeduse(spa.getProposedUse().getLandUseType_sw());
-            tmpdto.setAddress(projectArea.getAddress());
-            tmpdto.setAdminName(admin);
-
-            tmpdto.setSharepercentage(sharepercentage);
-            tmpdto.setResident(socialtenure.get(0).isResident());
-            tmpdto.setUka(spa.getPropertyno());
-            tmpdto.setUsin(spa.getUsin());
-            tmpdto.setPersonwithGid(personalogGid);
-            tmpdto.setGuardian(guardianName);
-            tmpdto.setGuardianUrl(guardianUrl);
-        } catch (Exception e) {
-            logger.error(e);
-        }
-
-        return tmpdto;
     }
 
     @RequestMapping(value = "/viewer/landrecords/updateshare", method = RequestMethod.POST)

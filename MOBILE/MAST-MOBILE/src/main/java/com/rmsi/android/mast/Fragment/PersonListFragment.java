@@ -204,8 +204,8 @@ public class PersonListFragment extends ListFragment implements ListActivity {
             options.inJustDecodeBounds = false;
             Bitmap resizedPhoto = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
 
-            int height = 1024;
-            int width = 768;
+            int height = 600;
+            int width = 600;
             double ratio = (double)height/(double) width;
 
             int imgHeight = resizedPhoto.getHeight();

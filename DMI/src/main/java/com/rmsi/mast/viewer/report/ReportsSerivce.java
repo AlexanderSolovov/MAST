@@ -8,5 +8,15 @@ import net.sf.jasperreports.engine.JasperPrint;
 public interface ReportsSerivce {
     JasperPrint getDenialLetter(long usin);
     
-    JasperPrint getAdjudicationForms(String projectName, long startUsin, long endUsin, String appUrl);
+    JasperPrint getAdjudicationForms(String projectName, Long usin, int startRecord, int endRecord, String appUrl);
+    
+    JasperPrint getCcroForms(String projectName, Long usin, int startRecord, int endRecord, String appUrl);
+    
+    JasperPrint getDistrictRegistryBook(String projectName);
+    
+    JasperPrint getVillageRegistryBook(String projectName);
+    
+    JasperPrint getVillageIssuanceBook(String projectName);
+    
+    JasperPrint getTransactionSheet(String projectName, Long usin);
 }

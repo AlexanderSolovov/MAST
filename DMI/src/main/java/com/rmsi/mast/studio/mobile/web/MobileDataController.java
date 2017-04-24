@@ -49,6 +49,7 @@ import com.rmsi.mast.studio.mobile.service.UserDataService;
 import com.rmsi.mast.studio.mobile.transferobjects.Attribute;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.service.UserService;
+import com.rmsi.mast.studio.util.FileUtils;
 import com.rmsi.mast.studio.util.StringUtils;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
@@ -344,8 +345,7 @@ public class MobileDataController {
                             + "/" + "multimedia");
 
                     // Creating documents directory to store file
-                    File documentsDir = new File(request.getServletContext()
-                            .getRealPath(sourceDocument.getLocScannedSourceDoc()).replace("mast", ""));
+                    File documentsDir = new File(FileUtils.getFielsFolder(request) + sourceDocument.getLocScannedSourceDoc());
 
                     if (!documentsDir.exists()) {
                         documentsDir.mkdirs();

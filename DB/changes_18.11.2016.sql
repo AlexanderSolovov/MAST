@@ -656,6 +656,7 @@ select
   p.last_name,
   p.middle_name,
   pt.person_type_sw as person_type,
+  pt.person_type_gid as person_type_id,
   g.gender_sw as gender,
   ms.maritalstatus_sw as marital_status,
   c.citizenname_sw as citizenship,
@@ -678,7 +679,7 @@ from
 
 where r.isactive and p.active
 
-order by trim(p.first_name);
+order by pt.person_type_gid, trim(p.first_name);
 
 -- claims
 
@@ -704,6 +705,7 @@ select
   su.claim_type,
   sur.tenure_class,
   sur.ownership_type,
+  sur.ownership_type_id,
   sur.duration,
   sur.cert_date,
   sur.cert_number,
@@ -724,6 +726,7 @@ from (((((
 		  r.usin,
 		  t.tenure_class,
 		  sh.share_type_sw as ownership_type,
+		  sh.gid as ownership_type_id,
 		  r.tenure_duration as duration,
 		  r.ccro_issue_date as cert_date,
 		  r.cert_number,
@@ -743,3 +746,77 @@ from (((((
 where su.active
 
 order by h.hamlet_name_second_language;
+
+-- Registry book
+
+CREATE OR REPLACE VIEW public.view_registry_book AS
+select 
+  p.gid,
+  r.usin,
+  su.project_name,
+  su.uka_propertyno as uka, 
+  round((st_area(st_transform(su.the_geom,32636))*0.000247105)::numeric, 3) as acres,
+  h.hamlet_name_second_language as hamlet_name, 
+  su.neighbor_north, 
+  su.neighbor_south, 
+  su.neighbor_east, 
+  su.neighbor_west,
+  r.ccro_issue_date as cert_date,
+  r.cert_number,
+  sh.share_type_sw as ownership_type,
+  r.file_number,
+  trim(p.first_name) as first_name,
+  p.last_name,
+  p.middle_name,
+  pt.person_type_sw as person_type,
+  pt.person_type_gid as person_type_id,
+  p.mobile,
+  p.id_number,
+  p.share,
+  it.name_other_lang as id_type
+
+from 
+	((social_tenure_relationship r left join share_type sh on r.share = sh.gid) inner join ((
+	natural_person p left join person_type pt on p.personsub_type = pt.person_type_gid)
+	left join id_type it on p.id_type = it.code) 
+	on r.person_gid = p.gid)
+	inner join (spatial_unit su left join project_hamlets h on su.hamlet_id = h.id) on r.usin = su.usin
+
+where r.isactive and p.active and su.active and su.current_workflow_status_id = 2 and su.claim_type = 'newClaim' and r.share != 6
+
+union
+
+select 
+  np.non_natural_person_gid as gid,
+  r.usin,
+  su.project_name,
+  su.uka_propertyno as uka, 
+  round((st_area(st_transform(su.the_geom,32636))*0.000247105)::numeric, 3) as acres,
+  h.hamlet_name_second_language as hamlet_name, 
+  su.neighbor_north, 
+  su.neighbor_south, 
+  su.neighbor_east, 
+  su.neighbor_west,
+  r.ccro_issue_date as cert_date,
+  r.cert_number,
+  sh.share_type_sw as ownership_type,
+  r.file_number,
+  trim(np.instutution_name) as first_name,
+  '' as last_name,
+  '' as middle_name,
+  'Zisizo za' as person_type,
+  2 as person_type_id,
+  np.phone_number as mobile,
+  '' as id_number,
+  '' as share,
+  '' as id_type
+
+from 
+	((social_tenure_relationship r left join share_type sh on r.share = sh.gid) 
+	inner join non_natural_person np on r.person_gid = np.non_natural_person_gid)
+	inner join (spatial_unit su left join project_hamlets h on su.hamlet_id = h.id) on r.usin = su.usin
+
+where r.isactive and np.active and su.active and su.current_workflow_status_id = 2 and su.claim_type = 'newClaim' and r.share = 6
+
+order by hamlet_name, cert_number, usin, first_name;
+

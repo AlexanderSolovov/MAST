@@ -76,6 +76,7 @@ import com.rmsi.mast.studio.mobile.transferobjects.Person;
 import com.rmsi.mast.studio.mobile.transferobjects.PersonOfInterest;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.mobile.transferobjects.Right;
+import com.rmsi.mast.studio.util.FileUtils;
 import com.rmsi.mast.studio.util.GeometryConversion;
 import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.dao.SpatialUnitDeceasedPersonDao;
@@ -725,20 +726,13 @@ public class UserDataServiceImpl implements UserDataService {
             byte[] document = mpFile.getBytes();
 
             if (sourceDocument.getGid() != 0) {
-
-                String fileExtension = sourceDocument
-                        .getScanedSourceDoc()
-                        .substring(
-                                sourceDocument.getScanedSourceDoc()
-                                .indexOf(".") + 1,
-                                sourceDocument.getScanedSourceDoc().length())
-                        .toLowerCase();
-
                 /**
                  * Create the file on Server
                  */
                 File serverFile = new File(documentsDir + File.separator
-                        + sourceDocument.getGid() + "." + fileExtension);
+                        + sourceDocument.getGid() + "." 
+                        + FileUtils.getFileExtension(sourceDocument.getScanedSourceDoc())
+                );
 
                 try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(serverFile))) {
                     outputStream.write(document);

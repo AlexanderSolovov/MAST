@@ -5,6 +5,7 @@ import java.util.List;
 import com.rmsi.mast.studio.dao.GenericDAO;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.RegistryBook;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 
@@ -46,8 +47,10 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
 
     boolean addAllVertexLabel(int k, String lat, String lon);
 
-    /** Returns list of claim summary based on usin range, project name, status, and claim type */
-    List<ClaimSummary> getClaimsSummary(Long startUsin, Long endUsin, String projectName, int statusId, String claimType);
+    /** Returns list of claim summary based on usin, project name, status, results rage, and claim type */
+    List<ClaimSummary> getClaimsSummary(Long usin, int startRecord, int endRecord, String projectName, int statusId, String claimType);
+    
+    List<RegistryBook> getRegistryBook(String projectName, long usin);
     
     ProjectDetails getProjectDetails(String projectName);
 }

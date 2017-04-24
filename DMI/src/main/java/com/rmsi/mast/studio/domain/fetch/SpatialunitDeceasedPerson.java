@@ -1,5 +1,6 @@
 package com.rmsi.mast.studio.domain.fetch;
 
+import com.rmsi.mast.studio.util.StringUtils;
 import java.io.Serializable;
 
 import javax.persistence.*;
@@ -71,4 +72,25 @@ public class SpatialunitDeceasedPerson implements Serializable {
         this.usin = usin;
     }
 
+    public String getFullName() {
+        String name = "";
+        if (!StringUtils.isEmpty(getFirstname())) {
+            name = getFirstname().trim();
+        }
+        if (!StringUtils.isEmpty(getMiddlename())) {
+            if (name.length() > 0) {
+                name = name + " " + getMiddlename().trim();
+            } else {
+                name = getMiddlename().trim();
+            }
+        }
+        if (!StringUtils.isEmpty(getLastname())) {
+            if (name.length() > 0) {
+                name = name + " " + getLastname().trim();
+            } else {
+                name = getLastname().trim();
+            }
+        }
+        return name;
+    }
 }

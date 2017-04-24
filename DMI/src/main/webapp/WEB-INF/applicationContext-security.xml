@@ -25,7 +25,7 @@
         <intercept-url pattern="/studio/adjudicators/**" access="ROLE_ADMIN, ROLE_PM,ROLE_PUBLICUSER, ROLE_LAO"/>
         <intercept-url pattern="/studio/**" access="ROLE_ADMIN, ROLE_PM,ROLE_PUBLICUSER" />
         <intercept-url pattern="/viewer/" access="ROLE_ADMIN, ROLE_USER, ROLE_PUBLICUSER, ROLE_PM, ROLE_LAO"/>
-        <intercept-url pattern="/viewer/landrecords/**" access="ROLE_ADMIN, ROLE_USER, ROLE_PUBLICUSER, ROLE_PM, ROLE_LAO"/>
+        <!--intercept-url pattern="/viewer/landrecords/**" access="ROLE_ADMIN, ROLE_USER, ROLE_PUBLICUSER, ROLE_PM, ROLE_LAO"/-->
         <intercept-url pattern="/mobileconfig/**" access="ROLE_ADMIN, ROLE_PM" />
         <intercept-url pattern="/index" access="ROLE_ADMIN, ROLE_USER, ROLE_PUBLICUSER, ROLE_PM, ROLE_LAO" />
         <form-login login-page="/login" default-target-url="/index" always-use-default-target="true" authentication-failure-url="/login?login_error=1" />

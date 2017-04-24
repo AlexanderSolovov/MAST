@@ -316,8 +316,8 @@ public class ParcelMapController {
         grFullImage.drawRect((mapMargin / 2) - 1, (mapMargin / 2) - 1, mapBounds.width + 1, mapBounds.height + 1);
 
         //int gridSize = getBestGridSize(gridDistanceX, gridDistanceY, width);
-        int gridSize = getBestGridSize(width, height, mpp);
-        int stepSize = (int) Math.round(gridSize / mpp);
+        int gridSize = 1; //getBestGridSize(width, height, mpp);
+        int stepSize = (int) Math.round(width / 4); //(int) Math.round(gridSize / mpp);
         int cutLen = 8;
         grFullImage.setColor(new Color(100, 100, 100));
         grFullImage.setStroke(new BasicStroke(1));

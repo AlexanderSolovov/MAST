@@ -405,6 +405,13 @@ a.denial_letter{
     float: left;
 }
 
+a.ts{
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+    background:url(../../images/viewer/ts.png) no-repeat;
+    float: left;
+}
 .actions-btn a:hover{
     opacity: 0.8;
     filter: alpha(opacity=80);

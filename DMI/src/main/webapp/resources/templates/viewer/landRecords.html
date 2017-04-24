@@ -212,7 +212,8 @@
          
                         {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_APPROVED}}
                             <a href="#" title="Upload document" onclick="javascript:editMultimedia(0,${usin},false)" class="upload"></a>
-                            <a href="#" title="Generate CCRO" onclick="javascript:get_Usin_detail('${usin}','${status.workflowStatusId}');" class="ccro"></a>
+                            <a href="#" title="Generate CCRO" onclick="javascript:generateCcro(${usin});" class="ccro"></a>
+                            <a href="#" title="Transaction Sheet" onclick="javascript:generateTransactionSheet(${usin});" class="ts"></a>
                         {{/if}}
                         
                         </div>
@@ -824,7 +825,7 @@
                                 </div>
                             </div>
                             <div id="tabPersonPhoto" style="margin: 10px;">
-                                <img id="imgPersonPhoto" src="" alt="Photo" />
+                                <img id="imgPersonPhoto" src="" alt="Photo" width="200" height="200" />
                             </div>
                             <div id="tabs-2" style="margin: 10px;">
                                 <div class="tab-pane landrecords22">

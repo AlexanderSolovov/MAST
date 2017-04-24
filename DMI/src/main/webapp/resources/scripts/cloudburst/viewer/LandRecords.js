@@ -531,7 +531,7 @@ function editAttribute(id) {
     $(".showMul").show();
     $(".showAddPerson").show();
     $(".hideNew").show();
-    
+
     if (read) {
         $('.ui-dialog-buttonpane button').button().hide();
         $(".hideNatural").show();
@@ -827,10 +827,10 @@ function rejectClaim(id) {
     });
 }
 
-function showErrors(errors){
-    if(errors !== null && errors.length > 0){
+function showErrors(errors) {
+    if (errors !== null && errors.length > 0) {
         combinedErrors = "";
-        for(i=0; i < errors.length; i++){
+        for (i = 0; i < errors.length; i++) {
             combinedErrors = combinedErrors + "- " + errors[i] + "<br>"
         }
         jAlert(combinedErrors);
@@ -1004,7 +1004,7 @@ function editNaturalData(id, viewOnly) {
                     $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
                 });
 
-                $("#imgPersonPhoto").attr("src", "landrecords/personphoto/" + id);
+                $("#imgPersonPhoto").attr("src", "landrecords/personphoto/" + id + "?rnd=" + Math.floor(Math.random() * 1000));
             }
         }
     });
@@ -1564,7 +1564,7 @@ function editMultimedia(id, usin, reloadPropForm) {
     $('.read-mul').attr('readonly', false);
     $('.disablemul').attr('disabled', false);
 
-    if (read) {
+    if (reloadPropForm && read) {
         $('.ui-dialog-buttonpane button').button().hide();
         $('.read-mul').attr('readonly', true);
         $('.disablemul').attr('disabled', true);
@@ -1621,7 +1621,7 @@ function updateMultimedia(reloadPropForm) {
             if (data) {
                 multimediaDialog.dialog("destroy");
                 if (reloadPropForm) {
-                    editAttribute($("#docName").val());
+                    editAttribute(editList[0].usin);
                 }
                 jAlert('Document has been sucessfully saved', 'Info');
             } else {
@@ -2383,9 +2383,9 @@ function naturalPersonImage(person_gid, admin_id) {
             if (result != "") {
                 jQuery("#naturalImage-div").append('<div id= "image_upload"><p class="type"><strong>Person Image</strong></p><p class="type"><img id="current_img" /></p></div>');
                 jQuery('#document_natural').val(result[0]);
-                jQuery('#current_img').attr("src", "http://" + location.host + "/" + result[1] + "?" + Math.floor(Math.random() * 1000));
-                jQuery('#current_img').attr("height", 126);
-                jQuery('#current_img').attr("width", 105);
+                $("#current_img").attr("src", "landrecords/personphoto/" + person_gid + "?rnd=" + Math.floor(Math.random() * 1000));
+                jQuery('#current_img').attr("height", 125);
+                jQuery('#current_img').attr("width", 125);
                 $('#check_img').text("Upate Existing Image");
             } else {
                 jQuery("#naturalImage-div").append('<div id= "image_upload"><p class="type"><strong>No Image</strong></p><p class="type"><img id="current_img" /></p></div>');
@@ -2397,7 +2397,7 @@ function naturalPersonImage(person_gid, admin_id) {
 
     uploadNaturalImage = $("#upload-natural-Image").dialog({
         autoOpen: false,
-        height: 350,
+        height: 430,
         width: 350,
         resizable: false,
         modal: true,
@@ -2967,11 +2967,11 @@ function deleteDisputingParty(disputeId, partyId) {
     });
 }
 
-function printDenialLetter(usin){
+function printDenialLetter(usin) {
     window.open("landrecords/denialletter/" + usin, 'Report', 'height=500,width=950,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=false');
 }
 
-function generateAdjudicationForm(usin){
+function generateAdjudicationForm(usin) {
     $.ajax({
         type: "GET",
         url: "landrecords/checkvcdate/" + activeProject,
@@ -2979,7 +2979,9 @@ function generateAdjudicationForm(usin){
         success: function (result) {
             if (result === RESPONSE_OK) {
                 var w = window.open("landrecords/adjudicationform/" + usin, 'AdjudicationForm', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
-                if (window.focus) {w.focus();}
+                if (window.focus) {
+                    w.focus();
+                }
             } else {
                 jAlert(result, 'Error');
             }
@@ -2990,6 +2992,115 @@ function generateAdjudicationForm(usin){
     });
 }
 
+function generateAdjudicationForms() {
+    $.ajax({
+        type: "GET",
+        url: "landrecords/checkvcdate/" + activeProject,
+        async: false,
+        success: function (result) {
+            if (result === RESPONSE_OK) {
+                var fromRecord = $("#adjStart").val();
+                var endRecord = $("#adjEnd").val();
+
+                if (!checkIntNumber(fromRecord))
+                    fromRecord = 1;
+
+                if (!checkIntNumber(endRecord))
+                    endRecord = 100000;
+
+                var w = window.open("landrecords/adjudicationforms/" + activeProject + "/" + fromRecord + "/" + endRecord, 'AdjudicationForms', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+                if (window.focus) {
+                    w.focus();
+                }
+            } else {
+                jAlert(result, 'Error');
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to validate Village Council date');
+        }
+    });
+}
+
+function generateCcro(usin) {
+    $.ajax({
+        type: "GET",
+        url: "landrecords/checkvcdate/" + activeProject,
+        async: false,
+        success: function (result) {
+            if (result === RESPONSE_OK) {
+                var w = window.open("landrecords/ccroform/" + usin, 'CcroForm', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+                if (window.focus) {
+                    w.focus();
+                }
+            } else {
+                jAlert(result, 'Error');
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to validate Village Council date');
+        }
+    });
+}
+
+function generateCcros() {
+    $.ajax({
+        type: "GET",
+        url: "landrecords/checkvcdate/" + activeProject,
+        async: false,
+        success: function (result) {
+            if (result === RESPONSE_OK) {
+                var fromRecord = $("#ccroStart").val();
+                var endRecord = $("#ccroEnd").val();
+
+                if (!checkIntNumber(fromRecord))
+                    fromRecord = 1;
+
+                if (!checkIntNumber(endRecord))
+                    endRecord = 100000;
+
+                var w = window.open("landrecords/ccroforms/" + activeProject + "/" + fromRecord + "/" + endRecord, 'CcroForms', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+                if (window.focus) {
+                    w.focus();
+                }
+            } else {
+                jAlert(result, 'Error');
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            jAlert('Failed to validate Village Council date');
+        }
+    });
+}
+
+function generateDistrictRegBook() {
+    var w = window.open("landrecords/districtregbook/" + activeProject, 'DistrictRegistryBook', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+    if (window.focus) {
+        w.focus();
+    }
+}
+
+function generateVillageRegBook() {
+    var w = window.open("landrecords/villageregbook/" + activeProject, 'DistrictRegistryBook', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+    if (window.focus) {
+        w.focus();
+    }
+}
+
+function generateVillageIssuanceBook() {
+    var w = window.open("landrecords/villageissuancebook/" + activeProject, 'VillageIssuanceBook', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+    if (window.focus) {
+        w.focus();
+    }
+}
+
+function generateTransactionSheet(usin) {
+    var w = window.open("landrecords/transactionsheet/" + usin + "/" + activeProject, 'TransactionSheet', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+    if (window.focus) {
+        w.focus();
+    }
+}
+
 function formatDate(intDate) {
     return jQuery.datepicker.formatDate('yy-mm-dd', new Date(parseInt(intDate)));
 }
@@ -2998,4 +3109,11 @@ function calculateAge(birthday) {
     var ageDifMs = Date.now() - (new Date(birthday)).getTime();
     var ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
+}
+
+function checkIntNumber(data) {
+    if (data === "" + parseInt(data, 10))
+        return true;
+    else
+        return false;
 }

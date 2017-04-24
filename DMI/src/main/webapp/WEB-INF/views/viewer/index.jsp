@@ -357,265 +357,267 @@
                             </div>
 
                             <div class="mainContainer">
-                                
-                                    <div id="tab">
-                                        <ul>
-                                            <li><a href="#map-tab" id="tab1">Map</a></li>
-                                            <li><a href="#landrecords-div" id="tab2">Land Records</a></li>
-                                        </ul>
 
-                                        <div id="map-tab">
-                                            <!--  Main Toolbar  -->
-                                            <div class="toolBarBG">
-                                                <div class="default-project">
-                                                    <div class="btn-wrap">
-                                                        <button id="defaultbutton" class="btn" style="visibility: hidden;"
-                                                                title="Go to Default Project"
-                                                                onclick="javascript:defaultProject();">
-                                                            <i class="fa fa-folder"></i>Default
-                                                        </button>
-                                                    </div>
+                                <div id="mainTabs">
+                                    <ul>
+                                        <li><a href="#map-tab" id="tab1">Map</a></li>
+                                        <li><a href="#landrecords-div" id="tab2">Land Records</a></li>
+                                        <li><a href="#tabPersonsEdit" id="tab3">Persons editing</a></li>
+                                        <li><a href="#tabReports" id="tab4">Reports</a></li>
+                                    </ul>
+
+                                    <div id="map-tab">
+                                        <!--  Main Toolbar  -->
+                                        <div class="toolBarBG">
+                                            <div class="default-project">
+                                                <div class="btn-wrap">
+                                                    <button id="defaultbutton" class="btn" style="visibility: hidden;"
+                                                            title="Go to Default Project"
+                                                            onclick="javascript:defaultProject();">
+                                                        <i class="fa fa-folder"></i>Default
+                                                    </button>
                                                 </div>
+                                            </div>
 
-                                                <div
-                                                    style="float: right; width: 10%; postion: relative; height: 34px; padding-top: 4px;">
-                                                    <div style="padding-top: 5px; padding-left: 0px;">
-                                                        <!--<label for="scale" style="height: 1.6em; color: #fff; float: left; margin-right: 5px;">1:</label> -->
-                                                        <select id="scale-interval" style="height: 24px; width: 80px;">
-                                                        </select>
-                                                    </div>
+                                            <div
+                                                style="float: right; width: 10%; postion: relative; height: 34px; padding-top: 4px;">
+                                                <div style="padding-top: 5px; padding-left: 0px;">
+                                                    <!--<label for="scale" style="height: 1.6em; color: #fff; float: left; margin-right: 5px;">1:</label> -->
+                                                    <select id="scale-interval" style="height: 24px; width: 80px;">
+                                                    </select>
                                                 </div>
+                                            </div>
 
-                                                <div style="float: right; postion: relative; height: 38px;">
-                                                    <div id="toolbar" class="toolbar">
-                                                        <div class="fg-buttonset fg-buttonset-single">
-                                                            <ul id="mycarousel" class="jcarousel-skin-tango" lang="cy">
-                                                                <li id="li-intersection">
-                                                                    <button id="intersection"
-                                                                            title="Spatial Validation"
-                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img src="<c:url value="resources/images/viewer/toolbar/intersections.png" />" />
-                                                                    </button>
-                                                                </li>
+                                            <div style="float: right; postion: relative; height: 38px;">
+                                                <div id="toolbar" class="toolbar">
+                                                    <div class="fg-buttonset fg-buttonset-single">
+                                                        <ul id="mycarousel" class="jcarousel-skin-tango" lang="cy">
+                                                            <li id="li-intersection">
+                                                                <button id="intersection"
+                                                                        title="Spatial Validation"
+                                                                        class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img src="<c:url value="resources/images/viewer/toolbar/intersections.png" />" />
+                                                                </button>
+                                                            </li>
 
-                                                                <li id="li-openproject">
-                                                                    <button id="openproject"
-                                                                            title="Open Project"
-                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt="" src="<c:url value="resources/images/viewer/toolbar/open.png" />" />
-                                                                    </button>
-                                                                </li>
+                                                            <li id="li-openproject">
+                                                                <button id="openproject"
+                                                                        title="Open Project"
+                                                                        class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img alt="" src="<c:url value="resources/images/viewer/toolbar/open.png" />" />
+                                                                </button>
+                                                            </li>
 
-                                                                <li id="li-zoomin">
-                                                                    <button id="zoomin"
-                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                            title="Zoom In">
-                                                                        <img src="<c:url value="resources/images/viewer/navi/zoom_in.png" />" />
-                                                                    </button>
-                                                                </li>
+                                                            <li id="li-zoomin">
+                                                                <button id="zoomin"
+                                                                        class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                        title="Zoom In">
+                                                                    <img src="<c:url value="resources/images/viewer/navi/zoom_in.png" />" />
+                                                                </button>
+                                                            </li>
 
-                                                                <li id="li-zoomout">
-                                                                    <button id="zoomout"
-                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                            title="Zoom Out">
-                                                                        <img src="<c:url value="resources/images/viewer/navi/zoom_out.png" />" />
-                                                                    </button>
-                                                                </li>
-                                                                <li id="li-pan"><button id="pan"
-                                                                                        class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right ui-state-active1"
-                                                                                        title="Pan">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/center.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-zoomtolayer"><button id="zoomtolayer"
-                                                                                                class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                                title="Zoom To Layer">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/zoom_layer.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-fixedzoomin"><button id="fixedzoomin"
-                                                                                                class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                                title="Fixed ZoomIn">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/fixed_zoom_in.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-fixedzoomout"><button id="fixedzoomout"
-                                                                                                 class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                                 title="Fixed ZoomOut">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/fixed_zoom_out.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-zoomprevious"><button id="zoomprevious"
-                                                                                                 class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                                 title="Zoom Previous">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/previous.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-zoomnext"><button id="zoomnext"
+                                                            <li id="li-zoomout">
+                                                                <button id="zoomout"
+                                                                        class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                        title="Zoom Out">
+                                                                    <img src="<c:url value="resources/images/viewer/navi/zoom_out.png" />" />
+                                                                </button>
+                                                            </li>
+                                                            <li id="li-pan"><button id="pan"
+                                                                                    class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right ui-state-active1"
+                                                                                    title="Pan">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/center.png" />" />
+                                                                </button></li>
+                                                            <li id="li-zoomtolayer"><button id="zoomtolayer"
+                                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                                            title="Zoom To Layer">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/zoom_layer.png" />" />
+                                                                </button></li>
+                                                            <li id="li-fixedzoomin"><button id="fixedzoomin"
+                                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                                            title="Fixed ZoomIn">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/fixed_zoom_in.png" />" />
+                                                                </button></li>
+                                                            <li id="li-fixedzoomout"><button id="fixedzoomout"
                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                             title="zoom Next">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/next.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-fullview"><button id="fullview"
+                                                                                             title="Fixed ZoomOut">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/fixed_zoom_out.png" />" />
+                                                                </button></li>
+                                                            <li id="li-zoomprevious"><button id="zoomprevious"
                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                             title="Full Zoom">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/zoom_full.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-info"><button id="info" title="Info"
+                                                                                             title="Zoom Previous">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/previous.png" />" />
+                                                                </button></li>
+                                                            <li id="li-zoomnext"><button id="zoomnext"
+                                                                                         class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                                         title="zoom Next">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/next.png" />" />
+                                                                </button></li>
+                                                            <li id="li-fullview"><button id="fullview"
+                                                                                         class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                                         title="Full Zoom">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/zoom_full.png" />" />
+                                                                </button></li>
+                                                            <li id="li-info"><button id="info" title="Info"
+                                                                                     class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/info.png" />" />
+                                                                </button></li>
+                                                            <li id="li-measurelength"><button id="measurelength"
+                                                                                              title="Measure"
+                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/length-measure.png" />" />
+                                                                </button></li>
+                                                            <li id="li-selectfeature"><button id="selectfeature"
+                                                                                              title="Select Feature"
+                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/select-Feature.png" />" />
+                                                                </button></li>
+                                                            <li id="li-selectbox"><button id="selectbox"
+                                                                                          title="Select By Rectangle"
+                                                                                          class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/select-rectangle.png" />" />
+                                                                </button></li>
+                                                            <li id="li-selectpolygon"><button id="selectpolygon"
+                                                                                              title="Select By Polygon"
+                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/navi/select-polygon.png" />" />
+                                                                </button></li>
+                                                            <li id="li-clear_selection"><button id="clear_selection"
+                                                                                                title="Clear"
+                                                                                                class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/clear_selection.png" />" />
+                                                                </button></li>
+                                                            <li id="li-search"><button id="search" title="Search"
+                                                                                       class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img alt=""
+                                                                         src="<c:url value="resources/images/viewer/navi/search.png" />" />
+                                                                </button></li>
+                                                            <li id="li-zoomtoxy"><button id="zoomtoxy"
+                                                                                         title="Zoom To XY"
                                                                                          class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/info.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-measurelength"><button id="measurelength"
-                                                                                                  title="Measure"
-                                                                                                  class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/length-measure.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-selectfeature"><button id="selectfeature"
-                                                                                                  title="Select Feature"
-                                                                                                  class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/select-Feature.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-selectbox"><button id="selectbox"
-                                                                                              title="Select By Rectangle"
-                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/select-rectangle.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-selectpolygon"><button id="selectpolygon"
-                                                                                                  title="Select By Polygon"
-                                                                                                  class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/navi/select-polygon.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-clear_selection"><button id="clear_selection"
-                                                                                                    title="Clear"
-                                                                                                    class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/clear_selection.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-search"><button id="search" title="Search"
-                                                                                           class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt=""
-                                                                             src="<c:url value="resources/images/viewer/navi/search.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-zoomtoxy"><button id="zoomtoxy"
-                                                                                             title="Zoom To XY"
-                                                                                             class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt=""
-                                                                             src="<c:url value="resources/images/viewer/navi/zoomtoxy.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-print"><button id="print" title="Print"
+                                                                    <img alt=""
+                                                                         src="<c:url value="resources/images/viewer/navi/zoomtoxy.png" />" />
+                                                                </button></li>
+                                                            <li id="li-print"><button id="print" title="Print"
+                                                                                      class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/print.png" />" />
+                                                                </button></li>
+                                                            <li id="li-query"><button id="query" title="Query Builder"
+                                                                                      class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/query.png" />" />
+                                                                </button></li>
+                                                            <li id="li-bookmark"><button id="bookmark" title="Bookmarks"
+                                                                                         class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/bookmark.png" />" />
+                                                                </button></li>
+                                                            <li id="li-maptip"><button id="maptip" title="Map Tips"
+                                                                                       class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/maptips.png" />" />
+                                                                </button></li>
+                                                            <li id="li-thematic"><button id="thematic" title="Thematic"
+                                                                                         class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/thematic.png" />" />
+                                                                </button></li>
+                                                            <li id="li-textstyle"><button id="textstyle"
+                                                                                          title="Text Style"
                                                                                           class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/print.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-query"><button id="query" title="Query Builder"
+                                                                    <img alt=""
+                                                                         src="<c:url value="resources/images/viewer/toolbar/text-style.png" />" />
+                                                                </button></li>
+                                                            <li id="li-export"><button id="export" title="Export Data"
+                                                                                       class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/export.png" />" />
+                                                                </button></li>
+                                                            </li>
+                                                            <li id="li-exportmap"><button id="exportmap"
+                                                                                          title="Export Map"
                                                                                           class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/query.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-bookmark"><button id="bookmark" title="Bookmarks"
-                                                                                             class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/bookmark.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-maptip"><button id="maptip" title="Map Tips"
-                                                                                           class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/maptips.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-thematic"><button id="thematic" title="Thematic"
-                                                                                             class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/thematic.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-textstyle"><button id="textstyle"
-                                                                                              title="Text Style"
-                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt=""
-                                                                             src="<c:url value="resources/images/viewer/toolbar/text-style.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-export"><button id="export" title="Export Data"
-                                                                                           class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/export.png" />" />
-                                                                    </button></li>
-                                                                </li>
-                                                                <li id="li-exportmap"><button id="exportmap"
-                                                                                              title="Export Map"
-                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt=""
-                                                                             src="<c:url value="resources/images/viewer/toolbar/exportmap.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-markup"><button id="markup" title="Markup"
-                                                                                           class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt=""
-                                                                             src="<c:url value="resources/images/viewer/toolbar/markup.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-editing"><button id="editing" title="Editing"
-                                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
-                                                                        <img alt=""
-                                                                             src="<c:url value="resources/images/viewer/toolbar/edit.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-complaint"><button id="complaint"
-                                                                                              class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                              title="Complaint">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/complaint.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-report"><button id="report"
+                                                                    <img alt=""
+                                                                         src="<c:url value="resources/images/viewer/toolbar/exportmap.png" />" />
+                                                                </button></li>
+                                                            <li id="li-markup"><button id="markup" title="Markup"
+                                                                                       class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img alt=""
+                                                                         src="<c:url value="resources/images/viewer/toolbar/markup.png" />" />
+                                                                </button></li>
+                                                            <li id="li-editing"><button id="editing" title="Editing"
+                                                                                        class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right">
+                                                                    <img alt=""
+                                                                         src="<c:url value="resources/images/viewer/toolbar/edit.png" />" />
+                                                                </button></li>
+                                                            <li id="li-complaint"><button id="complaint"
+                                                                                          class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                                          title="Complaint">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/complaint.png" />" />
+                                                                </button></li>
+                                                            <li id="li-report"><button id="report"
+                                                                                       class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
+                                                                                       title="Report">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/report.png" />" />
+                                                                </button></li>
+                                                            <li id="li-importdata"><button id="importdata"
                                                                                            class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                           title="Report">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/report.png" />" />
-                                                                    </button></li>
-                                                                <li id="li-importdata"><button id="importdata"
-                                                                                               class=" fg-button ui-state-default1 ui-priority-primary1 ui-corner-left ui-corner-right"
-                                                                                               title="Import Data">
-                                                                        <img
-                                                                            src="<c:url value="resources/images/viewer/toolbar/import.png" />" />
-                                                                    </button></li>
-                                                            </ul>
+                                                                                           title="Import Data">
+                                                                    <img
+                                                                        src="<c:url value="resources/images/viewer/toolbar/import.png" />" />
+                                                                </button></li>
+                                                        </ul>
 
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <!-- ------------- Horizontal Shadow  -->
-                                            <div id="shadowHor">
-                                                <div class="sh1"></div>
-                                                <div class="sh2"></div>
-                                                <div class="sh3"></div>
-                                                <div class="sh4"></div>
-                                                <div class="sh5"></div>
-                                                <div class="sh6"></div>
-                                            </div>
+                                        <!-- ------------- Horizontal Shadow  -->
+                                        <div id="shadowHor">
+                                            <div class="sh1"></div>
+                                            <div class="sh2"></div>
+                                            <div class="sh3"></div>
+                                            <div class="sh4"></div>
+                                            <div class="sh5"></div>
+                                            <div class="sh6"></div>
+                                        </div>
 
-                                            <table cellspacing="0" cellpadding="0" width="100%">
-                                                <tr>
-                                                    <td valign="top">
-                                                        <div id="sidebar">
-                                                            <ul>
-                                                                <li>
-                                                                    <a href="#tabs-LayerManager">
-                                                                        <span id="layermgr">Layer Manager</span>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                            <div id="tabs-LayerManager"></div>
-                                                            <div id="tabs-Tool"></div>
-                                                        </div>
-                                                    </td>
-                                                    <td valign="top" style="width: 100%">
-                                                        <div id="map">
+                                        <table cellspacing="0" cellpadding="0" width="100%">
+                                            <tr>
+                                                <td valign="top">
+                                                    <div id="sidebar">
+                                                        <ul>
+                                                            <li>
+                                                                <a href="#tabs-LayerManager">
+                                                                    <span id="layermgr">Layer Manager</span>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                        <div id="tabs-LayerManager"></div>
+                                                        <div id="tabs-Tool"></div>
+                                                    </div>
+                                                </td>
+                                                <td valign="top" style="width: 100%">
+                                                    <div id="map">
                                                         <span id="collapse" class="collapse_left"></span>
-                                    
+
                                                         <input type="text" class="markuptexttooltip" id="MarkupTextTooltip" title="" style="display: none" />
                                                         <div id="baselayer" class="baselayer-b mapbl-buttonset mapbl-buttonset-single"></div>
                                                         <div id="maptips" class="maptips-s"></div>
@@ -630,19 +632,99 @@
                                                             <div class="sv6"></div>
                                                         </div>
                                                         <div id="bottombar"></div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                        <!--Land records div  -->
-                                        <div id="landrecords-div"></div>
-                                        <div id="workcommitment-tab"></div>
-                                        <div id="bottomstatusbar" class="bottom_statusbar"></div>
-                                        <div id="report-tab"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <!--Land records div  -->
+                                    <div id="landrecords-div"></div>
+                                    <div id="tabPersonsEdit">
 
                                     </div>
-                               
+                                    <div id="tabReports">
+                                        <div style="padding: 10px;">
+                                            <div id="reportsAccordion">
+                                                <h3>Adjudication Forms</h3>
+                                                <div class="filter-details">
+                                                    <form id="formAdjudicationForms" action="" onsubmit="return false;">
+                                                        <table>
+                                                            <tr>
+                                                                <td>
+                                                                    <label>Record (start)</label>
+                                                                    <input type="text" id="adjStart" value="1" />
+                                                                </td>
+                                                                <td>
+                                                                    <label>Record (end)</label>
+                                                                    <input type="text" id="adjEnd" value="100000" class="input-medium" />
+                                                                </td>
+                                                                <td>
+                                                                    <label>&nbsp;</label>
+                                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateAdjudicationForms();" />
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <br />
+                                                    </form>
+                                                </div>
+                                                <h3>CCRO Forms</h3>
+                                                <div class="filter-details">
+                                                    <form id="formAdjudicationForms" action="" onsubmit="return false;">
+                                                        <table>
+                                                            <tr>
+                                                                <td>
+                                                                    <label>Record (start)</label>
+                                                                    <input type="text" id="ccroStart" value="1" />
+                                                                </td>
+                                                                <td>
+                                                                    <label>Record (end)</label>
+                                                                    <input type="text" id="ccroEnd" value="100000" class="input-medium" />
+                                                                </td>
+                                                                <td>
+                                                                    <label>&nbsp;</label>
+                                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateCcros();" />
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <br />
+                                                    </form>
+                                                </div>
+                                                <h3>Transaction Sheet</h3>
+                                                <div>
+                                                    <br />
+                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateTransactionSheet(0);" />
+                                                    <br />
+                                                </div>
+                                                <h3>District Register Book</h3>
+                                                <div>
+                                                    <br />
+                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateDistrictRegBook();" />
+                                                    <br />
+                                                </div>
+                                                <h3>Village Register Book</h3>
+                                                <div>
+                                                    <br />
+                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateVillageRegBook();" />
+                                                    <br />
+                                                </div>
+                                                <h3>Village Issuance Book</h3>
+                                                <div>
+                                                    <br />
+                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateVillageIssuanceBook();" />
+                                                    <br />
+                                                </div>
+                                                <h3>Claims Profile Statistics</h3>
+                                                <div>
+                                                    <p>
+                                                        ...
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="bottomstatusbar" class="bottom_statusbar"></div>
+                                </div>
+
                                 <!-- Popup for spatial validation -->
 
                                 <div id="validation-dialog-form" title="Spatial Validation"
@@ -650,8 +732,7 @@
 
 
 
-                                    <form class="cmxform" id="spatialValidationformID" action=""
-                                          onsubmit="return false;">
+                                    <form class="cmxform" id="spatialValidationformID" action="" onsubmit="return false;">
 
                                         <fieldset>
 

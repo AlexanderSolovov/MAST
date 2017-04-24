@@ -123,7 +123,6 @@
                "/cloudburst/viewer/Toolbar.js",
                "/cloudburst/viewer/Navi.js",
                "/cloudburst/viewer/Search.js",
-               "/cloudburst/viewer/Print.js",
                "/cloudburst/viewer/ZoomToXY.js",
                "/cloudburst/viewer/ExportData.js",
                "/cloudburst/viewer/Bookmark.js",
@@ -147,8 +146,6 @@
                "mtl-script/osgridref.js",
                "/cloudburst/viewer/UserProjects.js",
                "/cloudburst/viewer/LandRecords.js",
-               "/cloudburst/viewer/CCRO.js",
-               "/cloudburst/viewer/land-adjudication.js",
                "/cloudburst/viewer/mapLoader.js",
 			   "/cloudburst/viewer/mapImage.js",
 			   "/cloudburst/viewer/proj4js-combined.js",
@@ -169,8 +166,4 @@
     }
 })();
 
-/**
- * Constant: VERSION_NUMBER
- */
-Cloudburst.VERSION_NUMBER="0.1";
 var undoredo = null;

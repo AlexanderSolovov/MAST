@@ -1,5 +1,6 @@
 package com.rmsi.mast.studio.domain.fetch;
 
+import com.rmsi.mast.studio.util.StringUtils;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,6 +37,9 @@ public class PersonWithRightSummary implements Serializable {
     
     @Column(name="person_type")
     private String personType;
+    
+    @Column(name = "person_type_id")
+    private int personTypeId;
     
     @Column
     private String gender;
@@ -124,6 +128,14 @@ public class PersonWithRightSummary implements Serializable {
         this.personType = personType;
     }
 
+    public int getPersonTypeId() {
+        return personTypeId;
+    }
+
+    public void setPersonTypeId(int personTypeId) {
+        this.personTypeId = personTypeId;
+    }
+
     public String getGender() {
         return gender;
     }
@@ -194,5 +206,27 @@ public class PersonWithRightSummary implements Serializable {
 
     public void setResident(String resident) {
         this.resident = resident;
+    }
+    
+    public String getFullName() {
+        String name = "";
+        if (!StringUtils.isEmpty(getFirstName())) {
+            name = getFirstName().trim();
+        }
+        if (!StringUtils.isEmpty(getMiddleName())) {
+            if (name.length() > 0) {
+                name = name + " " + getMiddleName().trim();
+            } else {
+                name = getMiddleName().trim();
+            }
+        }
+        if (!StringUtils.isEmpty(getLastName())) {
+            if (name.length() > 0) {
+                name = name + " " + getLastName().trim();
+            } else {
+                name = getLastName().trim();
+            }
+        }
+        return name;
     }
 }

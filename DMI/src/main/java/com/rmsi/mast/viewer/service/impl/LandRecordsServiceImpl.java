@@ -27,7 +27,6 @@ import com.rmsi.mast.studio.dao.PersonDAO;
 import com.rmsi.mast.studio.dao.PersonTypeDAO;
 import com.rmsi.mast.studio.dao.ProjectAdjudicatorDAO;
 import com.rmsi.mast.studio.dao.ProjectAreaDAO;
-import com.rmsi.mast.studio.dao.ProjectHamletDAO;
 import com.rmsi.mast.studio.dao.RelationshipTypeDao;
 import com.rmsi.mast.studio.dao.SUnitHistoryDAO;
 import com.rmsi.mast.studio.dao.ShareTypeDAO;
@@ -61,7 +60,6 @@ import com.rmsi.mast.studio.domain.Person;
 import com.rmsi.mast.studio.domain.PersonType;
 import com.rmsi.mast.studio.domain.ProjectAdjudicator;
 import com.rmsi.mast.studio.domain.ProjectArea;
-import com.rmsi.mast.studio.domain.ProjectHamlet;
 import com.rmsi.mast.studio.domain.RelationshipType;
 import com.rmsi.mast.studio.domain.ShareType;
 import com.rmsi.mast.studio.domain.SlopeValues;
@@ -75,6 +73,7 @@ import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.RegistryBook;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitStatusHistory;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
@@ -89,7 +88,6 @@ import com.rmsi.mast.studio.mobile.dao.EducationLevelDao;
 import com.rmsi.mast.studio.mobile.dao.LandUseTypeDao;
 import com.rmsi.mast.studio.mobile.dao.NaturalPersonDao;
 import com.rmsi.mast.studio.mobile.dao.NonNaturalPersonDao;
-import com.rmsi.mast.studio.mobile.dao.SpatialUnitDao;
 import com.rmsi.mast.studio.mobile.dao.StatusDao;
 import com.rmsi.mast.studio.mobile.dao.SurveyProjectAttributeDao;
 import com.rmsi.mast.studio.util.StringUtils;
@@ -102,7 +100,6 @@ import com.rmsi.mast.viewer.dao.SpatialUnitPersonWithInterestDao;
 import com.rmsi.mast.viewer.dao.SpatialUnitTempDao;
 import com.rmsi.mast.viewer.service.LandRecordsService;
 import java.util.Calendar;
-import java.util.Locale;
 
 @Service
 public class LandRecordsServiceImpl implements LandRecordsService {
@@ -287,10 +284,10 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public SpatialUnitGeom getParcelGeometry(long usin){
+    public SpatialUnitGeom getParcelGeometry(long usin) {
         return landRecordsDao.getParcelGeometry(usin);
     }
-    
+
     @Override
     public boolean referClaim(SpatialUnitTable claim, long userId) {
         claim.setStatus(statusDao.getStatusById(Status.STATUS_REFERRED));
@@ -306,12 +303,12 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public boolean approveClaim(SpatialUnitTable claim, long userId){
+    public boolean approveClaim(SpatialUnitTable claim, long userId) {
         claim.setStatus(statusDao.getStatusById(Status.STATUS_APPROVED));
         updateStatusHistory(claim.getUsin(), userId, Status.STATUS_APPROVED);
         return update(claim);
     }
-    
+
     @Override
     public List<SpatialUnitTable> findAllSpatialUnitlist() {
         return landRecordsDao.findAll();
@@ -1209,17 +1206,22 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     }
 
     @Override
-    public List<ClaimSummary> getClaimsForAdjudicationForms(Long startUsin, Long endUsin, int statusId, String projectName){
-        return landRecordsDao.getClaimsSummary(startUsin, endUsin, projectName, statusId, ClaimType.CODE_NEW);
+    public List<ClaimSummary> getClaimsForAdjudicationForms(Long usin, int startRecord, int endRecord, int statusId, String projectName) {
+        return landRecordsDao.getClaimsSummary(usin, startRecord, endRecord, projectName, statusId, ClaimType.CODE_NEW);
+    }
+
+    @Override
+    public List<ClaimSummary> getClaimsForCcro(Long usin, int startRecord, int endRecord, String projectName) {
+        return landRecordsDao.getClaimsSummary(usin, startRecord, endRecord, projectName, Status.STATUS_APPROVED, ClaimType.CODE_NEW);
+    }
+
+    @Override
+    public List<RegistryBook> getRegistryBook(String projectName, long usin){
+        return landRecordsDao.getRegistryBook(projectName, usin);
     }
     
     @Override
-    public List<ClaimSummary> getClaimsForCcro(Long startUsin, Long endUsin, String projectName){
-        return landRecordsDao.getClaimsSummary(startUsin, endUsin, projectName, Status.STATUS_APPROVED, ClaimType.CODE_NEW);
-    }
-    
-    @Override
-    public ProjectDetails getProjectDetails(String projectName){
+    public ProjectDetails getProjectDetails(String projectName) {
         return landRecordsDao.getProjectDetails(projectName);
     }
 }

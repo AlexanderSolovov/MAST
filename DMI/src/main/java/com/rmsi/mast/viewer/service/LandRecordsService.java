@@ -40,6 +40,7 @@ import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
+import com.rmsi.mast.studio.domain.fetch.RegistryBook;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTemp;
@@ -803,9 +804,11 @@ public interface LandRecordsService {
     @Transactional
     boolean deleteDisputant(Long disputeId, Long partyId);
    
-    List<ClaimSummary> getClaimsForAdjudicationForms(Long startUsin, Long endUsin, int statusId, String projectName);
+    List<ClaimSummary> getClaimsForAdjudicationForms(Long usin, int startRecord, int endRecord, int statusId, String projectName);
     
-    List<ClaimSummary> getClaimsForCcro(Long startUsin, Long endUsin, String projectName);
+    List<ClaimSummary> getClaimsForCcro(Long usin, int startRecord, int endRecord, String projectName);
     
     ProjectDetails getProjectDetails(String projectName);
+    
+    List<RegistryBook> getRegistryBook(String projectName, long usin);
 }
