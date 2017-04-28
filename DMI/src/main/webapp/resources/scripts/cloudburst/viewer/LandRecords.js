@@ -3101,6 +3101,13 @@ function generateTransactionSheet(usin) {
     }
 }
 
+function generateClaimsProfile() {
+    var w = window.open("landrecords/claimsprofile/" + activeProject, 'ClaimsProfile', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+    if (window.focus) {
+        w.focus();
+    }
+}
+
 function formatDate(intDate) {
     return jQuery.datepicker.formatDate('yy-mm-dd', new Date(parseInt(intDate)));
 }

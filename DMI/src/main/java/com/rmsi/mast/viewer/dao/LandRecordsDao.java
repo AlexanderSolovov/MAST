@@ -3,6 +3,7 @@ package com.rmsi.mast.viewer.dao;
 import java.util.List;
 
 import com.rmsi.mast.studio.dao.GenericDAO;
+import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
@@ -51,6 +52,8 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
     List<ClaimSummary> getClaimsSummary(Long usin, int startRecord, int endRecord, String projectName, int statusId, String claimType);
     
     List<RegistryBook> getRegistryBook(String projectName, long usin);
+    
+    ClaimProfile getClaimsProfile(String projectName);
     
     ProjectDetails getProjectDetails(String projectName);
 }

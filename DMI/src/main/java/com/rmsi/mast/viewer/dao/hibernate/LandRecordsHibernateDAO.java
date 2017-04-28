@@ -9,17 +9,23 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.rmsi.mast.studio.dao.hibernate.GenericHibernateDAO;
-import com.rmsi.mast.studio.domain.ClaimType;
 import com.rmsi.mast.studio.domain.Status;
+import com.rmsi.mast.studio.domain.fetch.CcroOccurrenceStat;
+import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
+import com.rmsi.mast.studio.domain.fetch.ClaimantStat;
+import com.rmsi.mast.studio.domain.fetch.ClaimsStat;
+import com.rmsi.mast.studio.domain.fetch.OwnershipTypeStat;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.util.ClaimsSorter;
+import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.dao.LandRecordsDao;
-import com.vividsolutions.jts.geom.Geometry;
 import java.util.Collections;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureQuery;
 
 @Repository
 public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTable, Long>
@@ -239,6 +245,65 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
         try {
             Query query = getEntityManager().createQuery("Select p from ProjectDetails p where p.name = :projectName");
             return (ProjectDetails) query.setParameter("projectName", projectName).getSingleResult();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+    
+    @Override
+    public ClaimProfile getClaimsProfile(String projectName){
+        try {
+            ClaimProfile profile = new ClaimProfile();
+            if(StringUtils.empty(projectName).equalsIgnoreCase("ALL")){
+                projectName = "";
+            }
+            
+            // Get claims stat
+            StoredProcedureQuery query = getEntityManager().createStoredProcedureQuery("get_claims_stat", ClaimsStat.class)
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            profile.setClaimsStatList(query.getResultList());
+            
+            // Get unique claimants
+            query = getEntityManager().createStoredProcedureQuery("get_unique_claimants")
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            Object[] result = (Object[]) query.getSingleResult();
+            
+            if(result!=null && result[0] != null){
+                profile.setUniqueMales((int)result[0]);
+            }
+            if(result!=null && result[1] != null){
+                profile.setUniqueFemales((int)result[1]);
+            }
+            
+            // Get unique claimants with denied CCRO
+            query = getEntityManager().createStoredProcedureQuery("get_unique_claimants_denied")
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            result = (Object[]) query.getSingleResult();
+            
+            if(result!=null && result[0] != null){
+                profile.setUniqueMalesDenied((int)result[0]);
+            }
+            if(result!=null && result[1] != null){
+                profile.setUniqueFemalesDenied((int)result[1]);
+            }
+            
+            // Get ownership types stat
+            query = getEntityManager().createStoredProcedureQuery("get_ownership_types_approved", OwnershipTypeStat.class)
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            profile.setOwnershipTypeStatList(query.getResultList());
+            
+            // Get ccro occurrence stat
+            query = getEntityManager().createStoredProcedureQuery("get_ccro_occurrence", CcroOccurrenceStat.class)
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            profile.setCcroOccurrenceStatList(query.getResultList());
+            
+            return profile;
         } catch (Exception e) {
             logger.error(e);
             return null;

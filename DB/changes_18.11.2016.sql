@@ -688,7 +688,7 @@ select
   su.usin, 
   su.usin_str, 
   su.uka_propertyno as uka, 
-  round((st_area(st_transform(su.the_geom,32636))*0.000247105)::numeric, 3) as acres,
+  round((st_area(st_transform(su.the_geom,32736))*0.000247105)::numeric, 3) as acres,
   h.hamlet_name_second_language as hamlet_name, 
   ux.land_use_type_sw as existing_use, 
   up.land_use_type_sw as proposed_use, 
@@ -755,7 +755,7 @@ select
   r.usin,
   su.project_name,
   su.uka_propertyno as uka, 
-  round((st_area(st_transform(su.the_geom,32636))*0.000247105)::numeric, 3) as acres,
+  round((st_area(st_transform(su.the_geom,32736))*0.000247105)::numeric, 3) as acres,
   h.hamlet_name_second_language as hamlet_name, 
   su.neighbor_north, 
   su.neighbor_south, 
@@ -791,7 +791,7 @@ select
   r.usin,
   su.project_name,
   su.uka_propertyno as uka, 
-  round((st_area(st_transform(su.the_geom,32636))*0.000247105)::numeric, 3) as acres,
+  round((st_area(st_transform(su.the_geom,32736))*0.000247105)::numeric, 3) as acres,
   h.hamlet_name_second_language as hamlet_name, 
   su.neighbor_north, 
   su.neighbor_south, 
@@ -820,3 +820,101 @@ where r.isactive and np.active and su.active and su.current_workflow_status_id =
 
 order by hamlet_name, cert_number, usin, first_name;
 
+-- Claims
+CREATE OR REPLACE FUNCTION get_claims_stat(IN projectName character varying(100)) 
+RETURNS TABLE(claim_type character varying(200), collected integer, approved integer, denied integer)
+AS $$ 
+
+select  ct.name as claim_type, 
+	count(1)::int as collected,
+	sum(case when su.current_workflow_status_id = 2 then 1 else 0 end)::int as approved, 
+	sum(case when su.current_workflow_status_id = 5 then 1 else 0 end)::int as denied
+from spatial_unit su left join claim_type ct on su.claim_type = ct.code
+where su.active and (su.project_name = projectName or '' = projectName)
+group by ct.name
+order by ct.name
+
+$$
+LANGUAGE SQL;
+
+-- Unique claimants 
+CREATE OR REPLACE FUNCTION get_unique_claimants(IN projectName character varying(100)) 
+RETURNS TABLE(male_count integer, female_count integer)
+AS $$ 
+
+select 
+  sum(case when t.gender = 1 then 1 else 0 end)::int as male_count,
+  sum(case when t.gender = 2 then 1 else 0 end)::int as female_count
+from (
+  select p.gender
+  from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
+  where r.isactive and su.active and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+  group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
+) t
+
+$$
+LANGUAGE SQL;
+
+-- Unique claimants denied
+CREATE OR REPLACE FUNCTION get_unique_claimants_denied(IN projectName character varying(100)) 
+RETURNS TABLE(male_count integer, female_count integer)
+AS $$ 
+
+select 
+  sum(case when t.gender = 1 then 1 else 0 end)::int as male_count,
+  sum(case when t.gender = 2 then 1 else 0 end)::int as female_count
+from (
+  select p.gender
+  from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
+  where r.isactive and su.active and su.current_workflow_status_id = 5 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+  group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
+) t
+
+$$
+LANGUAGE SQL;
+
+
+-- By share type (approved)
+CREATE OR REPLACE FUNCTION get_ownership_types_approved(IN projectName character varying(100)) 
+RETURNS TABLE(ownership_type character varying, males integer, females integer, total integer)
+AS $$ 
+
+select 
+  sh.share_type as ownership_type, 
+  sum(case when p.gender = 1 then 1 else 0 end)::int as males,
+  sum(case when p.gender = 2 then 1 else 0 end)::int as females,
+  count(1)::int as total
+from ((social_tenure_relationship r inner join natural_person p on r.person_gid = p.gid) 
+	inner join share_type sh on r.share = sh.gid)
+	inner join spatial_unit su on r.usin = su.usin
+where r.isactive and su.active and su.current_workflow_status_id = 2 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+group by sh.share_type
+order by sh.share_type
+
+$$
+LANGUAGE SQL;
+
+-- Approved CCROs by unique persons
+CREATE OR REPLACE FUNCTION get_ccro_occurrence(IN projectName character varying(100)) 
+RETURNS TABLE(occurrence integer, males integer, females integer, total integer)
+AS $$ 
+
+select t.occurrence::int, 
+sum(case when t.gender = 1 then 1 else 0 end)::int as males,
+sum(case when t.gender = 2 then 1 else 0 end)::int as females,
+count(1)::int as total
+from
+(
+select 
+  count(1) as occurrence, 
+  p.gender, 
+  (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age
+from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
+  where r.isactive and su.active and su.current_workflow_status_id = 2 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+  group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
+  ) t
+group by t.occurrence
+order by t.occurrence
+
+$$
+LANGUAGE SQL;

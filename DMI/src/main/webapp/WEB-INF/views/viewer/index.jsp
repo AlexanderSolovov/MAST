@@ -715,9 +715,9 @@
                                                 </div>
                                                 <h3>Claims Profile Statistics</h3>
                                                 <div>
-                                                    <p>
-                                                        ...
-                                                    </p>
+                                                    <br />
+                                                    <input type="button" value="Generate" class="btn1" onclick="javascript:generateClaimsProfile();" />
+                                                    <br />
                                                 </div>
                                             </div>
                                         </div>

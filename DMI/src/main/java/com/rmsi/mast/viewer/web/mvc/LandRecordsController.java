@@ -1412,6 +1412,12 @@ public class LandRecordsController {
         writeReport(reportsService.getTransactionSheet(projectName, usin), "TransactionSheet", response);
     }
     
+    @RequestMapping(value = "/viewer/landrecords/claimsprofile/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getClaimsProfile(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getClaimsProfile(projectName), "ClaimsProfile", response);
+    }
+    
     @RequestMapping(value = "/viewer/landrecords/checkvcdate/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public String checkVillageCouncilDate(@PathVariable String projectName) {

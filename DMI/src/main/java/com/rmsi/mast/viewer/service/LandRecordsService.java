@@ -37,6 +37,7 @@ import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.domain.TenureClass;
 import com.rmsi.mast.studio.domain.Unit;
 import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
+import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
@@ -811,4 +812,6 @@ public interface LandRecordsService {
     ProjectDetails getProjectDetails(String projectName);
     
     List<RegistryBook> getRegistryBook(String projectName, long usin);
+    
+    ClaimProfile getClaimsProfile(String projectName);
 }

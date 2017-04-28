@@ -5,6 +5,7 @@ import com.rmsi.mast.studio.domain.NonNaturalPerson;
 import com.rmsi.mast.studio.domain.PersonType;
 import com.rmsi.mast.studio.domain.SocialTenureRelationship;
 import com.rmsi.mast.studio.domain.Status;
+import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
@@ -228,6 +229,33 @@ public class ReportsServiceImpl implements ReportsSerivce {
         }
     }
 
+    @Override
+    public JasperPrint getClaimsProfile(String projectName){
+        try {
+            ClaimProfile profile = landRecordsService.getClaimsProfile(projectName);
+
+            if (profile == null) {
+                return null;
+            }
+
+            if(StringUtils.isEmpty(projectName)){
+                projectName = "ALL";
+            }
+            
+            HashMap params = new HashMap();
+            params.put("VILLAGE", projectName);
+            ClaimProfile[] beans = new ClaimProfile[]{profile};
+            JRDataSource jds = new JRBeanArrayDataSource(beans);
+
+            return JasperFillManager.fillReport(
+                    ReportsServiceImpl.class.getResourceAsStream("/reports/ClaimsProfile.jasper"),
+                    params, jds);
+        } catch (Exception ex) {
+            logger.error(ex);
+            return null;
+        }
+    }
+    
     private JasperPrint getRegistryBook(String projectName, String reportPath) {
         try {
             ProjectDetails project = landRecordsService.getProjectDetails(projectName);

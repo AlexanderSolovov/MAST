@@ -19,4 +19,6 @@ public interface ReportsSerivce {
     JasperPrint getVillageIssuanceBook(String projectName);
     
     JasperPrint getTransactionSheet(String projectName, Long usin);
+    
+    JasperPrint getClaimsProfile(String projectName);
 }
