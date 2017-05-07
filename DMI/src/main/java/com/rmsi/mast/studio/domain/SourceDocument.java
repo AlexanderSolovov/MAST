@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.rmsi.mast.studio.util.JsonDateSerializer;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  * Entity implementation class for Entity: SourceDocument
@@ -36,6 +37,7 @@ public class SourceDocument implements Serializable {
 
     private boolean active;
 
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date recordation;
 
     @Column(name = "scanned_source_document")

@@ -614,7 +614,7 @@ function ScaleRangeView() {
 jQuery(document).ready(function () {
     $("#mainTabs").tabs();
     $.ajaxSetup({cache: false});
-    
+
     $("#tab1").click(function (event) {
         $('#sidebar').show();
         $('#collapse').show();
@@ -629,7 +629,22 @@ jQuery(document).ready(function () {
     $("#tab4").click(function (event) {
         hideMapComponents();
         $("#reportsAccordion").accordion();
+        $("#selectProjects").val(activeProject);
     });
+
+    // Load projects list
+    $.ajax({
+        url: "landrecords/allprojects/",
+        async: false,
+        success: function (data) {
+            $("#selectProjects").empty();
+            $("#selectProjects").append($("<option></option>").attr("value", "ALL").text("All villages"));
+            $.each(data, function (i, projectName) {
+                $("#selectProjects").append($("<option></option>").attr("value", projectName).text(projectName));
+            });
+        }
+    });
+    
     var landRecords = new LandRecords("landRecords");
 });
 

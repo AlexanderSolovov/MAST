@@ -14,7 +14,9 @@ public class ClaimProfile {
     Integer uniqueFemalesDenied = 0;
     List<OwnershipTypeStat> ownershipTypeStatList;
     List<CcroOccurrenceStat> ccroOccurrenceStatList;
-    
+    List<ClaimantAgeStat> claimantsAgeList;
+    List<DisputeStat> disputes;
+            
     public ClaimProfile(){
     }
 
@@ -72,5 +74,21 @@ public class ClaimProfile {
 
     public void setCcroOccurrenceStatList(List<CcroOccurrenceStat> ccroOccurrenceStatList) {
         this.ccroOccurrenceStatList = ccroOccurrenceStatList;
+    }
+
+    public List<ClaimantAgeStat> getClaimantsAgeList() {
+        return claimantsAgeList;
+    }
+
+    public void setClaimantsAgeList(List<ClaimantAgeStat> claimantsAgeList) {
+        this.claimantsAgeList = claimantsAgeList;
+    }
+
+    public List<DisputeStat> getDisputes() {
+        return disputes;
+    }
+
+    public void setDisputes(List<DisputeStat> disputes) {
+        this.disputes = disputes;
     }
 }

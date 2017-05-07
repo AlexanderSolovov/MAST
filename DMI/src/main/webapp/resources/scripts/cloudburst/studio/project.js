@@ -4,10 +4,9 @@ var projectAreas = [];
 var userroledata = null;
 var selectedText = null;
 var content = null;
-var array = [];
 var hamletDetails = [];
 var adjName = null;
-var adjList = null;
+var adjList = [];
 var hamletList = null;
 var checkAdjEdit = false;
 var checkHamletEdit = false;
@@ -233,6 +232,9 @@ var createEditProject = function (_name) {
                     jQuery("#hamletId").val(data.projectAreas[0].hamlet);
                     jQuery("#villageId").val(data.projectAreas[0].village);
                     jQuery("#villagechairmanId").val(data.projectAreas[0].villageChairman);
+                    showSignature("SignatureVillageChairman", data.projectAreas[0].villageChairmanSignaturePath);
+                    showSignature("SignatureVillageExecutive", data.projectAreas[0].villageExecutiveSignaturePath);
+                    showSignature("SignatureDistrictOfficer", data.projectAreas[0].districtOfficerSignaturePath);
                     jQuery("#executiveofficerId").val(data.projectAreas[0].approvingExecutive);
                     jQuery("#districtofficerId").val(data.projectAreas[0].districtOfficer);
                     jQuery("#villagecode").val(data.projectAreas[0].village_code);
@@ -248,16 +250,8 @@ var createEditProject = function (_name) {
                 jQuery("#projectUserList").empty();
                 jQuery("#ProjectTemplateUser").tmpl(userroledata).appendTo("#projectUserList");
 
-                if (adjList.length > 0)
-                {
-                    checkAdjEdit = true;
-                    array = [];
-                    for (var i = 0; i < adjList.length; i++) {
-                        selectedText = adjList[i].adjudicatorName;
-                        array.push(selectedText);
-                    }
-                    addPersonAdjudicator('new');
-                }
+                populateAdjudicators();
+
                 if (hamletList.length > 0)
                 {
                     checkHamletEdit = true;
@@ -582,7 +576,7 @@ var saveProject = function () {
     });
 
     if ($("#projectForm").valid()) {
-        if (array.length >= 2) {
+        if (adjList.length >= 2) {
             if (!$('#temporaryHamletDiv').is(':empty')) {
                 if (jQuery('#active').val() == "") {
                     jQuery('#active').val("false");
@@ -803,8 +797,8 @@ function getRegionOnCountryChange(countryname) {
     });
 
 }
-function addTempAdjudicator(title) {
 
+function addTempAdjudicator(id) {
     adjudicatorDialog = $("#adjudicator-dialog-form").dialog({
         autoOpen: false,
         height: 200,
@@ -814,76 +808,79 @@ function addTempAdjudicator(title) {
         buttons: {
             "Save": function ()
             {
-                validateAdjudicator(title);
-            },
-            "Cancel": function ()
-            {
-                adjudicatorDialog.dialog("destroy");
+                validateAdjudicator(id);
             }
-        },
-        close: function () {
-            adjudicatorDialog.dialog("destroy");
         }
     });
-    if (title != 'new')
-        $('#adjudicator_name').val(title.name);
+    if (id !== 'new')
+        $('#adjudicator_name').val(adjList[id].adjudicatorName);
+    else
+        $('#adjudicator_name').val('');
+
     adjudicatorDialog.dialog("open");
 }
-function addPersonAdjudicator(title) {
-    if (!checkAdjEdit) {
-        checkAdjEdit = true;
-        array = [];
+
+function addPersonAdjudicator(id) {
+    if (adjList === null) {
+        adjList = [];
     }
 
-    adjName = document.getElementById("adjudicator_name").value;
-    jQuery("#adjudicator_name").val("");
-
-    if (title != 'new') {
-        array[title.id] = adjName;
-    } else if (adjName != "" && array.indexOf(adjName) == -1) {
-        array.push(adjName);
-    } else if (adjName != "" && array.indexOf(adjName) > -1) {
-        jAlert("Name already exists");
+    adjName = $('#adjudicator_name').val();
+    if (id === 'new') {
+        // Add new adjudicator
+        adjList.push({adjudicatorName: adjName, id: 0 - adjList.length, signaturePath: '', projectName: ''});
+    } else {
+        // Update
+        adjList[id].adjudicatorName = adjName;
     }
+
+    populateAdjudicators();
+}
+
+function populateAdjudicators() {
     jQuery("#temporaryAdjDiv").empty();
     var content1 = "";
-    for (var i = 0; i < array.length; i++) {
-        selectedText = array[i];
-        content = '<tr><td>' + '<label id="adjudicator_name' + "" + i + "" + '">' + "" + selectedText + "" + '</label><input type="hidden" name="project_adjudicatorhid" id= "project_adjudicatorhid" value="' + selectedText + '"> ' + '</td>';
-        content += '<td align="center">' + '<div><a href ="#" title=Edit name= ' + selectedText + ' id= ' + i + ' onclick="javascript:addTempAdjudicator(this);"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
+    for (var i = 0; i < adjList.length; i++) {
+        content = '<tr><td><label>' + "" + adjList[i].adjudicatorName + "" + '</label>' +
+                '<input type="hidden" name="project_adjudicatorhid" id= "project_adjudicatorhid" value="' + adjList[i].adjudicatorName + '"> ' + '</td>';
+        content += '<td><img src="" id="imgSignatureAdjudicator' + i + '" alt="Signature" class="signatureImage" />' +
+                '<a href="#" id="linkDeleteSignatureAdjudicator' + i + '" class="deleteLink" onclick="deleteSignature(\'SignatureAdjudicator' + i + '\')" style="margin-left: 10px;display: none;">' +
+                '<i class="fa fa-times"></i> Delete</a>' +
+                '<a href="#" id="linkAddSignatureAdjudicator' + i + '" class="addLink" onclick="uploadSignature(\'SignatureAdjudicator' + i + '\')">' +
+                '<i class="fa fa-plus"></i> Add</a>' +
+                '<input type="hidden" id="hSignatureAdjudicator' + i + '" name="hSignatureAdjudicator" /></td>';
+        content += '<td align="center">' + '<div><a href ="#" title="Edit" onclick="javascript:addTempAdjudicator(' + i + ');"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
         content += '<td align="center">' + '<div><a href="javascript:deleteAdjudicator(' + i + ');"><img src="resources/images/studio/delete.png" title="Delete"/></a></div>' + '</td></tr>';
         content1 = content1 + content;
     }
-    if (array.length > 0)
-        jQuery("#temporaryAdjDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Adjudicator Name</th><th class='tableHeader'>Edit</th><th class='tableHeader'>Delete</th>" + content1 + "</table>");
-    if (title != 'new')
-        jAlert("Data successfully saved", "Adjudicator Info");
-}
-
-function deleteAdjudicator(name) {
-    jConfirm('Are You Sure You Want To Delete : <strong>' + "adjudicator" + '</strong>', 'Delete Confirmation', function (response) {
-
-        if (response) {
-            array = jQuery.grep(array, function (value) {
-                return value != array[name];
+    
+    if (adjList.length > 0) {
+        jQuery("#temporaryAdjDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Adjudicator Name</th><th class='tableHeader'>Signature</th><th class='tableHeader'>Edit</th><th class='tableHeader'>Delete</th>" + content1 + "</table>");
+        for (var i = 0; i < adjList.length; i++) {
+            showSignature("SignatureAdjudicator" + i, adjList[i].signaturePath);
+            $("#hSignatureAdjudicator" + i).change({ind: i}, function (event) {
+                var hId = $(this).attr('id');
+                //hId = hId.substr();
+                adjList[event.data.ind].signaturePath = $("#hSignatureAdjudicator" + event.data.ind).val();
             });
-            jQuery("#temporaryAdjDiv").empty();
-            var content1 = "";
-            for (var i = 0; i < array.length; i++) {
-                selectedText = array[i];
-                content = '<tr><td>' + '<label id="adjudicator_name' + "" + i + "" + '">' + "" + selectedText + "" + '</label><input type="hidden" name="project_adjudicatorhid" value="' + selectedText + '"> ' + '</td>';
-                content += '<td align="center">' + '<div><a href ="#" title=Edit name= ' + selectedText + ' id= ' + i + ' onclick="javascript:addTempAdjudicator(this);"><img src="resources/images/studio/edit.png" title="Edit"/></a></div>' + '</td>';
-                content += '<td align="center">' + '<div><a href="javascript:deleteAdjudicator(' + i + ');"><img src="resources/images/studio/delete.png" title="Delete"/></a></div>' + '</td></tr>';
-                content1 = content1 + content;
-            }
-            if (array.length > 0)
+        }
+    }
+}
+function deleteAdjudicator(id) {
+    jConfirm('Are You Sure You Want To Delete : <strong>' + "adjudicator" + '</strong>', 'Delete Confirmation', function (response) {
+        if (response) {
+            adjList = $.grep(adjList, function (item, index) {
+                return id !== index;
+            });
+            populateAdjudicators();
+            if (adjList.length > 0)
                 jQuery("#temporaryAdjDiv").append("<table class='temporaryDivTable'><th class='tableHeader'>Adjudicator Name</th><th class='tableHeader'>Edit</th><th class='tableHeader'>Delete</th>" + content1 + "</table>");
             jAlert("Data deleted successfully", "Delete");
         }
     });
 }
 
-function validateAdjudicator(title) {
+function validateAdjudicator(id) {
     $("#adjudicatorformID").validate({
         rules: {
             adjudicator_name: "required",
@@ -894,8 +891,20 @@ function validateAdjudicator(title) {
     });
 
     if ($("#adjudicatorformID").valid()) {
-        addPersonAdjudicator(title);
-        adjudicatorDialog.dialog("destroy");
+        // Check name exists
+        adjName = $('#adjudicator_name').val();
+        if (adjName !== '') {
+            for (var i = 0; i < adjList.length; i++) {
+                if (adjList[i].adjudicatorName === adjName) {
+                    if (id === 'new' || id !== i) {
+                        jAlert("Name already exists");
+                        return;
+                    }
+                }
+            }
+        }
+        addPersonAdjudicator(id);
+        adjudicatorDialog.dialog("close");
     }
 }
 
@@ -979,7 +988,7 @@ function addHamlet(hamlet) {
         hamletLeaderName = hamletDetails[i + 3];
         hamletLeaderName = hamletLeaderName.replace(/"/g, "&quot;");
         hamletLeaderNameEsc = hamletLeaderName.replace(/'/g, "\\'");
-                
+
         content = '<tr><td>' + '<label id="hamlet_name' + "" + i + "" + '">' + "" + HamletName + "" + '</label><input type="hidden" name="hamletName" value=' + "" + HamletName + "" + '> ' + '</td>';
         content += '<td>' + '<label id="hamlet_alias' + "" + i + "" + '">' + "" + HamletAlias + "" + '</label><input type="hidden" name="hamletAlias" value=' + "" + HamletAlias + "" + '> ' + '</td>';
         content += '<td>' + '<label id="hamlet_code' + "" + i + "" + '">' + "" + HamletCode + "" + '</label><input type="hidden" name="hamletCode" value=' + "" + HamletCode + "" + '> ' + '</td>';
@@ -1091,5 +1100,111 @@ function editHamlet(hamlet) {
     }
 }
 
+function uploadSignature(name) {
+    // Reset form
+    $("#fileSignature").val('');
 
+    signatureDialog = $("#signature-dialog-form").dialog({
+        autoOpen: false,
+        height: 200,
+        width: 250,
+        resizable: false,
+        modal: true,
+        buttons: {
+            "Upload": function () {
+                if ($("#fileSignature").val() === '') {
+                    jAlert("Select signature for upload.");
+                    return;
+                }
 
+                var formData = new FormData();
+                formData.append("signature", $('#fileSignature')[0].files[0]);
+
+                $.ajax({
+                    type: "POST",
+                    url: "project/uploadsignature",
+                    mimeType: "multipart/form-data",
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    data: formData,
+                    success: function (data) {
+                        if (data) {
+                            signatureDialog.dialog("close");
+                            showSignature(name, data);
+                        } else {
+                            jAlert('Failed to upload signature');
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        jAlert('Failed to upload signature');
+                    }
+                });
+            }
+        }
+    });
+
+    signatureDialog.dialog("open");
+}
+
+function showSignature(name, fileName) {
+    // Check if file exists
+    result = false;
+
+    if (fileName !== '') {
+        $.ajax({
+            type: 'GET',
+            async: false,
+            url: "project/signatureexists/" + fileName,
+            success: function (response) {
+                if (response) {
+                    $("#img" + name).attr('src', '/mast/studio/project/getsignature/' + fileName);
+                    $("#h" + name).val(fileName).trigger('change');
+                    showHideSignature(false, name);
+                    result = true;
+                }
+            }
+        });
+    }
+
+    // Otherwise show add signature link
+    if (!result) {
+        $("#h" + name).val('').trigger('change');
+        showHideSignature(true, name);
+    }
+}
+
+function deleteSignature(name) {
+    jConfirm('Are you sure?', 'Confirmation', function (response) {
+        if (response) {
+            $.ajax({
+                type: 'GET',
+                async: false,
+                url: "project/deletesignature/" + $("#h" + name).val(),
+                success: function (response) {
+                    if (response) {
+                        $("#h" + name).val('').trigger('change');
+                        showHideSignature(true, name);
+                    } else {
+                        jAlert('Failed to delete signature');
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    jAlert('Failed to delete signature');
+                }
+            });
+        }
+    });
+}
+
+function showHideSignature(hide, name) {
+    if (hide) {
+        $("#img" + name).hide();
+        $("#linkDelete" + name).hide();
+        $("#linkAdd" + name).show();
+    } else {
+        $("#img" + name).show();
+        $("#linkDelete" + name).show();
+        $("#linkAdd" + name).hide();
+    }
+}

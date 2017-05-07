@@ -90,25 +90,6 @@ var CreateEditUser = function (_userId) {
 
     jQuery("#userRoleList").empty();
 
-//	    jQuery("#user_accordion").show();
-//    	jQuery("#user_accordion").accordion({fillSpace: true});
-
-    /*jQuery.ajax({
-     url: "role/?" + token,
-     success: function (data) {
-     user_roleList = data;
-     
-     jQuery("#UserTemplateRole").tmpl(data,
-     
-     {
-     //roles: user_roleList
-     }
-     
-     ).appendTo("#userRoleList");
-     
-     }
-     });*/
-
     jQuery.ajax({
         url: "defaultproject/",
         async: false,
@@ -183,22 +164,8 @@ var CreateEditUser = function (_userId) {
                 jQuery("#user_active").val((data.active).toString());
                 jQuery("#manager_name").val(data.manager_name);
                 jQuery("#functionalRole").val(data.roles[0].name);
-
+                showSignature("SignatureUser", data.signaturePath);
                 jQuery('.accessKey').show();
-
-                //set selected  role
-
-                /*   jQuery.each(user_role, function (i, role) {
-                 
-                 jQuery.each(value.Roles, function (name, value) {
-                 jQuery('[id=' + role.name + ']').attr('checked', true);
-                 
-                 });
-                 });
-                 */
-
-
-
                 jQuery('#name').attr('readonly', true);
 
             },

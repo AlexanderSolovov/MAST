@@ -26,12 +26,10 @@ public class Feature implements Serializable {
     public static String GEOM_POLYGON = "Polygon";
 
     public static String SERVER_STATUS_NEW = "1";
-    public static String SERVER_STATUS_ADJUDICATED = "2";
-    public static String SERVER_STATUS_SPATIAL_VALIDATED = "3";
-    public static String SERVER_STATUS_APPROVED = "4";
+    public static String SERVER_STATUS_REFERRED = "4";
+    public static String SERVER_STATUS_VALIDATED = "3";
+    public static String SERVER_STATUS_APPROVED = "2";
     public static String SERVER_STATUS_REJECTED = "5";
-    public static String SERVER_STATUS_CCRO_GENERATED = "6";
-    public static String SERVER_STATUS_FINAL = "7";
 
     public static String CLIENT_STATUS_DRAFT = "draft";
     public static String CLIENT_STATUS_COMPLETE = "complete";

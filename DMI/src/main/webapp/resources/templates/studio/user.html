@@ -1,9 +1,4 @@
 <div id="userFormDiv" style="visibility: hidden">
-    <!-- <style type="text/css">
-label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
-</style> -->
-
-
     <form class="cmxform" id="userForm" action="" onsubmit="return false;">
 
         <div class="topmenu top-alt">
@@ -109,126 +104,111 @@ label.error { float: none; color: red; padding-left: .5em; vertical-align: top; 
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <script id="UserTemplate" type="text/x-jquery-tmpl">
-                <tr>
-                <td>
-                ${username}
-                </td>                       
-                <td>
-                ${defaultproject}
-                </td>           
-                <td>
-                ${email}
+        <script id="UserTemplate" type="text/x-jquery-tmpl">
+            <tr>
+            <td>
+            ${username}
+            </td>                       
+            <td>
+            ${defaultproject}
+            </td>           
+            <td>
+            ${email}
+            </td>
+
+            <td>
+            ${roles[0].description}
+            </td>
+
+            <td>
+            ${reportingTo}
+            </td>	
+
+            <td align="center">
+            <a href="javascript:CreateEditUser('${id}');"><img src="resources/images/studio/edit.png" title="Edit" /></a>
+            </td>
+            <td align="center">
+            <a href="javascript:deleteUser('${id}','${name}' );"><img src="resources/images/studio/delete.png" title="Delete" /></a>
+            </td>	
+            </tr>
+        </script>
+
+        <script id="UserTemplateForm" type="text/x-jquery-tmpl">        
+            <table class="styleForm inputint">
+            <tr>
+            <td class="labelHeader">Username</td>
+            <input type="hidden" name="hid_userid" id="hid_userid" value="${id}" /> 
+            <td><input type="textbox" name="name" id="name" value="${username}" /></td>
+
+            <td class="labelHeader">Name</td>
+            <td><input type="text" name="name_user" id="name_user" value="${name}"/></td>
+            </tr>
+
+            <tr>
+
+            <td class="labelHeader">Password</td>
+            <td><input type="password" name="password" id="password" value="${password}"/></td>
+
+            <td class="labelHeader">Confirm Password</td>
+            <td><input type="password" name="confirmPassword" id="confirmPassword" value="${password}"/></td>
+
+            </tr>
+
+            <tr>
+            <td class="labelHeader">Email</td>
+            <td><input type="textbox" name="email"  id="email" value="${email}"/></td>
+
+
+            <td class="labelHeader">DefaultProject</td>
+            <td>
+            <select name="defaultproject" id="user_defaultproject" >
+            <option  value="">Please Select</option>      
+            </select>
+            </td>
+
+
+            </tr>
+
+            <tr>
+            <td class="labelHeader">PasswordExpires</td>
+            {{if (id)}}
+            <td><input type="text"  class="datepicker" name="passwordexpires" id="passwordexpires" value="${passwordexpires}" readonly="readonly"/></td>
+            <![CDATA[${$item.addDatePicker()}]]> 
+            {{/if}}
+            {{if (!id)}}
+            <td><input type="text"  class="datepicker" name="passwordexpires" id="passwordexpires" value="Please Select" readonly="readonly"/></td>
+            <![CDATA[${$item.addDatePicker()}]]> 
+            {{/if}}
+            <td class="labelHeader">Reporting To</td>
+            <td>
+            <select name="manager_name" id="manager_name">
+            <option  value="">Please Select</option> 		
+            </select>
+            </td>
+            </tr>
+
+            <tr>
+                <td class="labelHeader">
+                    Role
                 </td>
-
                 <td>
-                ${roles[0].description}
+                    <select name="functionalRole" id="functionalRole">
+                        <option  value="">Please Select</option> 		
+                    </select>
                 </td>
-
+                <td class="labelHeader">
+                    Active
+                </td>
                 <td>
-                ${reportingTo}
-                </td>	
-
-                <td align="center">
-                <a href="javascript:CreateEditUser('${id}');"><img src="resources/images/studio/edit.png" title="Edit" /></a>
+                    <select name="active" id="user_active">
+                        <option value="false">No</option>	
+                        <option value="true">Yes</option>			
+                    </select>
                 </td>
-                <td align="center">
-                <a href="javascript:deleteUser('${id}','${name}' );"><img src="resources/images/studio/delete.png" title="Delete" /></a>
-                </td>	
-
-                </tr>
-            </script>
-
-            <script id="UserTemplateForm" type="text/x-jquery-tmpl">        
-                <table class="styleForm inputint">
-                <tr>
-                <td class="labelHeader">Username</td>
-                <input type="hidden" name="hid_userid" id="hid_userid" value="${id}" /> 
-                <td><input type="textbox" name="name" id="name" value="${username}" /></td>
-
-                <td class="labelHeader">Name</td>
-                <td><input type="text" name="name_user" id="name_user" value="${name}"/></td>
-                </tr>
-
-                <tr>
-
-                <td class="labelHeader">Password</td>
-                <td><input type="password" name="password" id="password" value="${password}"/></td>
-
-                <td class="labelHeader">Confirm Password</td>
-                <td><input type="password" name="confirmPassword" id="confirmPassword" value="${password}"/></td>
-
-                </tr>
-
-                <tr>
-                <td class="labelHeader">Email</td>
-                <td><input type="textbox" name="email"  id="email" value="${email}"/></td>
-
-
-                <td class="labelHeader">DefaultProject</td>
-                <td>
-                <select name="defaultproject" id="user_defaultproject" >
-                <option  value="">Please Select</option>      
-                </select>
-                </td>
-
-
-                </tr>
-
-                <tr>
-                <td class="labelHeader">PasswordExpires</td>
-                {{if (id)}}
-                <td><input type="text"  class="datepicker" name="passwordexpires" id="passwordexpires" value="${passwordexpires}" readonly="readonly"/></td>
-                <![CDATA[${$item.addDatePicker()}]]> 
-                {{/if}}
-                {{if (!id)}}
-                <td><input type="text"  class="datepicker" name="passwordexpires" id="passwordexpires" value="Please Select" readonly="readonly"/></td>
-                <![CDATA[${$item.addDatePicker()}]]> 
-                {{/if}}
-                <td class="labelHeader">Reporting To</td>
-                <td>
-                <select name="manager_name" id="manager_name">
-                <option  value="">Please Select</option> 		
-                </select>
-                </td>
-                </tr>
-
-                <tr>
-                <td class="labelHeader">Role</td>
-                <td>
-                <select name="functionalRole" id="functionalRole">
-                <option  value="">Please Select</option> 		
-                </select>
-                </td>
-                <td class="labelHeader">Active</td>
-                <td>
-                <select name="active" id="user_active">
-
-                <option value="false">No</option>	
-                <option value="true">Yes</option>			
-                </select>
-
-                </td>
-
-                </tr>
-
-
-                <tr class="accessKey" style="visibility: hidden;">
-                <td colspan ="4" class="accessstop">Access Key</td>
-                </tr>
-                <tr class="accessKey" style="visibility: hidden;">
-                <td colspan="3">
-                <input type="textbox" name="authkey" id="authkey" value="${authkey}" class="accesswidth" readonly="readonly"/>  
-
-                </td> 
-                <td><a href="#" onClick="javascript:alert('Not Implemented');"> Email</a></td>
-
-                </tr>
-                </table>
-
-
-
-            </script>
+            </tr>
+            </table>
+        </script>
     </form>
 </div>

@@ -12,9 +12,9 @@ public interface ReportsSerivce {
     
     JasperPrint getCcroForms(String projectName, Long usin, int startRecord, int endRecord, String appUrl);
     
-    JasperPrint getDistrictRegistryBook(String projectName);
+    JasperPrint getDistrictRegistryBook(String projectName, String appUrl);
     
-    JasperPrint getVillageRegistryBook(String projectName);
+    JasperPrint getVillageRegistryBook(String projectName, String appUrl);
     
     JasperPrint getVillageIssuanceBook(String projectName);
     

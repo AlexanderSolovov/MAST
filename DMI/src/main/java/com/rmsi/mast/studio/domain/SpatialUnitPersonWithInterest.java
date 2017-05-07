@@ -22,6 +22,7 @@ public class SpatialUnitPersonWithInterest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Column(name = "dob")
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date dob;
     
     @ManyToOne

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_ver">v 2.1</string>
-    <string name="app_ver2">2.1</string>
+    <string name="app_ver">v 2.3.1</string>
+    <string name="app_ver2">2.3.1</string>
     <string name="app_name">MAST</string>
     <string name="action_settings">Mpangilio</string>
     <string name="appname">UPIMAJI WA ARDHI KUTUMIA SIMU</string>
@@ -26,7 +26,7 @@
 
     <string-array name="UserPref_arrays">
         <item>Badilisha lugha</item>
-        <item>Pangilia zana za ukusanyaji taarifa</item>
+        <!--item>Pangilia zana za ukusanyaji taarifa</item-->
         <item>Pangilia kusawazisha moja kwa moja</item>
         <item>Pangilia muonekano wa ramani</item>
     </string-array>

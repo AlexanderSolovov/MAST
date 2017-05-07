@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_ver">v 2.1.1</string>
-    <string name="app_ver2">2.1.1</string>
+    <string name="app_ver">v 2.3.1</string>
+    <string name="app_ver2">2.3.1</string>
     <string name="app_name">MAST</string>
     <string name="action_settings">Settings</string>
     <string name="appname">Mobile Application to Secure Tenure</string>
@@ -29,7 +29,7 @@
 
     <string-array name="UserPref_arrays">
         <item>Change Language</item>
-        <item>Configure Data Collection Tools</item>
+        <!--item>Configure Data Collection Tools</item-->
         <item>Configure Auto Sync </item>
         <item>Configure Map Settings</item>
     </string-array>

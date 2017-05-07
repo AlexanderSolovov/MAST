@@ -73,8 +73,10 @@ import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
 import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
+import com.rmsi.mast.studio.domain.fetch.PersonForEditing;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitBasic;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitStatusHistory;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
@@ -279,6 +281,11 @@ public class LandRecordsServiceImpl implements LandRecordsService {
         return landRecordsDao.findSpatialUnitById(id);
     }
 
+    @Override
+    public SpatialUnitBasic getSpatialUnitBasic(Long usin){
+        return landRecordsDao.getSpatialUnitBasic(usin);
+    }
+    
     @Override
     public SpatialUnitTable getSpatialUnit(Long id) {
         return landRecordsDao.getSpatialUnit(id);
@@ -1229,5 +1236,15 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     @Override
     public ProjectDetails getProjectDetails(String projectName) {
         return landRecordsDao.getProjectDetails(projectName);
+    }
+    
+    @Override
+    public List<PersonForEditing> getPersonsForEditing(String projectName, long usin, String firstName, String lastName, String middleName, String idNumber, String claimNumber, String neighbourN, String neighbourS, String neighbourE, String neighbourW){
+        return landRecordsDao.getPersonsForEditing(projectName, usin, firstName, lastName, middleName, idNumber, claimNumber, neighbourN, neighbourS, neighbourE, neighbourW);
+    }
+    
+    @Override
+    public PersonForEditing updatePersonForEditing(PersonForEditing pfe) throws Exception {
+        return landRecordsDao.updatePersonForEditing(pfe);
     }
 }

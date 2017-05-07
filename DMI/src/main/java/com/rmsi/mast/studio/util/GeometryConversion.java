@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.rmsi.mast.studio.domain.SpatialUnit;
+import com.rmsi.mast.studio.mobile.service.impl.SurveyProjectAttributeServiceImp;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -14,60 +15,15 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import org.apache.log4j.Logger;
+import org.hibernate.annotations.common.util.impl.Log_$logger;
 
 /**
  * This class will be used in converting Geometry Type to String and vice-versa
- *
- * @author shruti.thakur
  */
 public class GeometryConversion {
 
-    /**
-     * This method converts the Geometry to String
-     *
-     * @param spatialUnitList
-     * @return
-     */
-    public List<SpatialUnit> converGeometryToString(
-            List<SpatialUnit> spatialUnitList) {
-
-        Iterator<SpatialUnit> spatialUnitIter = spatialUnitList.iterator();
-
-        Geometry geom = null;
-
-        SpatialUnit spatialUnitLocal = null;
-
-        String coords = "";
-
-        while (spatialUnitIter.hasNext()) {
-
-            spatialUnitLocal = spatialUnitIter.next();
-
-            coords = "";
-            geom = spatialUnitLocal.getTheGeom().getGeometryN(0);
-                        
-            if (spatialUnitLocal.getGtype().equalsIgnoreCase("point")) {
-                String coString = geom.toText();
-                coords = coString.substring(coString.indexOf("(") + 1);
-                coords = coords.substring(0, coords.indexOf(")"));
-                spatialUnitLocal.setGeometry(coords);
-            } else if (spatialUnitLocal.getGtype().equalsIgnoreCase("line")) {
-                String coString = geom.toText();
-                coords = coString.substring(coString.indexOf("(") + 1);
-                coords = coords.substring(0, coords.indexOf(")"));
-                spatialUnitLocal.setGeometry(coords);
-            } else if (spatialUnitLocal.getGtype().equalsIgnoreCase("polygon")) {
-                String coString = geom.toText();
-                coords = coString.substring(coString.indexOf("((") + 2);
-                coords = coords.substring(0, coords.indexOf("))"));
-                spatialUnitLocal.setGeometry(coords);
-            } else {
-                System.out.println("GType doesn't contain relevent value");
-            }
-
-        }
-        return spatialUnitList;
-    }
+    private static final Logger logger = Logger.getLogger(GeometryConversion.class.getName());
 
     /**
      * This method will get Coordinate Sequence

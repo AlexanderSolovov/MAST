@@ -114,32 +114,6 @@ ALTER TABLE public.spatial_unit_tmp ADD CONSTRAINT fk_claim_type_code FOREIGN KE
 COMMENT ON COLUMN public.spatial_unit_tmp.claim_type IS 'Claim type code';
 COMMENT ON COLUMN public.spatial_unit_tmp.polygon_number IS 'Polygon number assigned in the field manually. This value is supposed to be unique per village.';
 
--- spatial_unit trigger to control modifications
-
-CREATE OR REPLACE FUNCTION public.f_for_trg_change_spatial_unit()
-  RETURNS trigger AS
-$BODY$
-BEGIN
-   IF (OLD.current_workflow_status_id not in (1,3,4)) THEN
-      RAISE EXCEPTION 'You cannot modify this record, because of its status';
-   END IF; 
-   RETURN NEW;
-END;
-$BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
-ALTER FUNCTION public.f_for_trg_change_spatial_unit()
-  OWNER TO postgres;
-COMMENT ON FUNCTION public.f_for_trg_change_spatial_unit() IS 'This function controls spatial_unit table modifications, allowing modifications only on records with new status.';
-
-
-CREATE TRIGGER trg_change_spatial_unit
-  BEFORE UPDATE OR DELETE
-  ON public.spatial_unit
-  FOR EACH ROW
-  EXECUTE PROCEDURE public.f_for_trg_change_spatial_unit();
-
- 
 CREATE TABLE public.id_type
 (
    code integer NOT NULL, 
@@ -163,7 +137,7 @@ INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (1, 'Vot
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (2, 'Driving license', 'Leseni ya udereva', 't');
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (3, 'Passport', 'Pasi ya kusafiria', 't');
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (4, 'ID card', 'Kitambulisho', 't');
-INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (5, 'Political affiliation card', 'Kadi cha chama', 't');
+INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (5, 'Other', 'Nyingine', 't');
 
 -- Person
 CREATE TABLE public.relationship_type
@@ -454,6 +428,7 @@ COMMENT ON COLUMN public.source_document.dispute_id IS 'Dispute id.';
 
 -- Master attributes
 UPDATE public.attribute_master SET alias = 'Length of occupancy (years)', alias_second_language = 'Urefu wa kumiliki ardhi (miaka)' WHERE id = 13;
+UPDATE public.attribute_master SET mandatory = true where id = 3;
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
 VALUES (300, 'Acquisition Type', 'Namna ardhi ilivyopatikana', 'acquisition_type', 5, 4, 'social_tenure_relationship', 20, true, 3, true, true);
@@ -522,7 +497,7 @@ INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_se
 VALUES ((select max(id)+1 from public.attribute_options), 'ID card', 320, 'Kitambulisho', 4);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'Political affiliation card', 320, 'Kadi ya chama', 5);
+VALUES ((select max(id)+1 from public.attribute_options), 'Other', 320, 'Nyingine', 5);
 
 -- document type
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
@@ -577,7 +552,29 @@ INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_se
 VALUES ((select max(id)+1 from public.attribute_options), 'Mining', 16, 'Maeneo ya madini', 18);
 
 
--- Report views
+-- Report views and functions
+
+-- Function to get adjudicators signature path
+CREATE OR REPLACE FUNCTION public.get_adjudicator_signature(project character varying(100), person_name character varying(200)) 
+RETURNS character varying(255) AS 
+$$
+DECLARE result character varying(255);
+BEGIN
+
+select signature_path from project_adjudicators where project_name = project and adjudicator_name = person_name into result;
+
+IF (result is null or result = '') THEN
+  select '0' into result;
+END IF;
+RETURN result;
+
+END;
+$$
+LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.get_adjudicator_signature(project character varying(100), person_name character varying(200))
+  OWNER TO postgres;
+COMMENT ON FUNCTION public.get_adjudicator_signature(project character varying(100), person_name character varying(200)) IS 'This function for extracting adjudicator signature path';
 
 -- POI
 
@@ -612,7 +609,8 @@ select
   p.share,
   it.name_other_lang as id_type,
   (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
-  (case when p.resident_of_village then 'Ndiyo' else 'Hapana' end) as resident
+  (case when p.resident_of_village then 'Ndiyo' else 'Hapana' end) as resident,
+  coalesce(p.resident_of_village, true) as village_resident
 
 from 
 	((((
@@ -665,7 +663,8 @@ select
   p.share,
   it.name_other_lang as id_type,
   (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
-  (case when p.resident_of_village then 'Ndiyo' else 'Hapana' end) as resident
+  (case when p.resident_of_village then 'Ndiyo' else 'Hapana' end) as resident,
+  coalesce(p.resident_of_village, true) as village_resident
 
 from 
 	social_tenure_relationship r inner join (
@@ -698,11 +697,14 @@ select
   su.neighbor_east, 
   su.neighbor_west,
   su.witness_1 as adjudicator1,
+  get_adjudicator_signature(su.project_name, su.witness_1) as adjudicator1_signature,
   su.witness_2 as adjudicator2,
+  get_adjudicator_signature(su.project_name, su.witness_2) as adjudicator2_signature,
   su.survey_date as application_date,
   su.current_workflow_status_id as status_id,
   su.project_name,
   su.claim_type,
+  su.workflow_status_update_time as status_date,
   sur.tenure_class,
   sur.ownership_type,
   sur.ownership_type_id,
@@ -715,7 +717,8 @@ select
   u.name as recorder
 
 from (((((
-	spatial_unit su left join project_hamlets h on su.hamlet_id = h.id) 
+	spatial_unit su
+	left join project_hamlets h on su.hamlet_id = h.id) 
 	left join land_use_type ux on su.existing_use = ux.use_type_id) 
 	left join land_use_type up on su.proposed_use = up.use_type_id)
 	left join land_type lt on su.type_name::integer = lt.landtype_id)
@@ -747,8 +750,8 @@ where su.active
 
 order by h.hamlet_name_second_language;
 
--- Registry book
 
+-- Registry book
 CREATE OR REPLACE VIEW public.view_registry_book AS
 select 
   p.gid,
@@ -773,6 +776,8 @@ select
   p.mobile,
   p.id_number,
   p.share,
+  (case when p.gender = 1 then 'kiume' else 'kike' end) as gender,
+  (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
   it.name_other_lang as id_type
 
 from 
@@ -809,6 +814,8 @@ select
   np.phone_number as mobile,
   '' as id_number,
   '' as share,
+  '' as gender,
+  0 as age,
   '' as id_type
 
 from 
@@ -820,7 +827,42 @@ where r.isactive and np.active and su.active and su.current_workflow_status_id =
 
 order by hamlet_name, cert_number, usin, first_name;
 
--- Claims
+-- Owners for editing
+CREATE OR REPLACE VIEW public.view_claimants_for_editing AS
+select 
+  row_number() over () as id,
+  p.gid as person_id,
+  su.usin,
+  su.uka_propertyno as uka,
+  su.hamlet_id,
+  r.gid as right_id,
+  su.survey_date as claim_date,
+  su.polygon_number as claim_number,
+  su.project_name,
+  su.neighbor_north, 
+  su.neighbor_south, 
+  su.neighbor_east, 
+  su.neighbor_west,
+  su.current_workflow_status_id::int as claim_status,
+  sh.share_type,
+  p.first_name,
+  p.last_name,
+  p.middle_name,
+  p.mobile,
+  p.id_number,
+  p.id_type,
+  p.dob,
+  p.age,
+  p.gender,
+  p.marital_status
+from 
+	((social_tenure_relationship r left join share_type sh on r.share = sh.gid) inner join natural_person p on r.person_gid = p.gid)
+	inner join spatial_unit su on r.usin = su.usin
+
+where r.isactive and p.active and su.active and p.active and su.current_workflow_status_id in (1,3,4) and r.share != 6
+order by first_name;
+
+-- Claims stat
 CREATE OR REPLACE FUNCTION get_claims_stat(IN projectName character varying(100)) 
 RETURNS TABLE(claim_type character varying(200), collected integer, approved integer, denied integer)
 AS $$ 
@@ -848,9 +890,30 @@ select
 from (
   select p.gender
   from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
-  where r.isactive and su.active and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+  where r.isactive and su.active and coalesce(p.personsub_type, 0) != 5 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
   group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
 ) t
+
+$$
+LANGUAGE SQL;
+
+-- Unique claimants by age 
+CREATE OR REPLACE FUNCTION get_unique_claimants_with_age(IN projectName character varying(100)) 
+RETURNS TABLE(age_group character varying(20), male_count integer, female_count integer, total integer)
+AS $$ 
+
+select 
+  (case when t.age < 35 then '<35' else '>=35' end) as age_group,
+  sum(case when t.gender = 1 then 1 else 0 end)::int as male_count,
+  sum(case when t.gender = 2 then 1 else 0 end)::int as female_count,
+  count(1)::int as total
+from (
+  select p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age
+  from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
+  where r.isactive and su.active and coalesce(p.personsub_type, 0) != 5 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+  group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
+) t
+group by (case when t.age < 35 then '<35' else '>=35' end)
 
 $$
 LANGUAGE SQL;
@@ -866,9 +929,37 @@ select
 from (
   select p.gender
   from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
-  where r.isactive and su.active and su.current_workflow_status_id = 5 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+  where r.isactive and su.active and coalesce(p.personsub_type, 0) != 5 and su.current_workflow_status_id = 5 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
   group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
 ) t
+
+$$
+LANGUAGE SQL;
+
+
+-- Approved CCROs by unique persons
+CREATE OR REPLACE FUNCTION get_ccro_occurrence(IN projectName character varying(100)) 
+RETURNS TABLE(occurrence integer, males integer, females integer, total integer)
+AS $$ 
+
+select t.occurrence::int, 
+sum(case when t.gender = 1 then 1 else 0 end)::int as males,
+sum(case when t.gender = 2 then 1 else 0 end)::int as females,
+count(1)::int as total
+from
+(
+select 
+  count(1) as occurrence, 
+  p.gender, 
+  (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age
+from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
+  where r.isactive and coalesce(p.personsub_type, 0) != 5 and su.active and su.current_workflow_status_id = 2 and r.share > 0
+	and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') 
+	and (su.project_name = projectName or '' = projectName)
+  group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
+  ) t
+group by t.occurrence
+order by t.occurrence
 
 $$
 LANGUAGE SQL;
@@ -887,34 +978,200 @@ select
 from ((social_tenure_relationship r inner join natural_person p on r.person_gid = p.gid) 
 	inner join share_type sh on r.share = sh.gid)
 	inner join spatial_unit su on r.usin = su.usin
-where r.isactive and su.active and su.current_workflow_status_id = 2 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
+where r.isactive and su.active and coalesce(p.personsub_type, 0) != 5 and su.current_workflow_status_id = 2 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
 group by sh.share_type
 order by sh.share_type
 
 $$
 LANGUAGE SQL;
 
--- Approved CCROs by unique persons
-CREATE OR REPLACE FUNCTION get_ccro_occurrence(IN projectName character varying(100)) 
-RETURNS TABLE(occurrence integer, males integer, females integer, total integer)
-AS $$ 
+-- Disputes statistics
+CREATE OR REPLACE FUNCTION get_disputes_stat(IN projectName character varying(100)) 
+RETURNS TABLE(dispute_type character varying(200), resolved integer, unresolved integer, total integer)
+AS $$
 
-select t.occurrence::int, 
-sum(case when t.gender = 1 then 1 else 0 end)::int as males,
-sum(case when t.gender = 2 then 1 else 0 end)::int as females,
-count(1)::int as total
-from
-(
 select 
-  count(1) as occurrence, 
-  p.gender, 
-  (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age
-from natural_person p inner join (social_tenure_relationship r inner join spatial_unit su on r.usin = su.usin) on p.gid = r.person_gid
-  where r.isactive and su.active and su.current_workflow_status_id = 2 and (su.claim_type = 'newClaim' or su.claim_type = 'existingClaim') and (su.project_name = projectName or '' = projectName)
-  group by coalesce(p.last_name, ''), coalesce(p.first_name, ''), coalesce(p.id_number, ''), p.gender, (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer
-  ) t
-group by t.occurrence
-order by t.occurrence
+  dt.name as dispute_type,
+  sum(case when d.status = 1 then 1 else 0 end)::int as resolved,
+  sum(case when d.status = 2 then 1 else 0 end)::int as unresolved,
+  count(1)::int as total
+from (dispute d inner join dispute_type dt on d.dispute_type = dt.code) inner join spatial_unit su on d.usin = su.usin
+where su.active and d.deleted = 'f' and (su.project_name = projectName or '' = projectName)
+group by dt.name
+order by dt.name;
 
 $$
 LANGUAGE SQL;
+
+-- update natural person residency
+update natural_person set resident_of_village = person.resident
+from person where person.person_gid = natural_person.gid;
+
+-- function to check date validity
+create or replace function is_valid_date(text) returns boolean language plpgsql immutable as $$
+begin
+  return case when $1::date is null then false else true end;
+exception when others then
+  return false;
+end;$$;
+
+-- Migrate person IDs
+update natural_person 
+set id_number = attr.val
+from
+(select trim(a.value) as val, a.parentuid as gid
+from attribute a inner join surveyprojectattributes pa on a.uid = pa.uid
+where pa.id = 266) attr 
+where natural_person.gid = attr.gid and attr.val is not null and attr.val != '';
+
+update natural_person set id_type = (case when position('T-' in upper(id_number)) = 1 then 1 else 5 end) where id_type is null and id_number is not null and id_number != '';
+
+-- Migrate person date of birth
+update natural_person 
+set dob = cast(attr.val as date)
+from
+(select trim(a.value) as val, a.parentuid as gid
+from attribute a inner join surveyprojectattributes pa on a.uid = pa.uid
+where pa.id = 267) attr 
+where natural_person.gid = attr.gid and attr.val is not null and attr.val != '' and is_valid_date(attr.val);
+
+-- Migrate claim numbers
+update spatial_unit 
+set polygon_number = attr.val
+from
+(select trim(a.value) as val, a.parentuid as gid
+from attribute a inner join surveyprojectattributes pa on a.uid = pa.uid
+where pa.id = 264) attr 
+where spatial_unit.usin = attr.gid and attr.val is not null and attr.val != '';
+
+-- Migrate claim date
+update spatial_unit 
+set survey_date = cast(attr.val as date)
+from
+(select trim(a.value) as val, a.parentuid as gid
+from attribute a inner join surveyprojectattributes pa on a.uid = pa.uid
+where pa.id = 265) attr 
+where spatial_unit.usin = attr.gid and attr.val is not null and attr.val != '' and is_valid_date(attr.val);
+
+-- Delete unused attributes
+delete from attribute using surveyprojectattributes pa where attribute.uid = pa.uid and pa.id in (264,267,266,265);
+delete from surveyprojectattributes where id in (264,267,266,265);
+delete from attribute_master where id in (264,267,266,265);
+
+-- Clean spatial unit geometry
+update spatial_unit set the_geom = ST_GeometryN(the_geom,1) where ST_GeometryType(the_geom) = 'ST_MultiPolygon';
+update spatial_unit set the_geom = null where ST_GeometryType(the_geom) = 'ST_LineString';
+update spatial_unit set the_geom = null where ST_GeometryType(the_geom) = 'ST_Point';
+
+-- Apply restrictions for the_geom geometry
+ALTER TABLE spatial_unit ADD CONSTRAINT enforce_the_geom_type CHECK (geometrytype(the_geom) = 'POLYGON'::text OR the_geom IS NULL);
+
+-- spatial_unit trigger to control modifications
+
+CREATE OR REPLACE FUNCTION public.f_for_trg_change_spatial_unit()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+   IF (OLD.current_workflow_status_id not in (1,3,4)) THEN
+      RAISE EXCEPTION 'You cannot modify this record, because of its status';
+   END IF; 
+
+   IF (TG_OP = 'DELETE') THEN
+     RETURN OLD;
+   ELSE
+     RETURN NEW;
+   END IF;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.f_for_trg_change_spatial_unit()
+  OWNER TO postgres;
+COMMENT ON FUNCTION public.f_for_trg_change_spatial_unit() IS 'This function controls spatial_unit table modifications, allowing modifications only on records with new status.';
+
+CREATE TRIGGER trg_change_spatial_unit
+  BEFORE UPDATE OR DELETE
+  ON public.spatial_unit
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.f_for_trg_change_spatial_unit();
+
+-- Function to extract coordinates from geometry
+CREATE OR REPLACE FUNCTION public.get_coordinates(geom Geometry) 
+RETURNS TEXT AS 
+$$
+DECLARE result TEXT;
+BEGIN
+
+IF (geom is not null) THEN
+  IF geometrytype(geom) = 'POLYGON' THEN
+    select substring(left(st_astext(geom),-2),10) into result;
+    IF position(')' in result) > 1 THEN
+      select left(result, position(')' in result)-1) into result;
+    END IF;
+    RETURN result;
+  ELSIF geometrytype(geom) = 'POINT' THEN
+    RETURN substring(left(st_astext(geom),-1),6);
+  ELSIF geometrytype(geom) = 'LINESTRING' THEN
+    RETURN substring(left(st_astext(geom),-1),12);
+  END IF;
+END IF;
+RETURN '';
+
+END;
+$$
+LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.get_coordinates(geom Geometry)
+  OWNER TO postgres;
+COMMENT ON FUNCTION public.get_coordinates(geom Geometry) IS 'This function for extracting coordinates from provided geometry';
+
+-- Attribute views
+
+-- Attributes related to spatial unit
+CREATE OR REPLACE VIEW public.spatial_unit_attributes AS
+select distinct spa.id, a.parentuid as parent_id, a.value, am.listing, am.datatype_id 
+from attribute a 
+         inner join surveyprojectattributes spa on spa.uid = a.uid 
+         inner join attribute_master am on spa.id = am.id 
+where am.attributecategoryid in (1,6,7)
+order by am.listing;
+
+-- Attributes related to ownership right
+CREATE OR REPLACE VIEW public.right_attributes AS
+select distinct spa.id, a.parentuid as parent_id, a.value, am.listing, am.datatype_id 
+from attribute a 
+         inner join surveyprojectattributes spa on spa.uid = a.uid 
+         inner join attribute_master am on spa.id = am.id 
+where am.attributecategoryid in (4)
+order by am.listing;
+
+-- Attributes related to natural person
+CREATE OR REPLACE VIEW public.natural_person_attributes AS
+select distinct spa.id, a.parentuid as parent_id, a.value, am.listing, am.datatype_id 
+from attribute a 
+         inner join surveyprojectattributes spa on spa.uid = a.uid 
+         inner join attribute_master am on spa.id = am.id 
+where am.attributecategoryid in (2)
+order by am.listing;
+
+-- Attributes related to nonnatural person
+CREATE OR REPLACE VIEW public.nonnatural_person_attributes AS
+select distinct spa.id, a.parentuid as parent_id, a.value, am.listing, am.datatype_id 
+from attribute a 
+         inner join surveyprojectattributes spa on spa.uid = a.uid 
+         inner join attribute_master am on spa.id = am.id 
+where am.attributecategoryid in (5)
+order by am.listing;
+
+-- Attributes related to media
+CREATE OR REPLACE VIEW public.media_attributes AS
+select distinct spa.id, a.parentuid as parent_id, a.value, am.listing, am.datatype_id 
+from attribute a 
+         inner join surveyprojectattributes spa on spa.uid = a.uid 
+         inner join attribute_master am on spa.id = am.id 
+where am.attributecategoryid in (3)
+order by am.listing;
+
+-- Adjudicators
+ALTER TABLE public.project_adjudicators ADD COLUMN signature_path character varying(255);
+COMMENT ON COLUMN public.project_adjudicators.signature_path IS 'Path to adjudicator''s scanned signature';

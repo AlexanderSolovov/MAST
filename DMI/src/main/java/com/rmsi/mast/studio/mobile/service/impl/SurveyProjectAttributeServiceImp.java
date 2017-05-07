@@ -1,10 +1,8 @@
 package com.rmsi.mast.studio.mobile.service.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,18 +11,8 @@ import com.rmsi.mast.studio.dao.DisputeDao;
 import com.rmsi.mast.studio.dao.ProjectAdjudicatorDAO;
 import com.rmsi.mast.studio.dao.ProjectHamletDAO;
 import com.rmsi.mast.studio.domain.AttributeMaster;
-import com.rmsi.mast.studio.domain.Dispute;
-import com.rmsi.mast.studio.domain.NaturalPerson;
-import com.rmsi.mast.studio.domain.NonNaturalPerson;
-import com.rmsi.mast.studio.domain.Person;
 import com.rmsi.mast.studio.domain.ProjectAdjudicator;
 import com.rmsi.mast.studio.domain.ProjectHamlet;
-import com.rmsi.mast.studio.domain.SocialTenureRelationship;
-import com.rmsi.mast.studio.domain.SourceDocument;
-import com.rmsi.mast.studio.domain.SpatialUnit;
-import com.rmsi.mast.studio.domain.SpatialUnitPersonWithInterest;
-import com.rmsi.mast.studio.domain.fetch.SpatialunitDeceasedPerson;
-import com.rmsi.mast.studio.domain.fetch.SpatialunitPersonwithinterest;
 import com.rmsi.mast.studio.mobile.dao.AttributeOptionsDao;
 import com.rmsi.mast.studio.mobile.dao.AttributeValuesDao;
 import com.rmsi.mast.studio.mobile.dao.NaturalPersonDao;
@@ -36,9 +24,17 @@ import com.rmsi.mast.studio.mobile.dao.SurveyProjectAttributeDao;
 import com.rmsi.mast.studio.mobile.dao.hibernate.SocialTenureHibernateDao;
 import com.rmsi.mast.studio.mobile.dao.hibernate.SpatialUnitHibernateDao;
 import com.rmsi.mast.studio.mobile.service.SurveyProjectAttributeService;
-import com.rmsi.mast.studio.util.GeometryConversion;
 import com.rmsi.mast.viewer.dao.SpatialUnitDeceasedPersonDao;
 import com.rmsi.mast.studio.domain.Surveyprojectattribute;
+import com.rmsi.mast.studio.domain.fetch.AttributeValue;
+import com.rmsi.mast.studio.domain.fetch.ClaimBasic;
+import com.rmsi.mast.studio.domain.fetch.DisputeBasic;
+import com.rmsi.mast.studio.domain.fetch.MediaBasic;
+import com.rmsi.mast.studio.domain.fetch.NaturalPersonBasic;
+import com.rmsi.mast.studio.domain.fetch.NonNaturalPersonBasic;
+import com.rmsi.mast.studio.domain.fetch.PersonBasic;
+import com.rmsi.mast.studio.domain.fetch.PoiBasic;
+import com.rmsi.mast.studio.domain.fetch.RightBasic;
 import com.rmsi.mast.studio.mobile.dao.SpatialUnitPersonWithInterestDao;
 import com.rmsi.mast.studio.mobile.transferobjects.Attribute;
 import com.rmsi.mast.studio.mobile.transferobjects.DeceasedPerson;
@@ -47,7 +43,6 @@ import com.rmsi.mast.studio.mobile.transferobjects.PersonOfInterest;
 import com.rmsi.mast.studio.mobile.transferobjects.Property;
 import com.rmsi.mast.studio.mobile.transferobjects.Right;
 import com.rmsi.mast.studio.util.StringUtils;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -127,113 +122,106 @@ public class SurveyProjectAttributeServiceImp implements
     @Override
     public List<Property> getProperties(String projectId, int statusId) {
         List<Property> props = new ArrayList<>();
-        List<SpatialUnit> spatialUnits;
-
+        List<ClaimBasic> claims;
+        
         if (statusId > 0) {
-            spatialUnits = (new GeometryConversion()
-                    .converGeometryToString(spatialUnitiHibernateDao
-                            .findSpatialUnitByStatusId(projectId, statusId)));
+            claims = spatialUnitiHibernateDao.getClaimsBasicByStatus(projectId, statusId);
         } else {
-            spatialUnits = (new GeometryConversion()
-                    .converGeometryToString(spatialUnitiHibernateDao
-                            .getSpatialUnitByProject(projectId)));
+            claims = spatialUnitiHibernateDao.getClaimsBasicByProject(projectId);
         }
 
-        if (spatialUnits != null && spatialUnits.size() > 0) {
+        if (claims != null && claims.size() > 0) {
             SimpleDateFormat dfDateAndTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss a");
             SimpleDateFormat dfDate = new SimpleDateFormat("yyyy-MM-dd");
 
-            for (SpatialUnit su : spatialUnits) {
-                long usin = su.getUsin();
+            for (ClaimBasic claim : claims) {
+                long usin = claim.getUsin();
 
                 Property prop = new Property();
-                prop.setAdjudicator1(StringUtils.empty(su.getWitness1()));
-                prop.setAdjudicator2(StringUtils.empty(su.getWitness2()));
-                prop.setClaimTypeCode(su.getClaimType().getCode());
-                prop.setCoordinates(StringUtils.empty(su.getGeometry()));
-                if (su.getStatusUpdateTime() != null) {
-                    prop.setCompletionDate(dfDateAndTime.format(su.getStatusUpdateTime()));
+                prop.setAdjudicator1(StringUtils.empty(claim.getAdjudicator1()));
+                prop.setAdjudicator2(StringUtils.empty(claim.getAdjudicator2()));
+                prop.setClaimTypeCode(claim.getClaimType());
+                prop.setCoordinates(StringUtils.empty(claim.getCoordinates()));
+                if (claim.getStatusUpdateTime() != null) {
+                    prop.setCompletionDate(dfDateAndTime.format(claim.getStatusUpdateTime()));
                 }
-                prop.setGeomType(su.getGtype());
-                prop.setHamletId(su.getHamletId());
+                prop.setGeomType(claim.getGeomType());
+                prop.setHamletId(claim.getHamletId());
                 prop.setId(usin);
-                prop.setImei(StringUtils.empty(su.getImeiNumber()));
-                prop.setUkaNumber(StringUtils.empty(su.getPropertyno()));
-                prop.setPolygonNumber(StringUtils.empty(su.getPolygonNumber()));
+                prop.setImei(StringUtils.empty(claim.getImei()));
+                prop.setUkaNumber(StringUtils.empty(claim.getUka()));
+                prop.setPolygonNumber(StringUtils.empty(claim.getClaimNumber()));
                 prop.setServerId(usin);
-                prop.setStatus(su.getStatus().getWorkflowStatusId().toString());
-                prop.setUserId(su.getUserid());
-                if (su.getSurveyDate() != null) {
-                    prop.setSurveyDate(dfDate.format(su.getSurveyDate()));
+                prop.setStatus(claim.getStatusId().toString());
+                prop.setUserId(claim.getUserId());
+                if (claim.getSurveyDate() != null) {
+                    prop.setSurveyDate(dfDate.format(claim.getSurveyDate()));
                 }
 
                 // Property attributes
                 prop.setAttributes(new ArrayList<Attribute>());
-                fillAttributes(prop.getAttributes(), usin, 1);
-                fillAttributes(prop.getAttributes(), usin, 7);
-                fillAttributes(prop.getAttributes(), usin, 6);
+                fillAttributes(prop.getAttributes(), claim.getAttributes());
 
                 // Right
-                List<SocialTenureRelationship> rights = tenureDao.findSocailTenureByUsin(usin);
                 Right propRight = null;
 
-                if (rights != null && rights.size() > 0) {
-                    for (SocialTenureRelationship right : rights) {
-                        if (!right.getIsActive()) {
+                if (claim.getRights() != null && claim.getRights().size() > 0) {
+                    for (RightBasic right : claim.getRights()) {
+                        if (!right.getActive()) {
                             continue;
                         }
 
                         if (propRight == null) {
                             propRight = new Right();
-                            if (right.getCertIssueDate() != null) {
-                                propRight.setCertDate(dfDate.format(right.getCertIssueDate()));
+                            if (right.getCertDate() != null) {
+                                propRight.setCertDate(dfDate.format(right.getCertDate()));
                             }
                             propRight.setCertNumber(StringUtils.empty(right.getCertNumber()));
                             propRight.setId((long) right.getGid());
                             if (right.getJuridicalArea() != null) {
                                 propRight.setJuridicalArea(right.getJuridicalArea());
                             }
-                            if (right.getRelationshipType() != null) {
-                                propRight.setRelationshipId(Integer.parseInt(right.getRelationshipType().getCode().toString()));
+                            if (right.getRelationshipTypeId() != null) {
+                                propRight.setRelationshipId(right.getRelationshipTypeId());
                             }
-                            if (right.getTenureclassId() != null) {
-                                propRight.setRightTypeId(right.getTenureclassId().getTenureId());
+                            if (right.getRightTypeId() != null) {
+                                propRight.setRightTypeId(right.getRightTypeId());
                             }
-                            if (right.getShare_type() != null) {
-                                propRight.setShareTypeId(right.getShare_type().getGid());
+                            if (right.getShareTypeId() != null) {
+                                propRight.setShareTypeId(right.getShareTypeId());
                             }
                             propRight.setAttributes(new ArrayList<Attribute>());
                             propRight.setNaturalPersons(new ArrayList<com.rmsi.mast.studio.mobile.transferobjects.Person>());
-                            fillAttributes(propRight.getAttributes(), right.getGid(), 4);
+                            fillAttributes(propRight.getAttributes(), right.getAttributes());
 
                             prop.setRight(propRight);
                         }
 
                         // Persons
-                        Person person = right.getPerson_gid();
-                        NaturalPerson naturalPerson = null;
+                        PersonBasic person = right.getPerson();
+                        NaturalPersonBasic naturalPerson = null;
 
                         // Non natural person
-                        if (person.getPerson_type_gid().getPerson_type_gid() == 2) {
-                            NonNaturalPerson nonPerson = nonNaturalPersonDao.findById(person.getPerson_gid()).get(0);
+                        if (person.getPersonTypeId() == 2) {
+                            NonNaturalPersonBasic nonPerson = (NonNaturalPersonBasic) person;
                             com.rmsi.mast.studio.mobile.transferobjects.Person propNonPerson = new com.rmsi.mast.studio.mobile.transferobjects.Person();
                             propNonPerson.setIsNatural(0);
                             if (!StringUtils.isEmpty(person.getMobileGroupId())) {
                                 propNonPerson.setId(Long.parseLong(person.getMobileGroupId()));
                             } else {
-                                propNonPerson.setId(person.getPerson_gid());
+                                propNonPerson.setId(person.getPersonGid());
                             }
-                            propNonPerson.setResident(person.getResident() ? 1 : 0);
+                            propNonPerson.setResident(person.isResident() ? 1 : 0);
                             propNonPerson.setAttributes(new ArrayList<Attribute>());
-                            fillAttributes(propNonPerson.getAttributes(), nonPerson.getPerson_gid(), 5);
+                            fillAttributes(propNonPerson.getAttributes(), nonPerson.getAttributes());
                             propRight.setNonNaturalPerson(propNonPerson);
 
                             // Get natural person assosiated with non natural
-                            if (nonPerson.getPoc_gid() > 0) {
-                                naturalPerson = naturalPersonDao.findById(nonPerson.getPoc_gid()).get(0);
+                            if (nonPerson.getRepresentative() != null) {
+                                naturalPerson = nonPerson.getRepresentative();
                             }
-                        } else if (person.getPerson_type_gid().getPerson_type_gid() == 1) {
-                            naturalPerson = naturalPersonDao.findById(person.getPerson_gid()).get(0);
+                        } else if (person.getPersonTypeId() == 1) {
+                            naturalPerson = (NaturalPersonBasic) person;
                         }
 
                         if (naturalPerson != null) {
@@ -243,71 +231,64 @@ public class SurveyProjectAttributeServiceImp implements
                 }
 
                 // POIs
-                List<SpatialUnitPersonWithInterest> poiList = spatialUnitPersonWithInterestDao.findByUsin(usin);
-
-                if (poiList != null && poiList.size() > 0) {
+                if (claim.getPois() != null && claim.getPois().size() > 0) {
                     prop.setPersonOfInterests(new ArrayList<PersonOfInterest>());
 
-                    for (SpatialUnitPersonWithInterest poi : poiList) {
+                    for (PoiBasic poi : claim.getPois()) {
                         PersonOfInterest propPoi = new PersonOfInterest();
                         if (poi.getDob() != null) {
                             propPoi.setDob(dfDate.format(poi.getDob()));
                         }
-                        if (poi.getGender() != null) {
-                            propPoi.setGenderId((int) poi.getGender().getGenderId());
+                        if (poi.getGenderId() != null) {
+                            propPoi.setGenderId(poi.getGenderId());
                         }
                         propPoi.setId(poi.getId());
-                        propPoi.setName(StringUtils.empty(poi.getPerson_name()));
-                        if (poi.getRelationshipType() != null) {
-                            propPoi.setRelationshipId(Integer.parseInt(poi.getRelationshipType().getCode().toString()));
+                        propPoi.setName(StringUtils.empty(poi.getPersonName()));
+                        if (poi.getRelationshipTypeId() != null) {
+                            propPoi.setRelationshipId(poi.getRelationshipTypeId());
                         }
                         prop.getPersonOfInterests().add(propPoi);
                     }
                 }
 
                 // Deceased person
-                List<SpatialunitDeceasedPerson> deceasedlst = spatialUnitDeceasedPersonDao.findPersonByUsin(usin);
-
-                if (deceasedlst != null && deceasedlst.size() > 0) {
+                if (claim.getDeceased() != null && claim.getDeceased().size() > 0) {
                     DeceasedPerson deceasedPerson = new DeceasedPerson();
-                    deceasedPerson.setId(deceasedlst.get(0).getId());
-                    deceasedPerson.setFirstName(StringUtils.empty(deceasedlst.get(0).getFirstname()));
-                    deceasedPerson.setLastName(StringUtils.empty(deceasedlst.get(0).getLastname()));
-                    deceasedPerson.setMiddleName(StringUtils.empty(deceasedlst.get(0).getMiddlename()));
+                    deceasedPerson.setId(claim.getDeceased().get(0).getId());
+                    deceasedPerson.setFirstName(StringUtils.empty(claim.getDeceased().get(0).getFirstname()));
+                    deceasedPerson.setLastName(StringUtils.empty(claim.getDeceased().get(0).getLastname()));
+                    deceasedPerson.setMiddleName(StringUtils.empty(claim.getDeceased().get(0).getMiddlename()));
                     prop.setDeceasedPerson(deceasedPerson);
                 }
 
                 // Property media
-                List<SourceDocument> docs = sourceDocumentDao.findByUsin(usin);
-
-                if (docs != null && docs.size() > 0) {
+                if (claim.getMedia() != null && claim.getMedia().size() > 0) {
                     prop.setMedia(new ArrayList<Media>());
 
-                    for (SourceDocument doc : docs) {
-                        if (doc.isActive() && doc.getPerson_gid() == null && doc.getSocial_tenure_gid() == null && doc.getDisputeId() == null) {
+                    for (MediaBasic doc : claim.getMedia()) {
+                        if (doc.getActive() && doc.getPersonId() == null && doc.getRightId()== null && doc.getDisputeId() == null) {
                             Media media = new Media();
                             media.setId((long) doc.getGid());
                             media.setType(doc.getMediaType());
                             media.setAttributes(new ArrayList<Attribute>());
-                            fillAttributes(media.getAttributes(), doc.getGid(), 3);
+                            fillAttributes(media.getAttributes(), doc.getAttributes());
                             prop.getMedia().add(media);
                         }
                     }
                 }
 
                 // Dispute. If dispue found set claim type to disputed
-                List<Dispute> disputes = disputeDao.findByPropId(usin);
-                if (disputes != null && disputes.size() > 0) {
-                    for (Dispute dispute : disputes) {
-                        if (!dispute.isDeleted() && dispute.getStatus() != null && dispute.getStatus().getCode() == 1) {
+                if (claim.getDisputes() != null && claim.getDisputes().size() > 0) {
+                    for (DisputeBasic dispute : claim.getDisputes()) {
+                        if (!dispute.getDeleted() && dispute.getStatus() != null && dispute.getStatus() == 1) {
                             // Make sure property is disputed. set dispute type
                             prop.setClaimTypeCode("dispute");
 
                             // Add dispute information
                             com.rmsi.mast.studio.mobile.transferobjects.Dispute propDispute = new com.rmsi.mast.studio.mobile.transferobjects.Dispute();
                             propDispute.setDescription(StringUtils.empty(dispute.getDescription()));
-                            if (dispute.getDisputeType() != null) {
-                                propDispute.setDisputeTypeId(dispute.getDisputeType().getCode());
+                            if (dispute.getDisputeTypeId() != null) {
+                                propDispute.setDisputeTypeId(dispute.getDisputeTypeId());
                             }
                             propDispute.setId(dispute.getId());
                             if (dispute.getRegDate() != null) {
@@ -317,22 +298,22 @@ public class SurveyProjectAttributeServiceImp implements
                             // Add disputeing parties
                             if (dispute.getDisputingPersons() != null && dispute.getDisputingPersons().size() > 0) {
                                 propDispute.setDisputingPersons(new ArrayList<com.rmsi.mast.studio.mobile.transferobjects.Person>());
-                                for (NaturalPerson person : dispute.getDisputingPersons()) {
+                                for (NaturalPersonBasic person : dispute.getDisputingPersons()) {
                                     propDispute.getDisputingPersons().add(createPropPerson(person));
                                 }
                             }
 
                             // Add media
-                            if (docs != null && docs.size() > 0) {
+                            if (claim.getMedia() != null && claim.getMedia().size() > 0) {
                                 propDispute.setMedia(new ArrayList<Media>());
 
-                                for (SourceDocument doc : docs) {
-                                    if (doc.isActive() && doc.getPerson_gid() == null && doc.getSocial_tenure_gid() == null && doc.getDisputeId() != null) {
+                                for (MediaBasic doc : claim.getMedia()) {
+                                    if (doc.getActive() && doc.getPersonId() == null && doc.getRightId() == null && doc.getDisputeId() != null) {
                                         Media media = new Media();
                                         media.setId((long) doc.getGid());
                                         media.setType(doc.getMediaType());
                                         media.setAttributes(new ArrayList<Attribute>());
-                                        fillAttributes(media.getAttributes(), doc.getGid(), 3);
+                                        fillAttributes(media.getAttributes(), doc.getAttributes());
                                         propDispute.getMedia().add(media);
                                     }
                                 }
@@ -350,43 +331,35 @@ public class SurveyProjectAttributeServiceImp implements
         return props;
     }
 
-    private com.rmsi.mast.studio.mobile.transferobjects.Person createPropPerson(NaturalPerson naturalPerson) {
+    private com.rmsi.mast.studio.mobile.transferobjects.Person createPropPerson(NaturalPersonBasic naturalPerson) {
         com.rmsi.mast.studio.mobile.transferobjects.Person propPerson = new com.rmsi.mast.studio.mobile.transferobjects.Person();
         propPerson.setIsNatural(1);
         if (!StringUtils.isEmpty(naturalPerson.getMobileGroupId())) {
             propPerson.setId(Long.parseLong(naturalPerson.getMobileGroupId()));
         } else {
-            propPerson.setId(naturalPerson.getPerson_gid());
+            propPerson.setId(naturalPerson.getPersonGid());
         }
         if (naturalPerson.getAcquisitionType() != null) {
-            propPerson.setAcquisitionTypeId(naturalPerson.getAcquisitionType().getCode());
+            propPerson.setAcquisitionTypeId(naturalPerson.getAcquisitionType());
         }
         propPerson.setShare(StringUtils.empty(naturalPerson.getShare()));
-        if (naturalPerson.getPersonSubType() != null) {
-            propPerson.setSubTypeId((int) naturalPerson.getPersonSubType().getPerson_type_gid());
+        if (naturalPerson.getPersonType() != null) {
+            propPerson.setSubTypeId(naturalPerson.getPersonType());
         }
-        propPerson.setResident(naturalPerson.getResident() ? 1 : 0);
+        propPerson.setResident(naturalPerson.isResident() ? 1 : 0);
         propPerson.setAttributes(new ArrayList<Attribute>());
-        fillAttributes(propPerson.getAttributes(), naturalPerson.getPerson_gid(), 2);
+        fillAttributes(propPerson.getAttributes(), naturalPerson.getAttributes());
         return propPerson;
     }
 
-    private void fillAttributes(List<Attribute> attributes, long parentId, int categoryId) {
-        if (attributes == null) {
+    private void fillAttributes(List<Attribute> attributes, List<? extends AttributeValue> sourceAttributes) {
+        if (attributes == null || sourceAttributes == null || sourceAttributes.size() < 1) {
             return;
         }
-
-        List<Object> attrObjects = attributeValuesDao.getAttributeValueandId(parentId, categoryId);
-        if (attrObjects == null || attrObjects.size() < 1) {
-            return;
-        }
-
-        for (Object attrObj : attrObjects) {
-            Object[] values = (Object[]) attrObj;
-
+        for (AttributeValue attribute : sourceAttributes) {
             Attribute attr = new Attribute();
-            attr.setId(Long.parseLong(values[0].toString()));
-            attr.setValue(values[1].toString());
+            attr.setId(attribute.getId());
+            attr.setValue(attribute.getValue());
             attributes.add(attr);
         }
     }

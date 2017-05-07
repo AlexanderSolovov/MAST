@@ -32,6 +32,7 @@ import com.rmsi.mast.studio.domain.ProjectHamlet;
 import com.rmsi.mast.studio.domain.ProjectLayergroup;
 import com.rmsi.mast.studio.domain.ProjectRegion;
 import com.rmsi.mast.studio.domain.Savedquery;
+import com.rmsi.mast.studio.domain.SourceDocument;
 import com.rmsi.mast.studio.domain.User;
 import com.rmsi.mast.studio.domain.UserProject;
 import com.rmsi.mast.studio.domain.UserRole;
@@ -42,11 +43,23 @@ import com.rmsi.mast.studio.service.ProjectionService;
 import com.rmsi.mast.studio.service.RoleService;
 import com.rmsi.mast.studio.service.UnitService;
 import com.rmsi.mast.studio.service.UserService;
+import com.rmsi.mast.studio.util.FileUtils;
 import com.rmsi.mast.studio.util.SaveProject;
 import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.service.LandRecordsService;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @Controller
 public class ProjectController {
@@ -122,6 +135,7 @@ public class ProjectController {
         String projectName;
         Project project;
         String[] project_adjudicatorhid = null;
+        String[] adjudicatorsSignature = null;
         String[] hamlet_name = null;
         String[] hamlet_alias = null;
         String[] hamlet_code = null;
@@ -132,6 +146,7 @@ public class ProjectController {
 
             try {
                 project_adjudicatorhid = ServletRequestUtils.getRequiredStringParameters(request, "project_adjudicatorhid");
+                adjudicatorsSignature = ServletRequestUtils.getRequiredStringParameters(request, "hSignatureAdjudicator");
             } catch (Exception e) {
                 logger.error(e);
             }
@@ -203,8 +218,6 @@ public class ProjectController {
             String region = "";
             String districtname = "";
             String village = "";
-            String hamlet = "";
-            String name = "";
             String id = "";
             String districtOfficer = "";
             String villageChairman = "";
@@ -232,16 +245,6 @@ public class ProjectController {
                 }
                 try {
                     village = ServletRequestUtils.getRequiredStringParameter(request, "villageId");
-                } catch (Exception e) {
-                    logger.error(e);
-                }
-                try {
-                    hamlet = ServletRequestUtils.getRequiredStringParameter(request, "hamletId");
-                } catch (Exception e) {
-                    logger.error(e);
-                }
-                try {
-                    name = ServletRequestUtils.getRequiredStringParameter(request, "name");
                 } catch (Exception e) {
                     logger.error(e);
                 }
@@ -302,7 +305,11 @@ public class ProjectController {
                 projectArea.setDistrictOfficer(districtOfficer);
                 projectArea.setVillage_code(villagecode);
                 projectArea.setAddress(villagepostalcode);
-                if(StringUtils.isEmpty(vcmeetingdate)){
+                projectArea.setVillageChairmanSignaturePath(ServletRequestUtils.getStringParameter(request, "hSignatureVillageChairman", ""));
+                projectArea.setVillageExecutiveSignaturePath(ServletRequestUtils.getStringParameter(request, "hSignatureVillageExecutive", ""));
+                projectArea.setDistrictOfficerSignaturePath(ServletRequestUtils.getStringParameter(request, "hSignatureDistrictOfficer", ""));
+
+                if (StringUtils.isEmpty(vcmeetingdate)) {
                     projectArea.setVcMeetingDate(null);
                 } else {
                     projectArea.setVcMeetingDate(new SimpleDateFormat("yyyy-MM-dd").parse(vcmeetingdate));
@@ -356,26 +363,32 @@ public class ProjectController {
 
             ProjectAdjudicator adjObj = new ProjectAdjudicator();
 
-            for (String str : project_adjudicatorhid) {
-                adjObj.setAdjudicatorName(str);
-                adjObj.setProjectName(projectName);
-                projectService.addAdjudicatorDetails(adjObj);
+            if (project_adjudicatorhid != null && adjudicatorsSignature != null && project_adjudicatorhid.length == adjudicatorsSignature.length) {
+                for (int j = 0; j < project_adjudicatorhid.length; j++) {
+                    adjObj.setAdjudicatorName(project_adjudicatorhid[j]);
+                    adjObj.setProjectName(projectName);
+                    adjObj.setSignaturePath(adjudicatorsSignature[j]);
+                    projectService.addAdjudicatorDetails(adjObj);
+                }
             }
 
             List<String> hamlettmplst = projectService.getHamletCodesbyProject(projectName);
-            
-            for (int j = 0; j < hamlet_name.length; j++) {
-                ProjectHamlet hamletObj = new ProjectHamlet();
-                hamletObj.setHamletName(hamlet_name[j]);
-                hamletObj.setHamletNameSecondLanguage(hamlet_alias[j]);
-                hamletObj.setHamletCode(hamlet_code[j]);
-                hamletObj.setHamletLeaderName(hamlet_leader[j]);
-                hamletObj.setProjectName(projectName);
-                hamletObj.setCount(0);
-                if (!hamlettmplst.contains(hamlet_code[j])) {
-                    projectService.addHamlets(hamletObj);
+
+            if (hamlet_name != null) {
+                for (int j = 0; j < hamlet_name.length; j++) {
+                    ProjectHamlet hamletObj = new ProjectHamlet();
+                    hamletObj.setHamletName(hamlet_name[j]);
+                    hamletObj.setHamletNameSecondLanguage(hamlet_alias[j]);
+                    hamletObj.setHamletCode(hamlet_code[j]);
+                    hamletObj.setHamletLeaderName(hamlet_leader[j]);
+                    hamletObj.setProjectName(projectName);
+                    hamletObj.setCount(0);
+                    if (!hamlettmplst.contains(hamlet_code[j])) {
+                        projectService.addHamlets(hamletObj);
+                    }
                 }
             }
+            
             return "ProjectAdded";
         } catch (Exception e) {
             logger.error(e);
@@ -650,7 +663,6 @@ public class ProjectController {
         return projectService.findHamletByProject(projname);
     }
 
-    /* ************@RMSI/NK add for country,region, district,village,hamlet * start ***1-5 ***********/
     @RequestMapping(value = "/studio/project/delethamlet/{hamletcode}/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public boolean deleteHamlet(@PathVariable String hamletcode, @PathVariable String projectName) {
@@ -662,7 +674,105 @@ public class ProjectController {
         } else {
             return false;
         }
-
     }
 
+    @RequestMapping(value = "/studio/project/uploadsignature", method = RequestMethod.POST)
+    @ResponseBody
+    public String uploadSignature(MultipartHttpServletRequest request, HttpServletResponse response) {
+        try {
+            // Save signature
+            byte[] signature;
+            Iterator<String> files = request.getFileNames();
+
+            while (files.hasNext()) {
+                MultipartFile mpFile = request.getFile(files.next());
+                signature = mpFile.getBytes();
+                String fileName = mpFile.getOriginalFilename();
+                String uid = UUID.randomUUID().toString();
+                fileName = uid + "." + fileName.substring(fileName.indexOf(".") + 1, fileName.length()).toLowerCase();
+
+                String outDirPath = FileUtils.getFielsFolder(request) + "resources" + File.separator + "signatures";
+                File outDir = new File(outDirPath);
+                if (!outDir.exists()) {
+                    (new File(outDirPath)).mkdirs();
+                }
+
+                try (FileOutputStream uploadfile = new FileOutputStream(outDirPath + File.separator + fileName)) {
+                    uploadfile.write(signature);
+                    uploadfile.flush();
+                } catch (Exception e) {
+                    logger.error(e);
+                    return null;
+                }
+                return uid;
+            }
+            return null;
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @RequestMapping(value = "/studio/project/signatureexists/{fileName}", method = RequestMethod.GET)
+    @ResponseBody
+    public boolean checkSignatureExists(@PathVariable String fileName, HttpServletRequest request) {
+        File signature = new File(FileUtils.getFielsFolder(request) + "resources" + File.separator + "signatures" + File.separator + fileName + ".jpg");
+        return signature.exists();
+    }
+
+    @RequestMapping(value = "/studio/project/getsignature/{fileName}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getSignature(@PathVariable String fileName, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Path path = Paths.get(FileUtils.getFielsFolder(request) + "resources" + File.separator + "signatures" + File.separator + fileName + ".jpg");
+
+            if (!path.toFile().exists()) {
+                writeEmptyImage(request, response);
+                return;
+            }
+
+            byte[] data = Files.readAllBytes(path);
+            response.setContentLength(data.length);
+            response.setHeader("Content-Type", "image/jpeg");
+            response.addHeader("Content-disposition", "inline; inline; filename=\"" + fileName + "\"");
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(data);
+                out.flush();
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+
+    @RequestMapping(value = "/studio/project/deletesignature/{fileName}", method = RequestMethod.GET)
+    @ResponseBody
+    public boolean deleteSignature(@PathVariable String fileName, HttpServletRequest request) {
+        File signature = new File(FileUtils.getFielsFolder(request) + "resources" + File.separator + "signatures" + File.separator + fileName + ".jpg");
+        if (signature.exists()) {
+            try {
+                signature.delete();
+            } catch (Exception e) {
+                logger.error(e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void writeEmptyImage(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            byte[] data = Files.readAllBytes(Paths.get(request.getSession().getServletContext().getRealPath("/resources/images/pixel.png")));
+            response.setContentLength(data.length);
+            response.setHeader("Content-Type", "image/png");
+            response.addHeader("Content-disposition", "inline; inline; filename=\"photo.png\"");
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(data);
+                out.flush();
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
 }

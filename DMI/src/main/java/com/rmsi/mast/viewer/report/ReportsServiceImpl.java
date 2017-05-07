@@ -119,8 +119,10 @@ public class ReportsServiceImpl implements ReportsSerivce {
             params.put("APP_URL", appUrl);
             params.put("VC_DATE", vcDate);
             params.put("CHAIR_PERSON", project.getVillageChairman());
+            params.put("CHAIR_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageChairmanSignature()) ? "0" : project.getVillageChairmanSignature()));
             params.put("EXECUTIVE_PERSON", project.getVillageExecutive());
-
+            params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
+            
             ClaimSummary[] beans = claims.toArray(new ClaimSummary[claims.size()]);
             JRDataSource jds = new JRBeanArrayDataSource(beans);
 
@@ -149,8 +151,11 @@ public class ReportsServiceImpl implements ReportsSerivce {
             params.put("APP_URL", appUrl);
             params.put("VC_DATE", project.getVcMeetingDate());
             params.put("CHAIR_PERSON", project.getVillageChairman());
+            params.put("CHAIR_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageChairmanSignature()) ? "0" : project.getVillageChairmanSignature()));
             params.put("EXECUTIVE_PERSON", project.getVillageExecutive());
+            params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
             params.put("DLO_OFFICER", project.getDistrictOfficer());
+            params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
 
             ClaimSummary[] beans = claims.toArray(new ClaimSummary[claims.size()]);
             JRDataSource jds = new JRBeanArrayDataSource(beans);
@@ -165,18 +170,18 @@ public class ReportsServiceImpl implements ReportsSerivce {
     }
 
     @Override
-    public JasperPrint getDistrictRegistryBook(String projectName) {
-        return getRegistryBook(projectName, "/reports/DistrictRegBook.jasper");
+    public JasperPrint getDistrictRegistryBook(String projectName, String appUrl) {
+        return getRegistryBook(projectName, "/reports/DistrictRegBook.jasper", appUrl);
     }
 
     @Override
-    public JasperPrint getVillageRegistryBook(String projectName) {
-        return getRegistryBook(projectName, "/reports/VillageRegBook.jasper");
+    public JasperPrint getVillageRegistryBook(String projectName, String appUrl) {
+        return getRegistryBook(projectName, "/reports/VillageRegBook.jasper", appUrl);
     }
 
     @Override
     public JasperPrint getVillageIssuanceBook(String projectName) {
-        return getRegistryBook(projectName, "/reports/CcroIssuenceBook.jasper");
+        return getRegistryBook(projectName, "/reports/CcroIssuenceBook.jasper", "");
     }
 
     @Override
@@ -256,7 +261,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
         }
     }
     
-    private JasperPrint getRegistryBook(String projectName, String reportPath) {
+    private JasperPrint getRegistryBook(String projectName, String reportPath, String appUrl) {
         try {
             ProjectDetails project = landRecordsService.getProjectDetails(projectName);
             List<RegistryBook> registryBook = landRecordsService.getRegistryBook(projectName, 0);
@@ -274,6 +279,9 @@ public class ReportsServiceImpl implements ReportsSerivce {
             HashMap params = new HashMap();
             params.put("VILLAGE", project.getVillage());
             params.put("VLC", project.getVillageCode());
+            params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
+            params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
+            params.put("APP_URL", appUrl);
             params.put("VC_DATE", vcDate);
 
             RegistryBook[] beans = registryBook.toArray(new RegistryBook[registryBook.size()]);

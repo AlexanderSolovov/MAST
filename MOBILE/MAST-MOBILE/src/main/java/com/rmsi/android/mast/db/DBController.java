@@ -455,6 +455,25 @@ public class DbController extends SQLiteOpenHelper {
         return getFeatures(q);
     }
 
+    public boolean deleteDownloadedFeatures() {
+        String whereClause = Feature.COL_STATUS + "!='" + Property.CLIENT_STATUS_DRAFT + "' AND "
+                + Feature.COL_STATUS + "!='" + Property.CLIENT_STATUS_COMPLETE + "'";
+        try {
+            getDb().delete(Feature.TABLE_NAME, whereClause, null);
+            getDb().delete(Attribute.TABLE_ATTRIBUTE_VALUE_NAME, whereClause, null);
+            getDb().delete(Person.TABLE_NAME, whereClause, null);
+            getDb().delete(DeceasedPerson.TABLE_NAME, whereClause, null);
+            getDb().delete(PersonOfInterest.TABLE_NAME, whereClause, null);
+            getDb().delete(Right.TABLE_NAME, whereClause, null);
+            getDb().delete(Media.TABLE_NAME, whereClause, null);
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public boolean deleteFeature(Long featureid) {
         String whereClause = Feature.COL_ID + "=" + featureid;
         try {
@@ -1379,8 +1398,6 @@ public class DbController extends SQLiteOpenHelper {
      * Saves provided attributes list
      */
     private boolean saveAttributesList(List<Attribute> attributes) {
-        List<ContentValues> rows = new ArrayList<ContentValues>();
-
         if (attributes == null || attributes.size() < 1) {
             return true;
         }
@@ -2124,86 +2141,30 @@ public class DbController extends SQLiteOpenHelper {
             if(user != null)
                 userId = user.getUserId().toString();
 
-            // Get all features from DB
-            List<Feature> features = fetchFeatures();
-            boolean hasFeatures = features != null && features.size() > 0;
+            // Clean downloaded feature from DB
+            deleteDownloadedFeatures();
 
             for(Property prop : properties){
-                // Check if property exists in DB
-                Feature feature = null;
-                if(hasFeatures){
-                    for(int i = 0; i<features.size(); i++){
-                        if(features.get(i).getServerId() != null && features.get(i).getServerId().compareTo(prop.getServerId()) == 0){
-                            feature = features.get(i);
-                            break;
-                        }
-                    }
-                }
-
                 String status = "";
 
-                if(feature == null){
-                    // Skip feature if status is rejected
-                    if(StringUtility.empty(prop.getStatus()).equalsIgnoreCase(Feature.SERVER_STATUS_REJECTED)){
-                        continue;
-                    }
-                } else {
-                    status = StringUtility.empty(feature.getStatus());
-                    // Skip fetures with draft, verified and final status
-                    if(status.equalsIgnoreCase(Feature.CLIENT_STATUS_DRAFT)
-                            || status.equalsIgnoreCase(Feature.CLIENT_STATUS_VERIFIED)
-                            || status.equalsIgnoreCase(Feature.CLIENT_STATUS_FINAL)){
-                        continue;
-                    }
-                    // Update property with local feaure id
-                    //prop.setId(feature.getId());
+                // Skip feature if status is rejected
+                if(StringUtility.empty(prop.getStatus()).equalsIgnoreCase(Feature.SERVER_STATUS_REJECTED)){
+                    continue;
                 }
 
                 status = StringUtility.empty(prop.getStatus());
 
-                // If property is rejected, delete underlaying feautre
-                if(status.equalsIgnoreCase(Feature.SERVER_STATUS_REJECTED) && feature != null){
-                    deleteFeature(feature.getId());
-                    continue;
-                }
-
                 // Set appropriate client status to the property
-                if(status.equalsIgnoreCase(Feature.SERVER_STATUS_CCRO_GENERATED)
-                        || status.equalsIgnoreCase(Feature.SERVER_STATUS_FINAL)){
+                if(status.equalsIgnoreCase(Feature.SERVER_STATUS_APPROVED)){
                     prop.setStatus(Feature.CLIENT_STATUS_FINAL);
-                } else if(status.equalsIgnoreCase(Feature.SERVER_STATUS_APPROVED)){
-                    prop.setStatus(Feature.CLIENT_STATUS_COMPLETE);
-                } else if(status.equalsIgnoreCase(Feature.SERVER_STATUS_ADJUDICATED)){
+                } else if(status.equalsIgnoreCase(Feature.SERVER_STATUS_VALIDATED)){
                     prop.setStatus(Feature.CLIENT_STATUS_VERIFIED_AND_SYNCHED);
-                } else if (status.equalsIgnoreCase(Feature.SERVER_STATUS_NEW)
-                        || status.equalsIgnoreCase(Feature.SERVER_STATUS_SPATIAL_VALIDATED)){
-                    if(feature != null && StringUtility.empty(feature.getStatus()).equalsIgnoreCase(Feature.CLIENT_STATUS_COMPLETE))
-                        prop.setStatus(Feature.CLIENT_STATUS_COMPLETE);
-                    else
-                        prop.setStatus(Feature.CLIENT_STATUS_DOWNLOADED);
                 } else {
                     prop.setStatus(Feature.CLIENT_STATUS_DOWNLOADED);
                 }
 
                 // Insert property received from server
-                try{
-                    getDb().beginTransaction();
-                    // Delete feature first
-                    if(feature != null)
-                        deleteFeature(feature.getId());
-
-                    // Save property
-                    insertProperty(prop);
-
-                    getDb().setTransactionSuccessful();
-                } catch (Exception e) {
-                    cf.syncLog("", e);
-                    e.printStackTrace();
-                    return false;
-                } finally {
-                    if (getDb().inTransaction())
-                        getDb().endTransaction();
-                }
+                insertProperty(prop);
             }
         }
         return true;

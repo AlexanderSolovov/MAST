@@ -76,7 +76,7 @@
                           href="<c:url value="resources/scripts/openlayers/theme/default/google.css" />"
                           type="text/css" media="screen, projection" />
                     <link rel="stylesheet"
-                          href="<c:url value="resources/scripts/jquery-ui-1.8.13/css/redmond/jquery-ui-1.8.13.custom.css" />"
+                          href="<c:url value="resources/scripts/jquery-ui-1.12.1/jquery-ui.min.css" />"
                           type="text/css" media="screen, projection" />
                     <link rel="stylesheet"
                           href="<c:url value="resources/scripts/msdropdown/dd.css" />"
@@ -128,6 +128,12 @@
                           type="text/css" media="screen, projection" />
                     <link rel="stylesheet"
                           href="<c:url value="resources/styles/font-awesome.min.css" />"
+                          type="text/css" media="screen, projection" />
+                    <link rel="stylesheet"
+                          href="<c:url value="resources/styles/viewer/jsgrid.min.css" />"
+                          type="text/css" media="screen, projection" />
+                    <link rel="stylesheet"
+                          href="<c:url value="resources/styles/viewer/jsgrid-theme.min.css" />"
                           type="text/css" media="screen, projection" />
                     <!--[if IE 7]>  
                                  <link rel="stylesheet"
@@ -640,7 +646,11 @@
                                     <!--Land records div  -->
                                     <div id="landrecords-div"></div>
                                     <div id="tabPersonsEdit">
-
+                                        <div style="padding: 7px;font-size: 11px;">
+                                            <input type="button" id="btnLoadPersons" value="Load" class="btn1" 
+                                                   onclick="javascript:loadPersonsForEditing();" style="margin-bottom: 10px;" />
+                                            <div id="personsEditingGrid"></div>
+                                        </div>
                                     </div>
                                     <div id="tabReports">
                                         <div style="padding: 10px;">
@@ -716,6 +726,9 @@
                                                 <h3>Claims Profile Statistics</h3>
                                                 <div>
                                                     <br />
+                                                    <label>Village/Project:</label>
+                                                    <select id="selectProjects"></select>
+                                                    &nbsp;&nbsp;
                                                     <input type="button" value="Generate" class="btn1" onclick="javascript:generateClaimsProfile();" />
                                                     <br />
                                                 </div>

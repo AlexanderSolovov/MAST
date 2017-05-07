@@ -68,6 +68,9 @@ public class PersonWithRightSummary implements Serializable {
     @Column
     private String resident;
     
+    @Column(name = "village_resident")
+    private Boolean villageResident;
+    
     public PersonWithRightSummary(){
         
     }
@@ -206,6 +209,14 @@ public class PersonWithRightSummary implements Serializable {
 
     public void setResident(String resident) {
         this.resident = resident;
+    }
+
+    public Boolean getVillageResident() {
+        return villageResident;
+    }
+
+    public void setVillageResident(Boolean villageResident) {
+        this.villageResident = villageResident;
     }
     
     public String getFullName() {

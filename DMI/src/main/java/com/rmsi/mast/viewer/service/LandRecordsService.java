@@ -40,8 +40,10 @@ import com.rmsi.mast.studio.domain.fetch.AttributeValuesFetch;
 import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
 import com.rmsi.mast.studio.domain.fetch.PersonAdministrator;
+import com.rmsi.mast.studio.domain.fetch.PersonForEditing;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitBasic;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTemp;
@@ -94,6 +96,8 @@ public interface LandRecordsService {
      */
     List<SpatialUnitTable> findSpatialUnitbyId(Long id);
 
+    SpatialUnitBasic getSpatialUnitBasic(Long usin);
+    
     SpatialUnitTable getSpatialUnit(Long id);
     
     SpatialUnitGeom getParcelGeometry(long usin);
@@ -814,4 +818,8 @@ public interface LandRecordsService {
     List<RegistryBook> getRegistryBook(String projectName, long usin);
     
     ClaimProfile getClaimsProfile(String projectName);
+    
+    List<PersonForEditing> getPersonsForEditing(String projectName, long usin, String firstName, String lastName, String middleName, String idNumber, String claimNumber, String neighbourN, String neighbourS, String neighbourE, String neighbourW);
+    
+    PersonForEditing updatePersonForEditing(PersonForEditing pfe) throws Exception;
 }

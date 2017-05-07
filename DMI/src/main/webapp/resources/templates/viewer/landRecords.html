@@ -101,7 +101,7 @@
                                 </td>
                                 <td>
                                     <button class="btn1 v-top-18" onclick="javascript:search();">Search</button>
-                                    <button class="btn v-top-24" onclick="LandRecords('landRecords');">Clear</button>
+                                    <button class="btn v-top-24" onclick="clearSearch();">Clear</button>
                                 </td>
                             </tr>
                         </table>
@@ -181,41 +181,44 @@
                         <td>
                         <div class="actions-btn">
                         <a href="#" title="Show on the map" class="map-viewer" onclick="showOnMap('${usin}','${status.workflowStatusId}');"></a> 
-                
+
                         {{if status.workflowStatusId === CLAIM_STATUS_NEW || status.workflowStatusId === CLAIM_STATUS_VALIDATED || status.workflowStatusId === CLAIM_STATUS_REFERRED}}
-                            <a href="#" title="Update Hamlet" class="id-checked" onclick="editHamlet(${usin});" ></a>
+                        <a href="#" title="Update Hamlet" class="id-checked" onclick="editHamlet(${usin});" ></a>
                         {{/if}}
-                        
+
                         {{if (claimType.code === CLAIM_TYPE_NEW) && (status.workflowStatusId === CLAIM_STATUS_NEW || status.workflowStatusId === CLAIM_STATUS_REFERRED)}}
-                            <a href="#" title="Mark as validated" class="validate" onclick="markClaimValidated(${usin});"></a>
+                        <a href="#" title="Mark as validated" class="validate" onclick="markClaimValidated(${usin});"></a>
                         {{/if}}
-                        
+
                         {{if (claimType.code === CLAIM_TYPE_NEW || claimType.code === CLAIM_TYPE_DISPUTED) && status.workflowStatusId === CLAIM_STATUS_NEW}}
-                            <a href="#" title="Refer to VC/VLC" class="refer" onclick="javascript:referClaim(${usin});"></a>
+                        <a href="#" title="Refer to VC/VLC" class="refer" onclick="javascript:referClaim(${usin});"></a>
                         {{/if}}
-                                
+
                         {{if (claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_VALIDATED) || (claimType.code === CLAIM_TYPE_EXISTING && status.workflowStatusId === CLAIM_STATUS_NEW)}}
-                            <a href="#" class="correct" title="Approve" onclick="javascript:approveClaim(${usin});"></a>
+                        <a href="#" class="correct" title="Approve" onclick="javascript:approveClaim(${usin});"></a>
                         {{/if}}
-                                
+
                         {{if (claimType.code === CLAIM_TYPE_NEW || claimType.code === CLAIM_TYPE_DISPUTED) && (status.workflowStatusId === CLAIM_STATUS_NEW || status.workflowStatusId === CLAIM_STATUS_REFERRED)}}
-                            <a href="#" title="Deny" class="cross" onclick="javascript:rejectClaim(${usin});"></a>
+                        <a href="#" title="Deny" class="cross" onclick="javascript:rejectClaim(${usin});"></a>
                         {{/if}}
-                                
+
                         {{if status.workflowStatusId === CLAIM_STATUS_DENIED }}
-                            <a href="#" title="Print denial letter" class="denial_letter" onclick="javascript:printDenialLetter(${usin});"></a>
+                        <a href="#" title="Print denial letter" class="denial_letter" onclick="javascript:printDenialLetter(${usin});"></a>
+                        {{/if}}
+
+                        {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_VALIDATED}}
+                        <a href="#" title="Generate adjudication form" onclick="javascript:generateAdjudicationForm(${usin});" class="ga"></a>
+                        {{/if}}
+
+                        {{if claimType.code === CLAIM_TYPE_NEW && (status.workflowStatusId === CLAIM_STATUS_APPROVED || status.workflowStatusId === CLAIM_STATUS_DENIED)}}
+                        <a href="#" title="Upload document" onclick="javascript:editMultimedia(0,${usin},false)" class="upload"></a>
                         {{/if}}
                                 
-                        {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_VALIDATED}}
-                            <a href="#" title="Generate adjudication form" onclick="javascript:generateAdjudicationForm(${usin});" class="ga"></a>
-                        {{/if}}
-         
                         {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_APPROVED}}
-                            <a href="#" title="Upload document" onclick="javascript:editMultimedia(0,${usin},false)" class="upload"></a>
-                            <a href="#" title="Generate CCRO" onclick="javascript:generateCcro(${usin});" class="ccro"></a>
-                            <a href="#" title="Transaction Sheet" onclick="javascript:generateTransactionSheet(${usin});" class="ts"></a>
+                        <a href="#" title="Generate CCRO" onclick="javascript:generateCcro(${usin});" class="ccro"></a>
+                        <a href="#" title="Transaction Sheet" onclick="javascript:generateTransactionSheet(${usin});" class="ts"></a>
                         {{/if}}
-                        
+
                         </div>
                         </td>
                         </tr>
@@ -731,7 +734,7 @@
                                     </table>
 
                                     <div style="margin-bottom: 10px; float: right;">
-                                        <button class="btn1 padding0 hideNew" onclick="javascript:editMultimedia(0,0,true);">
+                                        <button class="btn1 padding0 hideNew" onclick="javascript:editMultimedia(0, 0, true);">
                                             <i class="fa fa-plus"></i>New Document
                                         </button>
                                     </div>
@@ -798,8 +801,19 @@
                                                 <input type="text" name="shareSize" id="shareSize" class="text ui-widget-content ui-corner-all justread">
                                             </td>
                                             <td>
-                                                <label>Gender</label>
-                                                <select name="gender" class="justdisable" id="gender"></select>
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <label>Gender</label>
+                                                            <select name="gender" class="justdisable" style="width:110px" id="gender"></select>
+                                                        </td>
+                                                        <td style="vertical-align: top;padding-left: 15px;text-align: center;">
+                                                            <label>Resident</label>
+                                                            <input type="checkbox" name="personResident" id="personResident" />
+                                                        </td>
+                                                    </tr>
+                                                </table>
+
                                             </td>
                                             <td>
                                                 <label>Date of birth</label>

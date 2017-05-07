@@ -20,6 +20,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import javax.persistence.Temporal;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.Type;
 
 /**
@@ -107,6 +109,7 @@ public class SpatialUnit implements Serializable {
     private Status status;
 
     @Column(name = "workflow_status_update_time", nullable = false)
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date statusUpdateTime;
 
     @Column(nullable = false)
@@ -117,6 +120,7 @@ public class SpatialUnit implements Serializable {
     private Usertable user;
 
     @Column(name = "survey_date", nullable = false)
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date surveyDate;
 
     @Column(name = "imei_number", nullable = false)
@@ -126,6 +130,9 @@ public class SpatialUnit implements Serializable {
     @Column(name = "the_geom", columnDefinition = "Geometry")
     private Geometry theGeom;
 
+    @Formula("get_coordinates(the_geom)")
+    private String geometry;
+    
     private String address1;
 
     private String address2;
@@ -258,9 +265,6 @@ public class SpatialUnit implements Serializable {
     public void setGeometry(String geometry) {
         this.geometry = geometry;
     }
-
-    @Transient
-    private String geometry;
 
     @JsonIgnore
     public Geometry getTheGeom() {

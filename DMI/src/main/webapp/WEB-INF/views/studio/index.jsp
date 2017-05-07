@@ -158,5 +158,14 @@
 
         </div>
         <div id="footer"></div>
+        <div id="signature-dialog-form" title="Signature" style="display: none;">
+            <form id="formSignature" action="" onsubmit="return false;">
+                <div style="margin: 10px;">
+                    <label>Select signature</label>
+                    <input name="fileSignature" id="fileSignature" type="file" accept=".jpg,.png,.gif,.jpeg" style="border: #aaa solid 1px;" />
+                    <label style="color: #0088cc">.jpeg,.png,.gif</label>
+                </div>
+            </form>
+        </div>
     </body>
 </html>

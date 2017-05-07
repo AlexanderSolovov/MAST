@@ -85,10 +85,10 @@
                "openlayers/MapQuestOSM.js",
                "openlayers/LayerSwitcherNew.js",
                "openlayers/UndoRedo.js",
-               "jquery-1.7.1/jquery-1.7.1.min.js",               
+               "jquery-1.8.3/jquery-1.8.3.min.js",               
                "jquery-1.6.3/jquery.cookie.js",
                "jquery-1.6.3/jquery.formHints.js",
-               "jquery-ui-1.8.13/jquery-ui-1.8.13.custom.min.js",
+               "jquery-ui-1.12.1/jquery-ui.min.js",
                "jquery-i18n/jquery.i18n.js",
                "jquery-localize/jquery.localize.js",
                "jquery-meerkat/jquery.meerkat.1.3.min.js",
@@ -147,9 +147,10 @@
                "/cloudburst/viewer/UserProjects.js",
                "/cloudburst/viewer/LandRecords.js",
                "/cloudburst/viewer/mapLoader.js",
-			   "/cloudburst/viewer/mapImage.js",
-			   "/cloudburst/viewer/proj4js-combined.js",
-			   "/cloudburst/viewer/Intersection.js"
+                "/cloudburst/viewer/mapImage.js",
+                "/cloudburst/viewer/proj4js-combined.js",
+                "/cloudburst/viewer/Intersection.js",
+                "jsgrid/jsgrid.min.js"
                
             ]; // etc.
         }

@@ -5,10 +5,14 @@ import java.util.List;
 import com.rmsi.mast.studio.dao.GenericDAO;
 import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
+import com.rmsi.mast.studio.domain.fetch.NaturalPersonBasic;
+import com.rmsi.mast.studio.domain.fetch.PersonForEditing;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitBasic;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
 
@@ -56,4 +60,13 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
     ClaimProfile getClaimsProfile(String projectName);
     
     ProjectDetails getProjectDetails(String projectName);
+    
+    List<PersonForEditing> getPersonsForEditing(String projectName, long usin, String firstName, String lastName, String middleName, String idNumber, String claimNumber, String neighbourN, String neighbourS, String neighbourE, String neighbourW);
+    
+    SpatialUnitBasic getSpatialUnitBasic(Long usin);
+    
+    NaturalPersonBasic getNaturalPersonBasic(Long id);
+    
+    @Transactional
+    PersonForEditing updatePersonForEditing(PersonForEditing pfe) throws Exception;
 }

@@ -10,6 +10,8 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 import android.app.IntentService;
@@ -318,7 +320,7 @@ public class DownloadService extends IntentService {
 
         URL url = new URL(requestUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(100000);
+        conn.setReadTimeout(450000);
         conn.setConnectTimeout(timeout);
         conn.setRequestMethod("POST");
         conn.setDoInput(true);
@@ -338,7 +340,8 @@ public class DownloadService extends IntentService {
                 }
             }
         } catch (SocketTimeoutException e) {
-
+            cf.syncLog("DownloadService", e);
+            e.printStackTrace();
         } catch (Exception e) {
             cf.syncLog("DownloadService", e);
             e.printStackTrace();

@@ -5,6 +5,7 @@ import com.rmsi.mast.studio.domain.ShareType;
 import com.rmsi.mast.studio.util.StringUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -65,9 +66,15 @@ public class ClaimSummary implements Serializable {
     @Column
     private String adjudicator1;
 
+    @Column(name = "adjudicator1_signature")
+    private String adjudicator1Signature;
+    
     @Column
     private String adjudicator2;
 
+    @Column(name = "adjudicator2_signature")
+    private String adjudicator2Signature;
+    
     @Column(name = "application_date")
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date applicationDate;
@@ -75,6 +82,10 @@ public class ClaimSummary implements Serializable {
     @Column(name = "status_id")
     private Integer statusId;
 
+    @Column(name = "status_date")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date statusDate;
+    
     @Column(name = "project_name")
     private String projectName;
 
@@ -387,6 +398,30 @@ public class ClaimSummary implements Serializable {
         this.deceasedPersons = deceasedPersons;
     }
 
+    public String getAdjudicator1Signature() {
+        return adjudicator1Signature;
+    }
+
+    public void setAdjudicator1Signature(String adjudicator1Signature) {
+        this.adjudicator1Signature = adjudicator1Signature;
+    }
+
+    public String getAdjudicator2Signature() {
+        return adjudicator2Signature;
+    }
+
+    public void setAdjudicator2Signature(String adjudicator2Signature) {
+        this.adjudicator2Signature = adjudicator2Signature;
+    }
+
+    public Date getStatusDate() {
+        return statusDate;
+    }
+
+    public void setStatusDate(Date statusDate) {
+        this.statusDate = statusDate;
+    }
+
     public List<PersonWithRightSummary> getPersonsForSignature() {
         ArrayList<PersonWithRightSummary> persons = new ArrayList<>();
 
@@ -495,5 +530,52 @@ public class ClaimSummary implements Serializable {
             names = administrators + " ambaye ni msimamizi wa mirathi ya Marehemu " + deceased;
         }
         return names;
+    }
+    
+    public boolean getHasNonResident(){
+        if(getNaturalOwners() != null && getNaturalOwners().size() > 0){
+            for(PersonWithRightSummary person : getNaturalOwners()){
+                if(!person.getVillageResident()){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public Date getStartDate(){
+        if(getCertDate() != null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(getCertDate());
+            int month = cal.get(Calendar.MONTH);
+            int day = cal.get(Calendar.DATE);
+            int newMonth = 0;
+            
+            if((month == Calendar.APRIL || month == Calendar.JULY || month == Calendar.OCTOBER 
+                    || month == Calendar.JANUARY) && day == 1){
+                return getCertDate();
+            }
+            
+            if(month == Calendar.JANUARY || month == Calendar.FEBRUARY || month == Calendar.MARCH){
+                newMonth = Calendar.APRIL;
+            }
+            
+            if(month == Calendar.APRIL || month == Calendar.MAY || month == Calendar.JUNE){
+                newMonth = Calendar.JULY;
+            }
+            
+            if(month == Calendar.JULY || month == Calendar.AUGUST || month == Calendar.SEPTEMBER){
+                newMonth = Calendar.OCTOBER;
+            }
+            
+            if(month == Calendar.OCTOBER || month == Calendar.NOVEMBER || month == Calendar.DECEMBER){
+                newMonth = Calendar.JANUARY;
+            }
+            
+            cal.set(Calendar.DATE, 1);
+            cal.set(Calendar.MONTH, newMonth);
+            return cal.getTime();
+        }
+        return null;
     }
 }

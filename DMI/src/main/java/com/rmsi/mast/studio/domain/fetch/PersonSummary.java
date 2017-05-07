@@ -61,6 +61,9 @@ public class PersonSummary implements Serializable {
     @Column
     private String resident;
     
+    @Column(name = "village_resident")
+    private Boolean villageResident;
+    
     public PersonSummary(){
         
     }
@@ -183,5 +186,13 @@ public class PersonSummary implements Serializable {
 
     public void setResident(String resident) {
         this.resident = resident;
+    }
+
+    public Boolean getVillageResident() {
+        return villageResident;
+    }
+
+    public void setVillageResident(Boolean villageResident) {
+        this.villageResident = villageResident;
     }
 }

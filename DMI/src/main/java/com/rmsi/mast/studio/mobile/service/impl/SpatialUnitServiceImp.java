@@ -97,8 +97,7 @@ public class SpatialUnitServiceImp implements SpatialUnitService {
     public List<SpatialUnit> getSpatialUnitDataByProjectId(String projectId) {
 
         // Convert WKT to Geometry Type and returns the List<SpatialUnit>
-        return new GeometryConversion().converGeometryToString(spatialUnitDao
-                .getSpatialUnitByProject(projectId));
+        return spatialUnitDao.getSpatialUnitByProject(projectId);
 
     }
 

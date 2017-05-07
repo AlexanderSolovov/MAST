@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
 
 @Entity
 @Table(name = "natural_person")
@@ -87,6 +88,7 @@ public class NaturalPerson extends Person implements Serializable {
     private String idNumber;
 
     @Column(name = "dob")
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date dob;
 
     @Column(name = "share")

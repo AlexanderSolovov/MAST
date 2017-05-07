@@ -70,6 +70,10 @@ var CLAIM_STATUS_DENIED = 5;
 var landRecordsInitialized = false;
 
 function LandRecords(_selectedItem) {
+    if(projList !== null && projList !== ""){
+        return;
+    }
+    
     selectedItem = _selectedItem;
     URL = "landrecords/spatialunit/default/" + 0;
     if (activeProject !== null && activeProject !== "") {
@@ -138,6 +142,9 @@ function displayRefreshedLandRecords() {
             if (dataList.length != 0 && dataList.length != undefined) {
                 jQuery("#landRecordsAttrTemplate").tmpl(dataList).appendTo("#landRecordsRowData");
             }
+
+            jQuery("#status_id").empty();
+            jQuery("#claim_type").empty();
 
             jQuery("#status_id").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
             jQuery("#claim_type").append(jQuery("<option></option>").attr("value", "").text("Please Select"));
@@ -463,7 +470,7 @@ function editAttribute(id) {
         modal: true,
         close: function () {
             editAttrDialog.dialog("destroy");
-            $('#tabs').tabs("select", "#tabGeneralInfo");
+            $('#tabs').tabs("option", "active", $('#tabs a[href="#tabGeneralInfo"]').parent().index());
         }
     });
 
@@ -703,7 +710,6 @@ function updateHamlet(usin, hamId) {
                     jAlert("Data Successfully saved", "Hamlet");
                     refreshLandRecords();
                     genAttrDialog.dialog("destroy");
-                    genAttrDialog.dialog("close");
                 } else {
                     jAlert("Request not completed");
                 }
@@ -835,6 +841,16 @@ function showErrors(errors) {
         }
         jAlert(combinedErrors);
     }
+}
+
+function clearSearch(){
+    $("#usinstr_id").val("");
+    $("#claim_type").val("");
+    $("#uka_id").val("");
+    $("#status_id").val("0");
+    $("#from_id").val("");
+    $("#to_id").val("");
+    search();
 }
 
 function search() {
@@ -976,9 +992,7 @@ function editNaturalData(id, viewOnly) {
                 if (data[0].idType !== null) {
                     jQuery("#idType").val(data[0].idType.code);
                 }
-                if (data[0].idNumber !== null) {
-                    jQuery("#idNumber").val(data[0].idNumber);
-                }
+                jQuery("#idNumber").val(data[0].idNumber);
                 if (data[0].personSubType !== null) {
                     jQuery("#person_subType").val(data[0].personSubType.person_type_gid);
                 }
@@ -986,6 +1000,7 @@ function editNaturalData(id, viewOnly) {
                     jQuery("#citizenship").val(data[0].citizenship_id.id);
                 }
 
+                jQuery("#personResident").prop( "checked", data[0].resident_of_village);
                 jQuery("#natural_key").val(id);
                 jQuery("#name").val(data[0].alias);
                 jQuery("#fname").val(data[0].firstName);
@@ -1022,7 +1037,7 @@ function editNaturalData(id, viewOnly) {
         },
         close: function () {
             naturalPersonDialog.dialog("destroy");
-            $('#tab-natural').tabs("select", "#tabs-1");
+            $('#tab-natural').tabs("option", "active", $('#tab-natural a[href="#tabs-1"]').parent().index());
         }
     });
 
@@ -1084,7 +1099,6 @@ function updateAttributeNaturalPerson(newPerson) {
         if (newPerson) {
             updateNewNaturalPerson();
             naturalPersonDialog.dialog("destroy");
-            naturalPersonDialog.dialog("close");
         } else {
             updateNaturalPerson();
         }
@@ -1182,7 +1196,7 @@ function editNonNatural(id) {
         },
         close: function () {
             nonnaturalPersonDialog.dialog("destroy");
-            $('#tab-nonnatural').tabs("select", "#tabs-3");
+            $('#tab-nonnatural').tabs("option", "active", $('#tab-nonnatural a[href="#tabs-3"]').parent().index());
         }
     });
 
@@ -1481,7 +1495,6 @@ function updateTenure() {
         success: function (data) {
             if (data) {
                 tenureDialog.dialog("destroy");
-                tenureDialog.dialog("close");
                 editAttribute(id);
                 jAlert('Data Sucessfully Saved', 'Tenure Info');
             } else {
@@ -1700,7 +1713,7 @@ var deleteNonNatural = function (id, name) {
                 success: function (result) {
                     if (result == true) {
                         jAlert('Data Successfully Deleted', 'Info');
-                        $('#tabs').tabs("select", "#tabGeneralInfo");
+                        $('#tabs').tabs("option", "active", $('#tabs a[href="#tabGeneralInfo"]').parent().index());
                         editAttribute(usinid);
                     }
 
@@ -1838,7 +1851,6 @@ function displayAttributeCategory(id, gid) {
 }
 
 function clearUploadDialog() {
-    uploadDialog.dialog("close");
     uploadDialog.dialog("destroy");
     $('#uploaddocumentformID')[0].reset();
 }
@@ -1963,7 +1975,7 @@ function zoomToAnyFeature(geom) {
     var biggerArea = 0.0;
     var biggerPart = 0;
     if (geom.components != undefined && geom.components != null) {
-        $('#tab').tabs("select", "#map-tab");
+        $('#tab').tabs("option", "active", $('#tab a[href="#map-tab"]').parent().index());
         $('#sidebar').show();
         $('#collapse').show();
 
@@ -1983,7 +1995,7 @@ function zoomToAnyFeature(geom) {
         vectors.addFeatures([feature]);
         map.zoomToExtent(bounds, true);
     } else {
-        $('#tab').tabs("select", "#landrecords-div");
+        $('#tab').tabs("option", "active", $('#tab a[href="#landrecords-div"]').parent().index());
         $('#sidebar').hide();
         $('#collapse').hide();
         jAlert('Site not found on Map', 'Alert');
@@ -2075,7 +2087,6 @@ function addNaturalPerson() {
                     modal: true,
                     buttons: {
                         "Close": function () {
-                            addDeletedNaturalDialog.dialog("close");
                             addDeletedNaturalDialog.dialog("destroy");
                         }
                     }
@@ -2094,7 +2105,6 @@ function addExistingPerson(personGid) {
         success: function (result) {
             if (result) {
                 jAlert('Person has been successfully added', 'Info');
-                addDeletedNaturalDialog.dialog("close");
                 addDeletedNaturalDialog.dialog("destroy");
                 editAttribute(id);
             } else {
@@ -2129,7 +2139,6 @@ function addNonNaturalPerson(empty) {
             modal: true,
             buttons: {
                 "Close": function () {
-                    addDeletedNonNaturalDialog.dialog("close");
                     addDeletedNonNaturalDialog.dialog("destroy");
                 }
             }
@@ -2147,7 +2156,6 @@ function addDeletedNonNatural(nonnatGid) {
             if (result) {
                 jAlert('Data Successfully Added', 'Non Natural Person');
                 if (DeletedNonNaturalList.length == 1) {
-                    addDeletedNonNaturalDialog.dialog("close");
                     addDeletedNonNaturalDialog.dialog("destroy");
                 }
                 addNonNaturalPerson("empty");
@@ -2244,7 +2252,6 @@ function addPerson() {
         modal: true,
         buttons: {
             "Close": function () {
-                addPersonDialog.dialog("close");
                 addPersonDialog.dialog("destroy");
             }
         }
@@ -2340,7 +2347,7 @@ function addNewNaturalPerson(parentNonNaturalId, disputeId) {
         },
         close: function () {
             naturalPersonDialog.dialog("destroy");
-            $('#tab-natural').tabs("select", "#tabs-1");
+            $('#tab-natural').tabs("option", "active", $('#tab-natural a[href="#tabs-1"]').parent().index());
         }
     });
     naturalPersonDialog.dialog("open");
@@ -2407,13 +2414,11 @@ function naturalPersonImage(person_gid, admin_id) {
             },
             "Cancel": function () {
                 uploadNaturalImage.dialog("destroy");
-                uploadNaturalImage.dialog("close");
                 $('#uploadNaturalImage')[0].reset();
             }
         },
         close: function () {
             uploadNaturalImage.dialog("destroy");
-            uploadNaturalImage.dialog("close");
             $('#uploadNaturalImage')[0].reset();
         }
     });
@@ -2451,7 +2456,6 @@ function uploadNaturalImg(gid_Person, id_admin) {
                     jAlert('File uploaded', 'upload');
                     editAttribute(usinId);
                     uploadNaturalImage.dialog("destroy");
-                    uploadNaturalImage.dialog("close");
                     $('#uploadNaturalImage')[0].reset();
                     $('#image_upload').remove();
                 } else if (result == "Error") {
@@ -2590,7 +2594,6 @@ function editnxtTokin(id) {
         },
         close: function () {
             nxtTokinDialog.dialog("destroy");
-            nxtTokinDialog.dialog("close");
             $('#editnxtTokinformID')[0].reset();
         }
     });
@@ -2627,7 +2630,7 @@ function updatePWI(pwi_id) {
     var mname = jQuery("#mname_kin").val();
     var lname = jQuery("#lname_kin").val();
     var name = fname + " " + lname;
-    if (mname != '')
+    if (mname !== '')
         name = fname + " " + mname + " " + lname;
     jQuery("#id_kin").val(pwi_id);
     jQuery("#usin_kin").val(usin);
@@ -2641,7 +2644,6 @@ function updatePWI(pwi_id) {
         success: function (data) {
             if (data) {
                 nxtTokinDialog.dialog("destroy");
-                nxtTokinDialog.dialog("close");
                 $('#editnxtTokinformID')[0].reset();
                 editAttribute(usin);
                 jAlert('Data Sucessfully Saved', 'Person of Interest');
@@ -2699,7 +2701,6 @@ function editDeceasedPerson(id) {
             },
             close: function () {
                 deceasedPersonDialog.dialog("destroy");
-                deceasedPersonDialog.dialog("close");
                 $('#editdeceasedformID')[0].reset();
 
             }
@@ -2728,7 +2729,6 @@ function updateDeceasedPerson(id) {
         success: function (data) {
             if (data) {
                 deceasedPersonDialog.dialog("destroy");
-                deceasedPersonDialog.dialog("close");
                 $('#editdeceasedformID')[0].reset();
                 editAttribute(usin);
                 jAlert('Data Sucessfully Saved', 'Deceased Person');
@@ -2860,7 +2860,6 @@ function updateDispute() {
             if (data) {
                 if (data === RESPONSE_OK) {
                     disputeDialog.dialog("destroy");
-                    disputeDialog.dialog("close");
                     editAttribute(editList[0].usin);
                     jAlert('Data Sucessfully Saved', 'Dispute');
                 } else {
@@ -2930,7 +2929,6 @@ function resolveDispute() {
         success: function (result) {
             if (result === RESPONSE_OK) {
                 disputeResolveDialog.dialog("destroy");
-                disputeResolveDialog.dialog("close");
                 editAttribute(editList[0].usin);
                 jAlert('Dispute has been successfully resolved', 'Info');
             } else {
@@ -3102,13 +3100,176 @@ function generateTransactionSheet(usin) {
 }
 
 function generateClaimsProfile() {
-    var w = window.open("landrecords/claimsprofile/" + activeProject, 'ClaimsProfile', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
+    var w = window.open("landrecords/claimsprofile/" + $("#selectProjects").val(), 'ClaimsProfile', 'left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=true');
     if (window.focus) {
         w.focus();
     }
 }
 
-function formatDate(intDate) {
+$(document).ready(function () {
+    // Add date field
+    var DateField = function (config) {
+        jsGrid.Field.call(this, config);
+    };
+
+    DateField.prototype = new jsGrid.Field({
+        sorter: function (date1, date2) {
+            if ((date1 === null || date1 === "") && (date2 === null || date2 === "")) {
+                return 0;
+            }
+            if (date1 === null || date1 === "") {
+                return -1;
+            }
+            if (date2 === null || date2 === "") {
+                return 1;
+            }
+            return new Date(date2) - new Date(date1);
+        },
+        itemTemplate: function (value) {
+            if (value !== null && value !== "") {
+                return formatDate(value);
+            }
+            return "";
+        },
+        editTemplate: function (value) {
+            if (value === null || value === "")
+                return this._editPicker = $("<input>").datepicker({dateFormat: "yy-mm-dd"});
+            else
+                return this._editPicker = $("<input>").datepicker({dateFormat: "yy-mm-dd"}).datepicker("setDate", new Date(value));
+        },
+        insertValue: function () {
+            return this._insertPicker.datepicker("getDate");
+        },
+        editValue: function () {
+            return this._editPicker.datepicker("getDate");
+        }
+    });
+
+    jsGrid.fields.date = DateField;
+
+    // init dropdown lists
+    var idTypes;
+    var maritalStatuses;
+    hamletList = [];
+
+    $.ajax({
+        url: "landrecords/idtype/",
+        async: false,
+        success: function (data) {
+            idTypes = data;
+            if (idTypes !== null && idTypes.length > 0)
+                idTypes = [{code: "", name: " "}].concat(idTypes);
+        }
+    });
+
+    $.ajax({
+        url: "landrecords/maritalstatus/",
+        async: false,
+        success: function (data) {
+            maritalStatuses = data;
+            if (maritalStatuses !== null && maritalStatuses.length > 0)
+                maritalStatuses = [{maritalStatusId: "", maritalStatus: " "}].concat(maritalStatuses);
+        }
+    });
+
+    // Init editing grid
+    $("#personsEditingGrid").jsGrid({
+        width: "100%",
+        height: "550px",
+        inserting: false,
+        editing: true,
+        sorting: true,
+        filtering: true,
+        paging: true,
+        autoload: false,
+        controller: personsEditingController,
+        pageSize: 50,
+        pageButtonCount: 20,
+        fields: [
+            {type: "control", deleteButton: false},
+            {name: "usin", title: "USIN", type: "number", width: 70, align: "left", editing: false, filtering: true},
+            {name: "uka", title: "UKA", type: "text", width: 140, editing: false, filtering: false},
+            {name: "hamletId", title: "Hamlet", align: "left", type: "select",
+                items: hamletList, valueField: "id", textField: "hamletName", width: 120, filtering: false,
+                editTemplate: function (value, item) {
+                    var isReadOnly = (item.uka !== null && item.uka !== '');
+                    var $result = jsGrid.fields.select.prototype.editTemplate.apply(this, [value]);
+                    if(isReadOnly)
+                        $result.prop("disabled", "disabled");
+                    return $result;
+                }
+            },
+            {name: "firstName", title: "First name", type: "text", width: 120, validate: {validator: "required", message: "Enter first name"}},
+            {name: "middleName", title: "Middle name", type: "text", width: 120, validate: {validator: "required", message: "Enter middle name"}},
+            {name: "lastName", title: "Last name", type: "text", width: 120, validate: {validator: "required", message: "Enter last name"}},
+            {name: "idType", title: "ID type", align: "left", type: "select", items: idTypes, valueField: "code", textField: "name", width: 90, validate: {validator: "required", message: "Select ID type"}, filtering: false},
+            {name: "idNumber", title: "ID number", type: "text", width: 130, validate: {validator: "required", message: "Fill in ID number"}},
+            {name: "dob", title: "Date of birth", type: "date", width: 110, align: "left", validate: {validator: "required", message: "Select date of birth"}, filtering: false},
+            {name: "age", title: "Age", type: "number", width: 50, align: "left", editing: false, filtering: false},
+            {name: "gender", title: "Gender", align: "left", type: "select", items: [{id: 1, name: "Male"}, {id: 2, name: "Female"}], valueField: "id", textField: "name", width: 80, filtering: false},
+            {name: "shareType", title: "Share type", type: "text", width: 170, editing: false, filtering: false},
+            {name: "maritalStatus", title: "Marital status", align: "left", type: "select", items: maritalStatuses, valueField: "maritalStatusId", textField: "maritalStatus", width: 130, filtering: false},
+            {name: "claimNumber", title: "Claim number", type: "text", width: 120, editing: false, validate: {validator: "required", message: "Enter claim number"}, filtering: true},
+            {name: "claimDate", title: "Claim date", type: "date", width: 100, align: "left", editing: false, filtering: false},
+            {name: "neighborNorth", title: "Neighbor north", type: "text", width: 120, validate: {validator: "required", message: "Enter neighbor north"}, filtering: true},
+            {name: "neighborSouth", title: "Neighbor south", type: "text", width: 120, validate: {validator: "required", message: "Enter neighbor south"}, filtering: true},
+            {name: "neighborEast", title: "Neighbor east", type: "text", width: 120, validate: {validator: "required", message: "Enter neighbor east"}, filtering: true},
+            {name: "neighborWest", title: "Neighbor west", type: "text", width: 120, validate: {validator: "required", message: "Enter neighbor west"}, filtering: true}
+        ]
+    });
+
+    $("#personsEditingGrid .jsgrid-table th:first-child :button").click();
+});
+
+function loadPersonsForEditing() {
+    if (hamletList === null || hamletList === "" || hamletList.length < 1) {
+        $.ajax({
+            url: "landrecords/hamletname/" + activeProject,
+            async: false,
+            success: function (data) {
+                hamletList = data;
+            }
+        });
+        $("#personsEditingGrid").jsGrid("fieldOption", "hamletId", "items", hamletList);
+    }
+
+    $("#personsEditingGrid").jsGrid("loadData");
+}
+
+var personsEditingController = {
+    loadData: function (filter) {
+        $("#btnLoadPersons").val("Reload");
+        return $.ajax({
+            type: "GET",
+            url: "landrecords/personsforediting/" + activeProject,
+            data: filter
+        });
+    },
+    insertItem: function (item) {
+        return false;
+    },
+    updateItem: function (item) {
+        return $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            traditional: true,
+            url: "landrecords/savepersonforediting",
+            data: JSON.stringify(item),
+            error: function (request, textStatus, errorThrown) {
+                jAlert(request.responseText);
+            }
+        });
+    },
+    deleteItem: function (item) {
+        return false;
+    }
+};
+
+function formatDate(date) {
+    return jQuery.datepicker.formatDate('yy-mm-dd', new Date(date));
+}
+
+function formatDate2(intDate) {
     return jQuery.datepicker.formatDate('yy-mm-dd', new Date(parseInt(intDate)));
 }
 

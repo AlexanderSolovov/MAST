@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import com.rmsi.mast.studio.dao.hibernate.GenericHibernateDAO;
 import com.rmsi.mast.studio.domain.SpatialUnit;
+import com.rmsi.mast.studio.domain.fetch.ClaimBasic;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.mobile.dao.SpatialUnitDao;
 
@@ -146,4 +147,54 @@ public class SpatialUnitHibernateDao extends
         return new ArrayList<SpatialUnit>();
     }
 
+    @Override
+    public List<ClaimBasic> getClaimsBasicByStatus(String projectId, int statusId) {
+        ArrayList<Integer> staList = new ArrayList<>();
+        staList.add(6);
+        staList.add(7);
+        String query = "select su from ClaimBasic su where "
+                + "su.statusId in :statusId and "
+                + "su.projectName =:projectId and s.active = true";
+
+        try {
+            List<ClaimBasic> claims = null;
+            if (statusId != 7) {
+                claims = getEntityManager()
+                        .createQuery(query).setParameter("statusId", statusId)
+                        .setParameter("projectId", projectId).getResultList();
+
+            } else {
+                claims = getEntityManager()
+                        .createQuery(query).setParameter("statusId", staList)
+                        .setParameter("projectId", projectId).getResultList();
+            }
+            if (claims.size() > 0) {
+                return claims;
+            }
+        } catch (Exception ex) {
+            logger.error(ex);
+            System.out.println("Exception while fetching SPATIAL UNIT:::: " + ex);
+        }
+        return new ArrayList<ClaimBasic>();
+    }
+
+    @Override
+    public List<ClaimBasic> getClaimsBasicByProject(String projectId) {
+        String query = "select s from ClaimBasic s where s.projectName = :projectId and s.active = true";
+
+        try {
+            @SuppressWarnings("unchecked")
+            List<ClaimBasic> claims = getEntityManager()
+                    .createQuery(query).setParameter("projectId", projectId)
+                    .getResultList();
+
+            if (!claims.isEmpty()) {
+                return claims;
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception while fetching the data from data base " + ex);
+            logger.error(ex);
+        }
+        return null;
+    }
 }

@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import com.rmsi.mast.custom.dto.CcroDto;
 import com.rmsi.mast.studio.dao.DisputeStatusDao;
 import com.rmsi.mast.studio.domain.AcquisitionType;
 import com.rmsi.mast.studio.domain.AttributeCategory;
@@ -86,15 +84,18 @@ import com.rmsi.mast.studio.domain.DocumentType;
 import com.rmsi.mast.studio.domain.IdType;
 import com.rmsi.mast.studio.domain.Project;
 import com.rmsi.mast.studio.domain.RelationshipType;
+import com.rmsi.mast.studio.domain.fetch.PersonForEditing;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.util.DateUtils;
 import com.rmsi.mast.studio.util.FileUtils;
 import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.report.ReportsSerivce;
-import java.net.URLEncoder;
 import javax.servlet.ServletOutputStream;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 public class LandRecordsController {
@@ -130,7 +131,42 @@ public class LandRecordsController {
         String username = principal.getName();
         User user = userService.findByUniqueName(username);
         return projectService.findProjectTempByName(user.getDefaultproject());
+    }
 
+    @RequestMapping(value = "/viewer/landrecords/allprojects/", method = RequestMethod.GET)
+    @ResponseBody
+    public List<String> getAllProjects() {
+        return projectService.getAllProjectNames();
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/personsforediting/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public List<PersonForEditing> getPersonsForEditing(HttpServletRequest request, @PathVariable String projectName) {
+        String firstName = ServletRequestUtils.getStringParameter(request, "firstName", "");
+        String lastName = ServletRequestUtils.getStringParameter(request, "lastName", "");
+        String middleName = ServletRequestUtils.getStringParameter(request, "middleName", "");
+        String idNumber = ServletRequestUtils.getStringParameter(request, "idNumber", "");
+        String claimNumber = ServletRequestUtils.getStringParameter(request, "claimNumber", "");
+        String neighbourN = ServletRequestUtils.getStringParameter(request, "neighbourNorth", "");
+        String neighbourS = ServletRequestUtils.getStringParameter(request, "neighbourSouth", "");
+        String neighbourE = ServletRequestUtils.getStringParameter(request, "neighbourEast", "");
+        String neighbourW = ServletRequestUtils.getStringParameter(request, "neighbourWest", "");
+        long usin = ServletRequestUtils.getLongParameter(request, "usin", 0);
+
+        return landRecordsService.getPersonsForEditing(projectName, usin, firstName, lastName, middleName, idNumber, claimNumber, neighbourN, neighbourS, neighbourE, neighbourW);
+    }
+
+    @RequestMapping(value = "/viewer/landrecords/savepersonforediting", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity savePersonForEditing(HttpServletResponse response, @RequestBody PersonForEditing pfe) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(landRecordsService.updatePersonForEditing(pfe));
+        } catch (Exception e) {
+            logger.error(e);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Failed to save record - " + e.getMessage());
+        }
     }
 
     @RequestMapping(value = "/viewer/landrecords/tenuretype/", method = RequestMethod.GET)
@@ -354,9 +390,8 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/naturalperson/{id}", method = RequestMethod.GET)
     @ResponseBody
     public List<NaturalPerson> naturalPerson(@PathVariable Long id) {
-
-        return landRecordsService.naturalPersonById(id);
-
+        List<NaturalPerson> persons = landRecordsService.naturalPersonById(id);
+        return persons;
     }
 
     @RequestMapping(value = "/viewer/landrecords/nonnaturalperson/{id}", method = RequestMethod.GET)
@@ -413,6 +448,7 @@ public class LandRecordsController {
         int idTypeCode;
         String idNumber;
         String shareSize;
+        boolean isResident;
 
         NaturalPerson person = new NaturalPerson();
         person.setResident(true);
@@ -438,6 +474,7 @@ public class LandRecordsController {
             middle_name = ServletRequestUtils.getRequiredStringParameter(request, "mname");
             last_name = ServletRequestUtils.getRequiredStringParameter(request, "lname");
             mobile_number = ServletRequestUtils.getRequiredStringParameter(request, "mobile_natural");
+            isResident = ServletRequestUtils.getBooleanParameter(request, "personResident", false);
 
             try {
                 dob = ServletRequestUtils.getRequiredStringParameter(request, "dob");
@@ -474,11 +511,12 @@ public class LandRecordsController {
             person.setMiddleName(middle_name);
             person.setLastName(last_name);
             person.setMobile(mobile_number);
-            person.setOwner(false);
             person.setDob(dobDate);
             person.setAge(age);
             person.setShare(shareSize);
             person.setIdNumber(idNumber);
+            person.setResident(isResident);
+            person.setResident_of_village(isResident);
             person.setActive(true);
 
             if (idTypeCode != 0) {
@@ -1327,8 +1365,8 @@ public class LandRecordsController {
     public void download(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
 
         SourceDocument doc = landRecordsService.getDocumentbyGid(id);
-        String filepath = FileUtils.getFielsFolder(request) + doc.getLocScannedSourceDoc() + 
-                File.separator + id + "." + FileUtils.getFileExtension(doc.getScanedSourceDoc());
+        String filepath = FileUtils.getFielsFolder(request) + doc.getLocScannedSourceDoc()
+                + File.separator + id + "." + FileUtils.getFileExtension(doc.getScanedSourceDoc());
         Path path = Paths.get(filepath);
         try {
             byte[] data = Files.readAllBytes(path);
@@ -1381,43 +1419,43 @@ public class LandRecordsController {
             logger.error(e);
         }
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/ccroforms/{projectName}/{startRecord}/{endRecord}", method = RequestMethod.GET)
     @ResponseBody
     public void getCcroForms(@PathVariable String projectName, @PathVariable int startRecord, @PathVariable int endRecord, HttpServletRequest request, HttpServletResponse response) {
         writeReport(reportsService.getCcroForms(projectName, 0L, startRecord, endRecord, getApplicationUrl(request)), "CcroForms", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/districtregbook/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public void getDistrictRegistryBook(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
-        writeReport(reportsService.getDistrictRegistryBook(projectName), "DistrictRegistryBook", response);
+        writeReport(reportsService.getDistrictRegistryBook(projectName, getApplicationUrl(request)), "DistrictRegistryBook", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/villageregbook/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public void getVillageRegistryBook(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
-        writeReport(reportsService.getVillageRegistryBook(projectName), "VillageRegistryBook", response);
+        writeReport(reportsService.getVillageRegistryBook(projectName, getApplicationUrl(request)), "VillageRegistryBook", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/villageissuancebook/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public void getVillageIssuanceBook(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
         writeReport(reportsService.getVillageIssuanceBook(projectName), "VillageIssuanceBook", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/transactionsheet/{usin}/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public void getTransactionSheet(@PathVariable long usin, @PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
         writeReport(reportsService.getTransactionSheet(projectName, usin), "TransactionSheet", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/claimsprofile/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public void getClaimsProfile(@PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
         writeReport(reportsService.getClaimsProfile(projectName), "ClaimsProfile", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/checkvcdate/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public String checkVillageCouncilDate(@PathVariable String projectName) {
@@ -1471,26 +1509,26 @@ public class LandRecordsController {
     public void getPersonPhoto(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) {
         try {
             SourceDocument doc = landRecordsService.getdocumentByPerson(id);
-            if(doc == null || !doc.isActive()){
+            if (doc == null || !doc.isActive()) {
                 writeEmptyImage(request, response);
                 return;
             }
-            
+
             String fileType = FileUtils.getFileExtension(doc.getScanedSourceDoc());
             String filepath = FileUtils.getFielsFolder(request) + doc.getLocScannedSourceDoc() + File.separator + doc.getGid() + "." + fileType;
             Path path = Paths.get(filepath);
 
-            if(!path.toFile().exists()){
+            if (!path.toFile().exists()) {
                 writeEmptyImage(request, response);
                 return;
             }
-            
+
             byte[] data = Files.readAllBytes(path);
 
             response.setContentLength(data.length);
             response.setHeader("Content-Type", "image/jpeg");
             response.addHeader("Content-disposition", "inline; inline; filename=\"photo.jpeg\"");
-            
+
             try (OutputStream out = response.getOutputStream()) {
                 out.write(data);
                 out.flush();
@@ -1499,14 +1537,14 @@ public class LandRecordsController {
             logger.error(e);
         }
     }
-    
+
     public void writeEmptyImage(HttpServletRequest request, HttpServletResponse response) {
         try {
             byte[] data = Files.readAllBytes(Paths.get(request.getSession().getServletContext().getRealPath("/resources/images/pixel.png")));
             response.setContentLength(data.length);
             response.setHeader("Content-Type", "image/png");
             response.addHeader("Content-disposition", "inline; inline; filename=\"photo.png\"");
-            
+
             try (OutputStream out = response.getOutputStream()) {
                 out.write(data);
                 out.flush();
@@ -2003,7 +2041,7 @@ public class LandRecordsController {
                 if (!"".equals(originalFileName)) {
                     document = mpFile.getBytes();
                 }
-                
+
                 String uploadFileName = null;
                 String outDirPath = FileUtils.getFielsFolder(request) + "resources" + File.separator + "documents" + File.separator + projectName + File.separator + "multimedia";
                 sourceDocument1.setScanedSourceDoc(originalFileName);
@@ -2605,7 +2643,7 @@ public class LandRecordsController {
                         }
 
                         // Check share size
-                        if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_JOINT
+                        if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_COMMON
                                 && person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
                                 && StringUtils.isEmpty(person.getShare())) {
                             errors.add("Enter share size for " + getPersonName(person));

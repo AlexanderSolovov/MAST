@@ -13,14 +13,19 @@ import com.rmsi.mast.studio.domain.Status;
 import com.rmsi.mast.studio.domain.fetch.CcroOccurrenceStat;
 import com.rmsi.mast.studio.domain.fetch.ClaimProfile;
 import com.rmsi.mast.studio.domain.fetch.ClaimSummary;
-import com.rmsi.mast.studio.domain.fetch.ClaimantStat;
+import com.rmsi.mast.studio.domain.fetch.ClaimantAgeStat;
 import com.rmsi.mast.studio.domain.fetch.ClaimsStat;
+import com.rmsi.mast.studio.domain.fetch.DisputeStat;
+import com.rmsi.mast.studio.domain.fetch.NaturalPersonBasic;
 import com.rmsi.mast.studio.domain.fetch.OwnershipTypeStat;
+import com.rmsi.mast.studio.domain.fetch.PersonForEditing;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.RegistryBook;
+import com.rmsi.mast.studio.domain.fetch.SpatialUnitBasic;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitGeom;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.util.ClaimsSorter;
+import com.rmsi.mast.studio.util.DateUtils;
 import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.dao.LandRecordsDao;
 import java.util.Collections;
@@ -73,6 +78,60 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
 
         return false;
 
+    }
+
+    @Override
+    public PersonForEditing updatePersonForEditing(PersonForEditing pfe) throws Exception {
+        // Check for claim to be editable
+        SpatialUnitBasic su = getSpatialUnitBasic(pfe.getUsin());
+        NaturalPersonBasic person = getNaturalPersonBasic(pfe.getPersonId());
+
+        if (su == null) {
+            throw new Exception("Claim was not found");
+        }
+        if (person == null) {
+            throw new Exception("Person was not found");
+        }
+        if (su.getStatus() != Status.STATUS_NEW && su.getStatus() != Status.STATUS_VALIDATED && su.getStatus() != Status.STATUS_REFERRED) {
+            throw new Exception("Record cannot be modified because of underlaying claim status");
+        }
+
+        // Calculate age
+        if (pfe.getDob() != null) {
+            pfe.setAge(DateUtils.getAge(pfe.getDob()));
+        } else {
+            pfe.setAge(null);
+        }
+
+        // Update claim
+        if (StringUtils.isNotEmpty(su.getPropertyno())) {
+            pfe.setHamletId(su.getHamletId());
+        } else {
+            su.setHamletId(pfe.getHamletId());
+        }
+
+        su.setSurveyDate(pfe.getClaimDate());
+        su.setNeighbor_north(pfe.getNeighborNorth());
+        su.setNeighbor_south(pfe.getNeighborSouth());
+        su.setNeighbor_east(pfe.getNeighborEast());
+        su.setNeighbor_west(pfe.getNeighborWest());
+
+        getEntityManager().merge(su);
+        
+        // Update person
+        person.setFirstName(pfe.getFirstName());
+        person.setLastName(pfe.getLastName());
+        person.setMiddleName(pfe.getMiddleName());
+        person.setIdType(pfe.getIdType());
+        person.setIdNumber(pfe.getIdNumber());
+        person.setDob(pfe.getDob());
+        person.setAge(pfe.getAge());
+        person.setGender(pfe.getGender());
+        person.setMaritalStatus(pfe.getMaritalStatus());
+        
+        getEntityManager().merge(person);
+
+        return pfe;
     }
 
     @Override
@@ -196,29 +255,29 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
                     // Sort by owner name, assuming that list already sorted by hamlets
                     Collections.sort(claims, new ClaimsSorter());
                 }
-                
-                if(startRecord > endRecord){
+
+                if (startRecord > endRecord) {
                     int tmpNumber = endRecord;
                     endRecord = startRecord;
                     startRecord = tmpNumber;
                 }
-                
+
                 if (startRecord > 1 || endRecord < claims.size()) {
                     // return requested range
-                    if(startRecord > claims.size()){
+                    if (startRecord > claims.size()) {
                         return null;
                     }
-                    
+
                     startRecord = startRecord - 1;
-                    
-                    if(startRecord < 0){
+
+                    if (startRecord < 0) {
                         startRecord = 0;
                     }
-                    
-                    if(endRecord > claims.size()){
+
+                    if (endRecord > claims.size()) {
                         endRecord = claims.size();
                     }
-                    
+
                     return claims.subList(startRecord, endRecord);
                 }
             }
@@ -230,7 +289,7 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
     }
 
     @Override
-    public List<RegistryBook> getRegistryBook(String projectName, long usin){
+    public List<RegistryBook> getRegistryBook(String projectName, long usin) {
         try {
             Query query = getEntityManager().createQuery("Select rb from RegistryBook rb where rb.projectName = :projectName and (:usin = 0L or rb.usin = :usin)");
             return query.setParameter("projectName", projectName).setParameter("usin", usin).getResultList();
@@ -239,7 +298,51 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
             return null;
         }
     }
-    
+
+    @Override
+    public List<PersonForEditing> getPersonsForEditing(String projectName,
+            long usin,
+            String firstName,
+            String lastName,
+            String middleName,
+            String idNumber,
+            String claimNumber,
+            String neighbourN,
+            String neighbourS,
+            String neighbourE,
+            String neighbourW) {
+        try {
+            Query query = getEntityManager().createQuery("Select p from PersonForEditing p where p.projectName = :projectName and "
+                    + "(p.usin = :usin or :usin = 0) and "
+                    + "(lower(trim(p.firstName)) like :firstName or p.firstName is null) and "
+                    + "(lower(trim(p.lastName)) like :lastName or p.lastName is null) and "
+                    + "(lower(trim(p.middleName)) like :middleName or p.middleName is null) and "
+                    + "(lower(trim(p.idNumber)) like :idNumber or p.idNumber is null) and "
+                    + "(lower(trim(p.claimNumber)) like :claimNumber or p.claimNumber is null) and "
+                    + "(lower(trim(p.neighborNorth)) like :neighbourN or p.neighborNorth is null) and "
+                    + "(lower(trim(p.neighborSouth)) like :neighbourS or p.neighborSouth is null) and "
+                    + "(lower(trim(p.neighborEast)) like :neighbourE or p.neighborEast is null) and "
+                    + "(lower(trim(p.neighborWest)) like :neighbourW or p.neighborWest is null)");
+
+            List<PersonForEditing> result = query.setParameter("projectName", projectName)
+                    .setParameter("usin", usin)
+                    .setParameter("firstName", StringUtils.empty(firstName).toLowerCase() + "%")
+                    .setParameter("lastName", StringUtils.empty(lastName).toLowerCase() + "%")
+                    .setParameter("middleName", StringUtils.empty(middleName).toLowerCase() + "%")
+                    .setParameter("idNumber", StringUtils.empty(idNumber).toLowerCase() + "%")
+                    .setParameter("claimNumber", StringUtils.empty(claimNumber).toLowerCase() + "%")
+                    .setParameter("neighbourN", StringUtils.empty(neighbourN).toLowerCase() + "%")
+                    .setParameter("neighbourS", StringUtils.empty(neighbourS).toLowerCase() + "%")
+                    .setParameter("neighbourE", StringUtils.empty(neighbourE).toLowerCase() + "%")
+                    .setParameter("neighbourW", StringUtils.empty(neighbourW).toLowerCase() + "%")
+                    .getResultList();
+            return result;
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
     @Override
     public ProjectDetails getProjectDetails(String projectName) {
         try {
@@ -250,59 +353,71 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
             return null;
         }
     }
-    
+
     @Override
-    public ClaimProfile getClaimsProfile(String projectName){
+    public ClaimProfile getClaimsProfile(String projectName) {
         try {
             ClaimProfile profile = new ClaimProfile();
-            if(StringUtils.empty(projectName).equalsIgnoreCase("ALL")){
+            if (StringUtils.empty(projectName).equalsIgnoreCase("ALL")) {
                 projectName = "";
             }
-            
+
             // Get claims stat
             StoredProcedureQuery query = getEntityManager().createStoredProcedureQuery("get_claims_stat", ClaimsStat.class)
                     .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
                     .setParameter("projectName", projectName);
             profile.setClaimsStatList(query.getResultList());
-            
+
             // Get unique claimants
             query = getEntityManager().createStoredProcedureQuery("get_unique_claimants")
                     .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
                     .setParameter("projectName", projectName);
             Object[] result = (Object[]) query.getSingleResult();
-            
-            if(result!=null && result[0] != null){
-                profile.setUniqueMales((int)result[0]);
+
+            if (result != null && result[0] != null) {
+                profile.setUniqueMales((int) result[0]);
             }
-            if(result!=null && result[1] != null){
-                profile.setUniqueFemales((int)result[1]);
+            if (result != null && result[1] != null) {
+                profile.setUniqueFemales((int) result[1]);
             }
-            
+
             // Get unique claimants with denied CCRO
             query = getEntityManager().createStoredProcedureQuery("get_unique_claimants_denied")
                     .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
                     .setParameter("projectName", projectName);
             result = (Object[]) query.getSingleResult();
-            
-            if(result!=null && result[0] != null){
-                profile.setUniqueMalesDenied((int)result[0]);
+
+            if (result != null && result[0] != null) {
+                profile.setUniqueMalesDenied((int) result[0]);
             }
-            if(result!=null && result[1] != null){
-                profile.setUniqueFemalesDenied((int)result[1]);
+            if (result != null && result[1] != null) {
+                profile.setUniqueFemalesDenied((int) result[1]);
             }
-            
+
             // Get ownership types stat
             query = getEntityManager().createStoredProcedureQuery("get_ownership_types_approved", OwnershipTypeStat.class)
                     .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
                     .setParameter("projectName", projectName);
             profile.setOwnershipTypeStatList(query.getResultList());
-            
+
             // Get ccro occurrence stat
             query = getEntityManager().createStoredProcedureQuery("get_ccro_occurrence", CcroOccurrenceStat.class)
                     .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
                     .setParameter("projectName", projectName);
             profile.setCcroOccurrenceStatList(query.getResultList());
             
+            // Get claimants age stat
+            query = getEntityManager().createStoredProcedureQuery("get_unique_claimants_with_age", ClaimantAgeStat.class)
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            profile.setClaimantsAgeList(query.getResultList());
+            
+            // Get disputes stat
+            query = getEntityManager().createStoredProcedureQuery("get_disputes_stat", DisputeStat.class)
+                    .registerStoredProcedureParameter("projectName", String.class, ParameterMode.IN)
+                    .setParameter("projectName", projectName);
+            profile.setDisputes(query.getResultList());
+
             return profile;
         } catch (Exception e) {
             logger.error(e);
@@ -326,6 +441,32 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
         try {
             Query query = getEntityManager().createQuery("Select su from SpatialUnitGeom su where su.usin = :usin");
             return (SpatialUnitGeom) query.setParameter("usin", usin).getSingleResult();
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @Override
+    public SpatialUnitBasic getSpatialUnitBasic(Long usin) {
+        try {
+            Query query = getEntityManager().createQuery("Select su from SpatialUnitBasic su where su.usin = :usin");
+            @SuppressWarnings("unchecked")
+            SpatialUnitBasic result = (SpatialUnitBasic) query.setParameter("usin", usin).getSingleResult();
+            return result;
+        } catch (Exception e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    @Override
+    public NaturalPersonBasic getNaturalPersonBasic(Long id) {
+        try {
+            Query query = getEntityManager().createQuery("Select p from NaturalPersonBasic p where p.personGid = :id");
+            @SuppressWarnings("unchecked")
+            NaturalPersonBasic result = (NaturalPersonBasic) query.setParameter("id", id).getSingleResult();
+            return result;
         } catch (Exception e) {
             logger.error(e);
             return null;

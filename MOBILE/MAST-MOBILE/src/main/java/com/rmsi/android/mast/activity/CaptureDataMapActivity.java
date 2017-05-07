@@ -90,6 +90,7 @@ import com.rmsi.android.mast.domain.ProjectSpatialDataDto;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GisUtility;
 import com.rmsi.android.mast.util.OfflineTileProvider;
+import com.rmsi.android.mast.util.StringUtility;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -835,15 +836,17 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
                 dct = "0,1,2";
             }
 
-            if (dct.contains("0")) {
-                parentItems.add(pItems[0]);
-            }
-            if (dct.contains("1")) {
-                parentItems.add(pItems[1]);
-            }
-            if (dct.contains("2")) {
-                parentItems.add(pItems[2]);
-            }
+            parentItems.add(pItems[2]);
+
+//            if (dct.contains("0")) {
+//                parentItems.add(pItems[0]);
+//            }
+//            if (dct.contains("1")) {
+//                parentItems.add(pItems[1]);
+//            }
+//            if (dct.contains("2")) {
+//                parentItems.add(pItems[2]);
+//            }
         } catch (Exception e) {
             cf.appLog("", e);
             e.printStackTrace();
@@ -858,26 +861,32 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
         }
         List<String> child = new ArrayList<String>();
         childItems.clear();
-        if (dct.contains("0")) {
-            // POINT
-            String[] c1Items = getResources().getStringArray(R.array.add_point_options_arrays);
-            child = Arrays.asList(c1Items);
-            childItems.add(child);
-        }
-        if (dct.contains("1")) {
-            // LINE
-            child = new ArrayList<String>();
-            String[] c2Items = getResources().getStringArray(R.array.add_line_options_arrays);
-            child = Arrays.asList(c2Items);
-            childItems.add(child);
-        }
-        if (dct.contains("2")) {
-            // POLYGON
-            child = new ArrayList<String>();
-            String[] c3Items = getResources().getStringArray(R.array.add_poly_options_arrays);
-            child = Arrays.asList(c3Items);
-            childItems.add(child);
-        }
+
+        child = new ArrayList<String>();
+        String[] c3Items = getResources().getStringArray(R.array.add_poly_options_arrays);
+        child = Arrays.asList(c3Items);
+        childItems.add(child);
+
+//        if (dct.contains("0")) {
+//            // POINT
+//            String[] c1Items = getResources().getStringArray(R.array.add_point_options_arrays);
+//            child = Arrays.asList(c1Items);
+//            childItems.add(child);
+//        }
+//        if (dct.contains("1")) {
+//            // LINE
+//            child = new ArrayList<String>();
+//            String[] c2Items = getResources().getStringArray(R.array.add_line_options_arrays);
+//            child = Arrays.asList(c2Items);
+//            childItems.add(child);
+//        }
+//        if (dct.contains("2")) {
+//            // POLYGON
+//            child = new ArrayList<String>();
+//            String[] c3Items = getResources().getStringArray(R.array.add_poly_options_arrays);
+//            child = Arrays.asList(c3Items);
+//            childItems.add(child);
+//        }
     }
 
     private class DrawerItemClickListener implements OnItemClickListener {
@@ -1250,7 +1259,9 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
             }
 
             for (Feature feature : features) {
-                mapFeatures.add(new MapFeature(feature));
+                if(!StringUtility.isEmpty(feature.getCoordinates())) {
+                    mapFeatures.add(new MapFeature(feature));
+                }
             }
         } catch (Exception e) {
             cf.appLog("", e);

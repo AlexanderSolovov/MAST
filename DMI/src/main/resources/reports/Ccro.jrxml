@@ -25,6 +25,9 @@
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["C:\\Projects\\MAST\\NEW_MAST\\MAST\\DMI\\src\\main\\resources\\reports\\"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="EXECUTIVE_PERSON_SIGNATURE" class="java.lang.String"/>
+	<parameter name="CHAIR_PERSON_SIGNATURE" class="java.lang.String"/>
+	<parameter name="DLO_OFFICER_SIGNATURE" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -126,6 +129,12 @@
 	</field>
 	<field name="fileNumber" class="java.lang.String">
 		<fieldDescription><![CDATA[fileNumber]]></fieldDescription>
+	</field>
+	<field name="hasNonResident" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[hasNonResident]]></fieldDescription>
+	</field>
+	<field name="startDate" class="java.util.Date">
+		<fieldDescription><![CDATA[startDate]]></fieldDescription>
 	</field>
 	<detail>
 		<band height="760" splitType="Stretch">
@@ -299,15 +308,22 @@ $F{acres}.toString() +
 					<font size="11" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Leo tarehe <b>" +
-($P{VC_DATE} == null ? "" : Integer.toString($P{VC_DATE}.getDate())) + 
+($P{VC_DATE} == null ? "..............." : Integer.toString($P{VC_DATE}.getDate())) + 
 "</b> mwezi <b>" +
-($P{VC_DATE} == null ? "" : Integer.toString($P{VC_DATE}.getMonth()+1)) + 
+($P{VC_DATE} == null ? "..............." : Integer.toString($P{VC_DATE}.getMonth()+1)) + 
 "</b> mwaka <b>" +
-($P{VC_DATE} == null ? "" : Integer.toString($P{VC_DATE}.getYear()+1900)) + 
+($P{VC_DATE} == null ? "..............." : Integer.toString($P{VC_DATE}.getYear()+1900)) + 
 "</b>. Hii ni kuthibitisha kwamba Halmashauri ya Kijiji cha <b>" + $P{VILLAGE_ADDRESS} + "</b> " +
 "imetoa kwa " + $F{ownerNames} + " hakimiliki ya kimila (itaitwa “hakimiliki”) juu ya " + 
-"ardhi iliyofafanuliwa katika Jedwali (humu ndani itaitwa “ardhi”) kwa kipindi kisicho na Kikomo " + 
-"tangu tarehe............... mwezi............... mwaka............... kwa maudhui na tafsiri " + 
+"ardhi iliyofafanuliwa katika Jedwali (humu ndani itaitwa “ardhi”) " + 
+($F{hasNonResident} ? "kwa kipindi cha miaka ............... " : "kwa <b>kipindi kisicho na Kikomo</b> ") +
+"tangu tarehe <b>" +
+($F{startDate} == null ? "..............." : Integer.toString($F{startDate}.getDate())) + 
+"</b> mwezi <b>" +
+($F{startDate} == null ? "..............." : Integer.toString($F{startDate}.getMonth()+1)) + 
+"</b> mwaka <b>" +
+($F{startDate} == null ? "..............." : Integer.toString($F{startDate}.getYear()+1900)) + 
+"</b> kwa maudhui na tafsiri " + 
 "halisi ya Sheria ya Ardhi ya Vijiji na kwa kuzingatia vipengele vyake na kanuni zozote zinazotungwa " + 
 "chini ya sheria hiyo au sheria mbadala au marekebisho yake na kwa mujibu wa masharti yafuatayo:"]]></textFieldExpression>
 			</textField>
@@ -333,7 +349,7 @@ $F{acres}.toString() +
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
 				</textElement>
-				<text><![CDATA[Mkazi atalipa kodi ya mwaka ya Shs...........kabla ya tarehe........... ya mwezi........... kila mwaka (kama inahusika).]]></text>
+				<text><![CDATA[Mkazi atalipa kodi ya mwaka ya Shs ........... kabla ya tarehe ........... ya mwezi ........... kila mwaka (kama inahusika).]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="40" y="315" width="484" height="18" uuid="46c9f3bb-f211-4d59-baf0-8ec6ee2e941b"/>
@@ -453,12 +469,12 @@ $F{acres}.toString() +
 				<textFieldExpression><![CDATA[$P{CHAIR_PERSON}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="39" width="369" height="20" uuid="37383bae-92c7-46bd-916c-086d6b21f4b7"/>
+				<reportElement x="0" y="39" width="30" height="20" uuid="37383bae-92c7-46bd-916c-086d6b21f4b7"/>
 				<box leftPadding="0"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
 				</textElement>
-				<text><![CDATA[Saini: ………………………………………]]></text>
+				<text><![CDATA[Saini:]]></text>
 			</staticText>
 			<rectangle>
 				<reportElement x="369" y="63" width="150" height="150" uuid="4b1f9189-c4d8-4c20-a7f4-aeb6db689bc9"/>
@@ -507,12 +523,12 @@ YA KIJIJI]]></text>
 				<text><![CDATA[Wadhifa:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="150" width="369" height="20" uuid="3ab6925c-b7b9-4512-be46-f38c3bc905ad"/>
+				<reportElement x="0" y="150" width="30" height="20" uuid="3ab6925c-b7b9-4512-be46-f38c3bc905ad"/>
 				<box leftPadding="0"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
 				</textElement>
-				<text><![CDATA[Saini: ………………………………………]]></text>
+				<text><![CDATA[Saini:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="0" y="116" width="57" height="20" uuid="40cadf69-4c69-4996-bb3e-a1c674326a82"/>
@@ -686,12 +702,12 @@ YA KIJIJI]]></text>
 					<textFieldExpression><![CDATA[$P{DLO_OFFICER}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="0" y="123" width="320" height="20" uuid="56fa6c1f-13c8-4172-a546-5b9a371eed38"/>
+					<reportElement x="0" y="123" width="30" height="20" uuid="56fa6c1f-13c8-4172-a546-5b9a371eed38"/>
 					<box leftPadding="0"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
 					</textElement>
-					<text><![CDATA[Saini: ……………………………………………………………]]></text>
+					<text><![CDATA[Saini:]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="57" y="146" width="263" height="20" uuid="dce3aba3-6233-4f0e-8a78-e9c13eee5496"/>
@@ -709,7 +725,55 @@ YA KIJIJI]]></text>
 					</textElement>
 					<text><![CDATA[Wadhifa:]]></text>
 				</staticText>
+				<image>
+					<reportElement positionType="Float" x="58" y="104" width="80" height="40" uuid="2357c0a3-918d-4b1d-8ee3-11ee657e558c">
+						<printWhenExpression><![CDATA[$P{DLO_OFFICER_SIGNATURE} != "0"]]></printWhenExpression>
+					</reportElement>
+					<imageExpression><![CDATA[$P{APP_URL} + "/studio/project/getsignature/" + $P{DLO_OFFICER_SIGNATURE}]]></imageExpression>
+				</image>
+				<staticText>
+					<reportElement x="30" y="123" width="290" height="20" uuid="d9094eca-4510-4f8a-9bfd-e102ad867c5d">
+						<printWhenExpression><![CDATA[$P{DLO_OFFICER_SIGNATURE} == "0"]]></printWhenExpression>
+					</reportElement>
+					<box leftPadding="0"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
+					</textElement>
+					<text><![CDATA[……………………………………………………………]]></text>
+				</staticText>
 			</frame>
+			<image>
+				<reportElement x="60" y="25" width="70" height="35" uuid="2181f06c-8cf1-41a3-b8c6-bfa878594dbd">
+					<printWhenExpression><![CDATA[$P{CHAIR_PERSON_SIGNATURE} != "0"]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{APP_URL} + "/studio/project/getsignature/" + $P{CHAIR_PERSON_SIGNATURE}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="30" y="39" width="339" height="20" uuid="f7c2d698-c64c-496b-8ef0-ccd3df679b57">
+					<printWhenExpression><![CDATA[$P{CHAIR_PERSON_SIGNATURE} == "0"]]></printWhenExpression>
+				</reportElement>
+				<box leftPadding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[ ………………………………………]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="30" y="150" width="339" height="20" uuid="40ac4fde-c12e-46b7-8cda-4f6060bc7c59">
+					<printWhenExpression><![CDATA[$P{EXECUTIVE_PERSON_SIGNATURE} == "0"]]></printWhenExpression>
+				</reportElement>
+				<box leftPadding="0"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[ ………………………………………]]></text>
+			</staticText>
+			<image>
+				<reportElement x="60" y="136" width="70" height="35" uuid="d047d124-1ee6-4b52-b365-78a01c57054d">
+					<printWhenExpression><![CDATA[$P{EXECUTIVE_PERSON_SIGNATURE} != "0"]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{APP_URL} + "/studio/project/getsignature/" + $P{EXECUTIVE_PERSON_SIGNATURE}]]></imageExpression>
+			</image>
 		</band>
 	</detail>
 </jasperReport>

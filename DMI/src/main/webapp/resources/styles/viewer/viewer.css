@@ -17,7 +17,6 @@ div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,block
 	{
 	margin: 0;
 	padding: 0;
-	
 }
 
 h1 {
@@ -180,7 +179,7 @@ padding:0;
 	overflow: auto;
 	left: 0px;
 	margin-top: 0px;
-	z-index: 951;
+	z-index: 51;
 }
 
 #bottombar {
@@ -195,7 +194,7 @@ padding:0;
 	bottom: 0px;
 	*bottom: -8px;
 	width: 890px;
-	z-index: 950;
+	z-index: 50;
 	margin-bottom:0.49em;
 	overflow-y:hidden;
 	width:100%;
@@ -211,7 +210,7 @@ padding:0;
 	margin-top: 250px;
 	padding: 2px;
 	position: absolute;
-	z-index: 952;
+	z-index: 52;
 	
 }
 
@@ -225,7 +224,7 @@ padding:0;
 	margin-top: 250px;
 	padding: 2px;
 	position: absolute;
-	z-index: 952;
+	z-index: 52;
 }
 
 .bottom_collapse {
@@ -242,7 +241,7 @@ padding:0;
 	position: absolute;
 	text-align: center;
 	bottom: 0px;
-	z-index: 952;
+	z-index: 52;
 }
 
 .bottom_collapse_down {
@@ -257,7 +256,7 @@ padding:0;
 	position: absolute;
 	text-align: center;
 	bottom: 0px;
-	z-index: 952;
+	z-index: 52;
 }
 
 #shadowVer div {
@@ -776,6 +775,11 @@ div.olMap {
 	padding: 0 !important;
 	z-index: 0;
 }
+
+.olMapViewport div:first-child, .olMapViewport .olLayerDiv, .olMapViewport .olLayerDiv *{
+    z-index: 5 !important;
+}
+
 /********* custom dialog *********/
 .dialog-v {
 	padding: 0 10px;
@@ -1516,7 +1520,7 @@ overflow:hidden;
 	/*top: 125px;	Aparesh*/
 	width: 100%;
 	margin-left: -8px;
-	z-index: 1111;
+	z-index: 101;
 }
 
 /******************  Info popup ********************/
@@ -1922,7 +1926,7 @@ button.mapbl-button {
 	right: 0;
 	width: 70%;
 	border-right: 1px solid #FFFFFF;
-	z-index: 999;
+	z-index: 99;
 }
 
 .scaleline-c {
@@ -1942,7 +1946,7 @@ button.mapbl-button {
 }
 
 .olControlScale {
-	bottom: 15px;
+	bottom: 7px;
 	color: #000000;
 	display: block;
 	font-size: smaller;
@@ -2063,7 +2067,7 @@ input.btn-dyna:hover {
 
 .markuptexttooltip {
 	position: absolute;
-	z-index: 1000;
+	z-index: 100;
 }
 /*-------------------------------------*/
 .layerwidth_cross {
@@ -2107,7 +2111,7 @@ line-height:1.3em;
 	}
 
 div.olControlMousePosition {
-	bottom: 15px;
+	bottom: 7px;
 	color: black;
 	display: block;
 	font-size: 0.8em;
@@ -2312,7 +2316,7 @@ div.olControlMousePosition {
 	width: 100%;
 	opacity: 0.8;
 	filter: alpha(opacity = 60);
-	z-index: 950;
+	z-index: 50;
 }
 
 .olControlPanZoomBar, 
@@ -2322,7 +2326,7 @@ div.olControlMousePosition {
 .olControlOverviewMapMaximizeButton,
 .olControlOverviewMapMinimizeButton,
 .olControlOverviewMap {
-    z-index: 999 !important;
+    z-index: 99 !important;
 }
 .ui-widget-content a {
 	color: #1491FF;
@@ -2454,7 +2458,7 @@ ul.menuBar li ul {
 	top: 1em;
 	visibility: hidden;
 	width: 10em;
-	z-index: 1000;
+	z-index: 100;
 	background-color: #fff;
 	border: 1px solid #000;
 	border-top: 0;
@@ -3361,7 +3365,7 @@ background: transparent url('../../images/viewer/create_legal.png') left top no-
 
 .backtoParent {
 position: absolute;
-z-index: 1111;
+z-index: 101;
 text-align: right;
 right: 10px;
 margin: 0.2em 0 0 0;

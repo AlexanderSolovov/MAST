@@ -67,6 +67,7 @@ import com.rmsi.android.mast.domain.User;
 import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.GisUtility;
 import com.rmsi.android.mast.util.OfflineTileProvider;
+import com.rmsi.android.mast.util.StringUtility;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -693,7 +694,9 @@ public class MapViewerActivity extends ActionBarActivity implements OnMapReadyCa
             }
 
             for (Feature feature : features) {
-                mapFeatures.add(new MapFeature(feature));
+                if(!StringUtility.isEmpty(feature.getCoordinates())) {
+                    mapFeatures.add(new MapFeature(feature));
+                }
             }
         } catch (Exception e) {
             cf.appLog("", e);
