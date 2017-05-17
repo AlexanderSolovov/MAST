@@ -101,16 +101,17 @@ public class ParcelMapController {
     // Returns map filled with parcels
     private MapContent getMap(long usin, int width, int height) {
         try {
-            String crsWkt = "GEOGCS[\"WGS 84\", \n"
-                    + "  DATUM[\"World Geodetic System 1984\", \n"
-                    + "    SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], \n"
-                    + "    AUTHORITY[\"EPSG\",\"6326\"]], \n"
-                    + "  PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], \n"
-                    + "  UNIT[\"degree\", 0.017453292519943295], \n"
-                    + "  AXIS[\"Geodetic latitude\", NORTH], \n"
-                    + "  AXIS[\"Geodetic longitude\", EAST], \n"
-                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
+//            String crsWkt = "GEOGCS[\"WGS 84\", \n"
+//                    + "  DATUM[\"World Geodetic System 1984\", \n"
+//                    + "    SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], \n"
+//                    + "    AUTHORITY[\"EPSG\",\"6326\"]], \n"
+//                    + "  PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], \n"
+//                    + "  UNIT[\"degree\", 0.017453292519943295], \n"
+//                    + "  AXIS[\"Geodetic latitude\", NORTH], \n"
+//                    + "  AXIS[\"Geodetic longitude\", EAST], \n"
+//                    + "  AUTHORITY[\"EPSG\",\"4326\"]]";
 
+            String crsWkt = "PROJCS[\"WGS 84 / UTM zone 36S\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",33],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",10000000],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32736\"]]";
             CoordinateReferenceSystem crs;
             crs = CRS.parseWKT(crsWkt);
 
@@ -131,7 +132,8 @@ public class ParcelMapController {
 
             // Get parcels
             SpatialUnitGeom parcel = landRecordsService.getParcelGeometry(usin);
-
+            WKTReader2 wkt = new WKTReader2();
+            
             if (parcel == null) {
                 return null;
             }
@@ -140,7 +142,7 @@ public class ParcelMapController {
 
             SimpleFeature parcelFeature = SimpleFeatureBuilder.build(
                     TYPE,
-                    new Object[]{parcel.getTheGeom(), claimLabel, true},
+                    new Object[]{wkt.read(parcel.getUtmCoordinates()), claimLabel, true},
                     Long.toString(usin));
 
             parcelFeatures.add(parcelFeature);

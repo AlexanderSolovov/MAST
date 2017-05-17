@@ -35,6 +35,6 @@ public interface PersonDao extends GenericDAO<Person, Long> {
 	 * @param usin
 	 * @return
 	 */
-	Person findPersonByClientId(String clientId);
+	Long findPersonIdClientId(String clientId, Long usin);
 
 }

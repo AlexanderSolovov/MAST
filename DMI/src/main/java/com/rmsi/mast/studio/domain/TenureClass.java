@@ -22,6 +22,9 @@ public class TenureClass implements Serializable {
     @Column(name = "tenure_class", nullable = false)
     private String tenureClass;
 
+    @Column(name = "tenure_class_sw", nullable = false)
+    private String tenureClassSw;
+    
     @Column
     private boolean active;
 
@@ -64,4 +67,11 @@ public class TenureClass implements Serializable {
         this.forAdjudication = forAdjudication;
     }
 
+    public String getTenureClassSw() {
+        return tenureClassSw;
+    }
+
+    public void setTenureClassSw(String tenureClassSw) {
+        this.tenureClassSw = tenureClassSw;
+    }
 }

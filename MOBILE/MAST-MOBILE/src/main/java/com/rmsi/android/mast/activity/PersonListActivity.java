@@ -328,7 +328,7 @@ public class PersonListActivity extends ActionBarActivity {
         if (property.getRight().getShareTypeId() > 0) {
             ShareType shareType = db.getShareType(property.getRight().getShareTypeId());
             if (shareType != null)
-                lblShareType.setText(shareTypeStr + ": " + shareType.getName());
+                lblShareType.setText(shareTypeStr + ": " + shareType.toString());
         }
 
         personsFragment.setPersons(property.getRight().getNaturalPersons(), readOnly);

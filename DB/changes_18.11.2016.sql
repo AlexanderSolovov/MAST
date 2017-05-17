@@ -3,6 +3,9 @@ ALTER TABLE public.land_use_type
  ADD COLUMN active boolean NOT NULL DEFAULT true;
 COMMENT ON COLUMN public.land_use_type.active IS 'Boolean flag indicating whether the record is active and should be displayed on the forms.';
 
+-- Marital status
+update marital_status set maritalstatus_sw = 'talaka', maritalstatus='divorced' where maritalstatus_id=3;
+
 update public.land_use_type set land_use_type = 'Forestry', land_use_type_sw = 'Hifadhi ya Misitu' where use_type_id = 2;
 update public.land_use_type set land_use_type = 'Residential', land_use_type_sw = 'Makazi' where use_type_id = 3;
 update public.land_use_type set land_use_type = 'Grazing', land_use_type_sw = 'Malisho' where use_type_id = 4;
@@ -11,6 +14,15 @@ insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) 
 insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) values (17, 'Social services', 'Huduma za jamii');
 insert into public.land_use_type (use_type_id, land_use_type, land_use_type_sw) values (18, 'Mining', 'Maeneo ya madini');
 update public.land_use_type set active = 'f' where use_type_id in (5,6,7,13);
+
+-- Share type
+update share_type set share_type = 'Co-occupancy (Tenancy in Common)', share_type_sw = 'Milki ya pamoja kwa Hisa' where gid = 1;
+update share_type set share_type = 'Single Occupant', share_type_sw = 'Milki ya mmoja' where gid = 2;
+update share_type set share_type = 'Co-occupancy (Joint tenancy)', share_type_sw = 'Milki ya pamoja isiyogawanyika' where gid = 3;
+update share_type set share_type = 'Probate Administration', share_type_sw = 'Milki chini ya usimamizi wa Mirathi' where gid = 4;
+update share_type set share_type = 'Guardian(Minor)', share_type_sw = 'Milki chini ya Mlezi' where gid = 5;
+update share_type set share_type = 'Non-Natural/Institution', share_type_sw = 'Taasisi/Kampuni/Asasi' where gid = 6;
+
 
 -- spatial unit status
 update public.sunit_status set workflow_status = 'Denied' where workflow_status_id = 5;
@@ -61,10 +73,14 @@ INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('unc
 INSERT INTO public.claim_type (code, name, name_other_lang, active) VALUES ('dispute', 'Disputed claim', 'Eneo lenye mgogoro', 't');
 
 ALTER TABLE public.tenure_class ADD COLUMN for_adjudication boolean DEFAULT 't';
+ALTER TABLE public.tenure_class ADD COLUMN tenure_class_sw character varying;
 COMMENT ON COLUMN public.tenure_class.for_adjudication IS 'Indicates whether type right should be processed through adjudication process.';
+COMMENT ON COLUMN public.tenure_class.tenure_class_sw IS 'Name of tenure class in Swahili';
 
 UPDATE public.tenure_class SET for_adjudication = 'f';
 UPDATE public.tenure_class SET for_adjudication = 't' WHERE tenureclass_id = 2;
+UPDATE public.tenure_class SET tenure_class = 'Cerificate of Occupany', tenure_class_sw = 'Hati ya Hatimiliki', active = 't', for_adjudication = 'f' WHERE tenureclass_id = 3;
+UPDATE public.tenure_class SET tenure_class_sw = 'Hati ya Hakimiliki ya Kimila' WHERE tenureclass_id = 2;
 
 CREATE TABLE public.acquisition_type
 (
@@ -136,7 +152,7 @@ COMMENT ON TABLE public.id_type
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (1, 'Voter ID', 'Kitambulisho cha mpiga kura', 't');
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (2, 'Driving license', 'Leseni ya udereva', 't');
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (3, 'Passport', 'Pasi ya kusafiria', 't');
-INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (4, 'ID card', 'Kitambulisho', 't');
+INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (4, 'ID card', 'Kitambulisho cha Mkazi', 't');
 INSERT INTO public.id_type (code, name, name_other_lang, active) VALUES (5, 'Other', 'Nyingine', 't');
 
 -- Person
@@ -427,8 +443,9 @@ COMMENT ON COLUMN public.source_document.document_type IS 'Document type code.';
 COMMENT ON COLUMN public.source_document.dispute_id IS 'Dispute id.';
 
 -- Master attributes
-UPDATE public.attribute_master SET alias = 'Length of occupancy (years)', alias_second_language = 'Urefu wa kumiliki ardhi (miaka)' WHERE id = 13;
+UPDATE public.attribute_master SET alias = 'Length of occupancy (years)', alias_second_language = 'Muda wa umiliki ardhi (miaka)' WHERE id = 13;
 UPDATE public.attribute_master SET mandatory = true where id = 3;
+UPDATE public.attribute_master SET alias_second_language = 'Matumizi yaliyopo' where id = 16;
 
 INSERT INTO public.attribute_master(id, alias, alias_second_language, fieldname, datatype_id, attributecategoryid, reftable, size, mandatory, listing, active, master_attrib)
 VALUES (300, 'Acquisition Type', 'Namna ardhi ilivyopatikana', 'acquisition_type', 5, 4, 'social_tenure_relationship', 20, true, 3, true, true);
@@ -494,7 +511,7 @@ INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_se
 VALUES ((select max(id)+1 from public.attribute_options), 'Passport', 320, 'Pasi ya kusafiria', 3);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
-VALUES ((select max(id)+1 from public.attribute_options), 'ID card', 320, 'Kitambulisho', 4);
+VALUES ((select max(id)+1 from public.attribute_options), 'ID card', 320, 'Kitambulisho cha Mkazi', 4);
 
 INSERT INTO public.attribute_options(id, optiontext, attribute_id, optiontext_second_language, parent_id)
 VALUES ((select max(id)+1 from public.attribute_options), 'Other', 320, 'Nyingine', 5);
@@ -778,7 +795,8 @@ select
   p.share,
   (case when p.gender = 1 then 'kiume' else 'kike' end) as gender,
   (case when p.dob is null then p.age else DATE_PART('year', now()) - DATE_PART('year', p.dob) end)::integer as age,
-  it.name_other_lang as id_type
+  it.name_other_lang as id_type,
+  p.resident_of_village as resident
 
 from 
 	((social_tenure_relationship r left join share_type sh on r.share = sh.gid) inner join ((
@@ -816,7 +834,8 @@ select
   '' as share,
   '' as gender,
   0 as age,
-  '' as id_type
+  '' as id_type,
+  true as resident
 
 from 
 	((social_tenure_relationship r left join share_type sh on r.share = sh.gid) 
@@ -992,11 +1011,11 @@ AS $$
 
 select 
   dt.name as dispute_type,
-  sum(case when d.status = 1 then 1 else 0 end)::int as resolved,
+  sum(case when d.status = 1 or su.active = 'f' then 1 else 0 end)::int as resolved,
   sum(case when d.status = 2 then 1 else 0 end)::int as unresolved,
   count(1)::int as total
 from (dispute d inner join dispute_type dt on d.dispute_type = dt.code) inner join spatial_unit su on d.usin = su.usin
-where su.active and d.deleted = 'f' and (su.project_name = projectName or '' = projectName)
+where d.deleted = 'f' and (su.project_name = projectName or '' = projectName)
 group by dt.name
 order by dt.name;
 

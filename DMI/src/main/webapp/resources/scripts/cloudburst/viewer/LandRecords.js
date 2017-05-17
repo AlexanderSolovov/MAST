@@ -1975,7 +1975,7 @@ function zoomToAnyFeature(geom) {
     var biggerArea = 0.0;
     var biggerPart = 0;
     if (geom.components != undefined && geom.components != null) {
-        $('#tab').tabs("option", "active", $('#tab a[href="#map-tab"]').parent().index());
+        $('#mainTabs').tabs("option", "active", $('#mainTabs a[href="#map-tab"]').parent().index());
         $('#sidebar').show();
         $('#collapse').show();
 
@@ -1995,7 +1995,7 @@ function zoomToAnyFeature(geom) {
         vectors.addFeatures([feature]);
         map.zoomToExtent(bounds, true);
     } else {
-        $('#tab').tabs("option", "active", $('#tab a[href="#landrecords-div"]').parent().index());
+        $('#mainTabs').tabs("option", "active", $('#mainTabs a[href="#landrecords-div"]').parent().index());
         $('#sidebar').hide();
         $('#collapse').hide();
         jAlert('Site not found on Map', 'Alert');
@@ -2452,7 +2452,7 @@ function uploadNaturalImg(gid_Person, id_admin) {
             cache: false,
             processData: false,
             success: function (result, textStatus, jqXHR) {
-                if (result == "Success") {
+                if (result === "Success") {
                     jAlert('File uploaded', 'upload');
                     editAttribute(usinId);
                     uploadNaturalImage.dialog("destroy");

@@ -95,6 +95,9 @@ public class RegistryBook implements Serializable {
     @Column(name="ownership_type")
     private String ownershipType;
     
+    @Column
+    private boolean resident;
+    
     public long getId() {
         return id;
     }
@@ -293,6 +296,14 @@ public class RegistryBook implements Serializable {
 
     public void setOwnershipType(String ownershipType) {
         this.ownershipType = ownershipType;
+    }
+
+    public boolean isResident() {
+        return resident;
+    }
+
+    public void setResident(boolean resident) {
+        this.resident = resident;
     }
     
     public String getFullName() {

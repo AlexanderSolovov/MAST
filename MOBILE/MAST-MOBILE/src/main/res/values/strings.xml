@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_ver">v 2.3.1</string>
-    <string name="app_ver2">2.3.1</string>
+    <string name="app_ver">v 2.3.5</string>
+    <string name="app_ver2">2.3.5</string>
     <string name="app_name">MAST</string>
     <string name="action_settings">Settings</string>
     <string name="appname">Mobile Application to Secure Tenure</string>
@@ -417,7 +416,7 @@
     <string name="infoSingleOccupantStr">You must add only one "Owner" and can add one or more "Person(s) of Interest"</string>
     <string name="infoMultipleJointStr">You must add two Owners and can add one or more "Person(s) of Interest"</string>
     <string name="infoMultipleTeneancyStr">You must add two or more Owners and can add one or more "Person(s) of Interest"</string>
-    <string name="infoTenancyInProbateStr">You can add one or more "Owner(s)" and up to two "Administrators", you must indicated the name of the "Deceased Person", and can add one or more "Person(s) of Interest"</string>
+    <string name="infoTenancyInProbateStr">You can add one or two "Administrators", you must indicated the name of the "Deceased Person", and can add one or more "Person(s) of Interest"</string>
     <string name="infoGuardianMinorStr">You must add one or more "Minor(s)" and up to two "Guardian"</string>
     <string name="warning_multipleJoint">In case of "Multiple Occupancy(Joint Tenancy)" you have to add two "Owners"</string>
     <string name="warning_multipleTenancy">In case of "\"Multiple Occupancy(Tenancy in Common)\"" you have to add two or more than two "Owners"</string>
@@ -436,7 +435,7 @@
     <string name="can_not_add_admin_in_cas_of_guardian_minor">You can not add Administrator in case of "\"Guardian(Minor)\""</string>
     <string name="can_not_add_moreThanOne_dp_tenancy_inProbate">You can not add more than one "Deceased Person"</string>
     <string name="Please_add_Administrator_first_or_Owner_first">Please add "Administrator"or "Owner" first</string>
-    <string name="you_can_not_add_Guardian_in_tenancy_in_Probate">You can not add Guardian if tenure type is "\"Tenancy in Probate(Administrator)\""</string>
+    <string name="you_can_not_add_Guardian_in_tenancy_in_Probate">You can not add Guardian or Owner if tenure type is "\"Tenancy in Probate(Administrator)\""</string>
     <string name="Administrator_can_not_be_more_than_two_in_tenancy_in_Probate">Administrator can not be more than two</string>
     <string name="Please_delete_Owner_first">Please delete "\"Owner\"" first</string>
     <string name="Please_select_Hamlet">Please select Hamlet</string>

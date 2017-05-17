@@ -752,13 +752,9 @@ public class UserDataServiceImpl implements UserDataService {
     }
 
     @Override
-    public Long findPersonByMobileGroupId(String mobileGroupId) {
+    public Long findPersonByMobileGroupId(String mobileGroupId, Long usin) {
         try {
-            com.rmsi.mast.studio.domain.Person person = personDao.findPersonByClientId(mobileGroupId);
-            if (person != null) {
-                return person.getPerson_gid();
-            }
-            return null;
+            return personDao.findPersonIdClientId(mobileGroupId, usin);
         } catch (Exception ex) {
             logger.error("Exception", ex);
             System.out.println("Exception while finding PERSON:: " + ex);

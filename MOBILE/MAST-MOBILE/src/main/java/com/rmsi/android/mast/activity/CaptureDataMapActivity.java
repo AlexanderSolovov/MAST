@@ -1056,7 +1056,7 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
 
             if (pointslist.size() > 0) {
                 String WKTStr = GisUtility.getWKTfromPoints(geomtype, pointslist);
-                String imei = cf.getIMEI();
+                String imei = cf.getAppId();
                 DbController db = DbController.getInstance(context);
                 Long featureId = db.createFeature(geomtype, WKTStr, imei);
                 if (featureId != 0) {

@@ -430,6 +430,7 @@ public class PersonListWithDPActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         if (!firstRun) {
             // Refresh persons list
             List<Person> persons = DbController.getInstance(context).getNaturalPersonsByRight(property.getRight().getId());
@@ -510,10 +511,15 @@ public class PersonListWithDPActivity extends ActionBarActivity {
     public boolean checkOccupancyType_tenancy_inProbate(int personSubType, int ownerCount, int adminCount)   //Only 2 owner can be added in case of TENANCY IN PROBATE)
     {
         boolean flag = false;
-        //allow
-        if (personSubType == Person.SUBTYPE_OWNER) {
-            return flag = true;
-        } else if (personSubType == Person.SUBTYPE_ADMINISTRATOR) {
+
+        if (personSubType == Person.SUBTYPE_GUARDIAN || personSubType == Person.SUBTYPE_OWNER) {
+            msg = getResources().getString(R.string.you_can_not_add_Guardian_in_tenancy_in_Probate);
+            warning = getResources().getString(R.string.warning);
+            cf.showMessage(context, warning, msg);
+            return false;
+        }
+
+        if (personSubType == Person.SUBTYPE_ADMINISTRATOR) {
             if (adminCount < ownerCount) {
                 if (adminCount == 2) {
                     msg = getResources().getString(R.string.Administrator_can_not_be_more_than_two_in_tenancy_in_Probate);
@@ -536,11 +542,6 @@ public class PersonListWithDPActivity extends ActionBarActivity {
                 cf.showMessage(context, warning, msg);
                 return flag = false;
             }
-        } else if (personSubType == Person.SUBTYPE_GUARDIAN) {
-            msg = getResources().getString(R.string.you_can_not_add_Guardian_in_tenancy_in_Probate);
-            warning = getResources().getString(R.string.warning);
-            cf.showMessage(context, warning, msg);
-            return flag = false;
         }
         return flag;
     }

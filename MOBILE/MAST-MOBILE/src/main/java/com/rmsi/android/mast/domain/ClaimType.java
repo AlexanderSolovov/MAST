@@ -1,5 +1,6 @@
 package com.rmsi.android.mast.domain;
 
+import com.rmsi.android.mast.util.CommonFunctions;
 import com.rmsi.android.mast.util.StringUtility;
 
 import java.io.Serializable;
@@ -45,6 +46,9 @@ public class ClaimType implements Serializable {
 
     @Override
     public String toString(){
+        if(CommonFunctions.getInstance().getLocale().equalsIgnoreCase("sw")){
+            return StringUtility.empty(getNameOtherLang());
+        }
         return StringUtility.empty(getName());
     }
 }

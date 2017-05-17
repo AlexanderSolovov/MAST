@@ -332,7 +332,7 @@ public class AddSocialTenureActivity extends ActionBarActivity {
                 final TextView txtInfoMsg = (TextView) dialog.findViewById(R.id.textView_infoMsg);
                 final TextView cnfrmMsg = (TextView) dialog.findViewById(R.id.textView_cnfrm_msg);
                 cnfrmMsg.setVisibility(View.VISIBLE);
-                txtTenureType.setText(db.getShareType(shareTypeId).getName());
+                txtTenureType.setText(db.getShareType(shareTypeId).toString());
                 txtInfoMsg.setText(infoMsg);
                 proceed.setText(getResources().getText(R.string.yes));
                 cancel.setText(getResources().getText(R.string.no));

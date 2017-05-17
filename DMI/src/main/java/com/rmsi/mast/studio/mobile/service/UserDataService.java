@@ -79,7 +79,7 @@ public interface UserDataService {
 	 * @param mobileGroupId
 	 * @return
 	 */
-	Long findPersonByMobileGroupId(String mobileGroupId);
+	Long findPersonByMobileGroupId(String mobileGroupId, Long usin);
 
 	@Transactional
 	boolean updateNaturalPersonAttribValues(NaturalPerson naturalPerson,

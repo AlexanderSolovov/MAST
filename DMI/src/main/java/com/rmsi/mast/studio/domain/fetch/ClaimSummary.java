@@ -518,14 +518,22 @@ public class ClaimSummary implements Serializable {
             }
         }
 
+        String resident = "Mkazi";
+        String residents = "Wakazi";
+        
+        if(getHasNonResident()){
+            resident = "Sio mkazi";
+            residents = "Sio Wakazi";
+        }
+                
         if (getOwnershipTypeId() == ShareType.SHARE_SINGLE || getOwnershipTypeId() == ShareType.SHARE_INSTITUTION) {
-            names = owners + " (humu ndani akirejewa kama \"Mkazi\")";
+            names = owners + " (humu ndani akirejewa kama \"" + resident + "\")";
         } else if (getOwnershipTypeId() == ShareType.SHARE_MULTIPLE_JOINT) {
-            names = owners + " (humu ndani wakirejewa kama \"Wakazi\")";
+            names = owners + " kwa umiliki wa pamoja usio gawanyika (humu ndani wakirejewa kama \"" + residents + "\")";
         } else if (getOwnershipTypeId() == ShareType.SHARE_MULTIPLE_COMMON) {
-            names = ownersWithShare + " kwa umiliki wa hisa (humu ndani wakirejewa kama \"Wakazi\")";
+            names = ownersWithShare + " kwa umiliki wa hisa (humu ndani wakirejewa kama \"" + residents + "\")";
         } else if (getOwnershipTypeId() == ShareType.SHARE_GUARDIAN) {
-            names = guardians + " msimamizi mlezi wa " + owners + " (humu ndani akirejewa kama \"Mkazi\")";
+            names = guardians + " msimamizi mlezi wa " + owners + " (humu ndani akirejewa kama \"" + resident + "\")";
         } else if (getOwnershipTypeId() == ShareType.SHARE_ADMINISTRATOR) {
             names = administrators + " ambaye ni msimamizi wa mirathi ya Marehemu " + deceased;
         }
@@ -535,8 +543,8 @@ public class ClaimSummary implements Serializable {
     public boolean getHasNonResident(){
         if(getNaturalOwners() != null && getNaturalOwners().size() > 0){
             for(PersonWithRightSummary person : getNaturalOwners()){
-                if(!person.getVillageResident()){
-                    return true;
+                if(person.getVillageResident()){
+                    return false;
                 }
             }
         }
@@ -557,19 +565,19 @@ public class ClaimSummary implements Serializable {
             }
             
             if(month == Calendar.JANUARY || month == Calendar.FEBRUARY || month == Calendar.MARCH){
-                newMonth = Calendar.APRIL;
+                newMonth = Calendar.JANUARY;
             }
             
             if(month == Calendar.APRIL || month == Calendar.MAY || month == Calendar.JUNE){
-                newMonth = Calendar.JULY;
+                newMonth = Calendar.APRIL;
             }
             
             if(month == Calendar.JULY || month == Calendar.AUGUST || month == Calendar.SEPTEMBER){
-                newMonth = Calendar.OCTOBER;
+                newMonth = Calendar.JULY;
             }
             
             if(month == Calendar.OCTOBER || month == Calendar.NOVEMBER || month == Calendar.DECEMBER){
-                newMonth = Calendar.JANUARY;
+                newMonth = Calendar.OCTOBER;
             }
             
             cal.set(Calendar.DATE, 1);

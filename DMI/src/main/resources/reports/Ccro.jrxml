@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Ccro" pageWidth="595" pageHeight="842" columnWidth="527" leftMargin="34" rightMargin="34" topMargin="28" bottomMargin="10" uuid="34e83ee4-79a7-4e09-8eed-721ca4bfad0c">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="1256"/>
+	<property name="ireport.y" value="0"/>
 	<subDataset name="OwnersForSignature" uuid="751763e3-9b88-4600-a4f6-1ae67bbfbd07">
 		<parameter name="APP_URL" class="java.lang.String"/>
 		<queryString>
@@ -22,8 +22,8 @@
 	<parameter name="CHAIR_PERSON" class="java.lang.String"/>
 	<parameter name="EXECUTIVE_PERSON" class="java.lang.String"/>
 	<parameter name="DLO_OFFICER" class="java.lang.String"/>
-	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["C:\\Projects\\MAST\\NEW_MAST\\MAST\\DMI\\src\\main\\resources\\reports\\"]]></defaultValueExpression>
+	<parameter name="SUBREPORT_PATH" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="EXECUTIVE_PERSON_SIGNATURE" class="java.lang.String"/>
 	<parameter name="CHAIR_PERSON_SIGNATURE" class="java.lang.String"/>
@@ -229,80 +229,79 @@ $F{acres}.toString() +
 				</staticText>
 			</frame>
 			<staticText>
-				<reportElement x="376" y="0" width="151" height="16" uuid="12e70a87-1580-4146-b70e-867d252f70ea"/>
-				<textElement verticalAlignment="Middle">
+				<reportElement x="356" y="-11" width="171" height="16" uuid="12e70a87-1580-4146-b70e-867d252f70ea"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="true"/>
 				</textElement>
 				<text><![CDATA[Fomu ya Ardhi ya Vijiji Na. 21]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="22" width="527" height="19" uuid="0e8a9120-fd57-4ed9-8dba-7f5eba82657f"/>
+				<reportElement x="0" y="10" width="527" height="19" uuid="0e8a9120-fd57-4ed9-8dba-7f5eba82657f"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="13"/>
+					<font fontName="SansSerif" size="13" isBold="true"/>
 				</textElement>
 				<text><![CDATA[JAMHURI YA MUUNGANO WA TANZANIA]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="284" y="46" width="129" height="20" uuid="c8735a76-a4e6-4ab6-aa4d-db6d592ce0a1"/>
+				<reportElement x="317" y="56" width="128" height="20" uuid="c8735a76-a4e6-4ab6-aa4d-db6d592ce0a1"/>
 				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" size="10" isItalic="false"/>
+					<font fontName="SansSerif" size="9" isItalic="false" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Namba ya Hati ya Hakimiliki:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="284" y="66" width="129" height="20" uuid="0dd3ac5f-6c39-4a70-b2c9-8e026a5c10f2"/>
+				<reportElement x="317" y="76" width="128" height="20" uuid="0dd3ac5f-6c39-4a70-b2c9-8e026a5c10f2"/>
 				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" size="10" isItalic="false"/>
+					<font fontName="SansSerif" size="9" isItalic="false" isPdfEmbedded="false"/>
 				</textElement>
 				<text><![CDATA[Namba ya UKA:]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="413" y="46" width="114" height="20" uuid="7eaa50a9-ce58-4cf6-b015-4a24cbf688eb"/>
+				<reportElement x="436" y="56" width="95" height="20" uuid="7eaa50a9-ce58-4cf6-b015-4a24cbf688eb"/>
 				<textElement verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font isBold="true" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{certNumber}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="413" y="66" width="114" height="20" uuid="0426fc52-9e0b-4399-bc9b-ebcf11eac3d9"/>
+				<reportElement x="436" y="76" width="95" height="20" uuid="0426fc52-9e0b-4399-bc9b-ebcf11eac3d9"/>
 				<textElement verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font isBold="true" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uka}]]></textFieldExpression>
 			</textField>
 			<rectangle radius="10">
-				<reportElement x="0" y="90" width="527" height="406" uuid="6b08a6d6-3f45-41a5-ab4b-e5ab70e1ce4c"/>
+				<reportElement x="0" y="127" width="527" height="369" uuid="6b08a6d6-3f45-41a5-ab4b-e5ab70e1ce4c"/>
 			</rectangle>
 			<rectangle radius="8">
-				<reportElement x="3" y="93" width="521" height="400" uuid="bcea3e08-e35c-4dc4-bdad-1476f58a25e9"/>
+				<reportElement x="3" y="130" width="521" height="363" uuid="bcea3e08-e35c-4dc4-bdad-1476f58a25e9"/>
 				<graphicElement>
 					<pen lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="3" y="99" width="521" height="35" uuid="eef1dee7-7ec0-4f18-8c67-cada480a5b5d"/>
+				<reportElement x="3" y="137" width="521" height="16" uuid="eef1dee7-7ec0-4f18-8c67-cada480a5b5d"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
+					<font fontName="SansSerif" size="11" isBold="true" isItalic="false"/>
 				</textElement>
-				<text><![CDATA[SHERIA YA ARDHI YA VIJIJI, 1999
-(Na. 5 ya 1999)]]></text>
+				<text><![CDATA[SHERIA YA ARDHI YA VIJIJI, 1999]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="3" y="134" width="521" height="23" uuid="b4e9ec92-7f45-4e15-a6f3-5b373c162ad3"/>
+				<reportElement x="3" y="172" width="521" height="23" uuid="b4e9ec92-7f45-4e15-a6f3-5b373c162ad3"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="SansSerif" size="14" isItalic="false"/>
+					<font fontName="SansSerif" size="14" isBold="true" isItalic="false"/>
 				</textElement>
 				<text><![CDATA[HATI YA HAKIMILIKI YA KIMILA]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="3" y="157" width="521" height="18" uuid="1f53404e-cb90-4a1d-8e6a-a0ab0631d8d0"/>
+				<reportElement x="3" y="195" width="521" height="18" uuid="1f53404e-cb90-4a1d-8e6a-a0ab0631d8d0"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
 				</textElement>
 				<text><![CDATA[(CHINI YA FUNGU LA 25)]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="3" y="175" width="521" height="106" uuid="11cd3d47-37bf-46f4-9a4e-8889260c4aa5"/>
+				<reportElement x="3" y="213" width="521" height="76" uuid="11cd3d47-37bf-46f4-9a4e-8889260c4aa5"/>
 				<box topPadding="7" leftPadding="10" bottomPadding="0" rightPadding="10"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top" markup="html">
 					<font size="11" isBold="false"/>
@@ -328,7 +327,7 @@ $F{acres}.toString() +
 "chini ya sheria hiyo au sheria mbadala au marekebisho yake na kwa mujibu wa masharti yafuatayo:"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="3" y="285" width="37" height="18" uuid="ea36a528-905b-4f45-a5b6-6aebb66ba33d"/>
+				<reportElement positionType="Float" x="3" y="292" width="37" height="18" uuid="ea36a528-905b-4f45-a5b6-6aebb66ba33d"/>
 				<box leftPadding="20"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -336,7 +335,7 @@ $F{acres}.toString() +
 				<text><![CDATA[i)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="3" y="315" width="37" height="18" uuid="0decae91-b540-492d-a02f-e22e87d3b446"/>
+				<reportElement positionType="Float" x="3" y="322" width="37" height="18" uuid="0decae91-b540-492d-a02f-e22e87d3b446"/>
 				<box leftPadding="20"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -344,7 +343,7 @@ $F{acres}.toString() +
 				<text><![CDATA[ii)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="40" y="285" width="484" height="30" uuid="44295739-90b0-4a63-9ec4-cd765a318186"/>
+				<reportElement positionType="Float" x="40" y="292" width="484" height="30" uuid="44295739-90b0-4a63-9ec4-cd765a318186"/>
 				<box leftPadding="0" rightPadding="15"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -352,7 +351,7 @@ $F{acres}.toString() +
 				<text><![CDATA[Mkazi atalipa kodi ya mwaka ya Shs ........... kabla ya tarehe ........... ya mwezi ........... kila mwaka (kama inahusika).]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="40" y="315" width="484" height="18" uuid="46c9f3bb-f211-4d59-baf0-8ec6ee2e941b"/>
+				<reportElement positionType="Float" x="40" y="322" width="484" height="18" uuid="46c9f3bb-f211-4d59-baf0-8ec6ee2e941b"/>
 				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="15"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top" markup="html">
 					<font size="11" isBold="false"/>
@@ -360,7 +359,7 @@ $F{acres}.toString() +
 				<textFieldExpression><![CDATA["Ardhi itatumika kwa ajili ya <b>" + $F{proposedUse} + "</b>"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="40" y="333" width="484" height="18" uuid="616dcf56-3d32-476b-b7c1-88d925578efe"/>
+				<reportElement positionType="Float" x="40" y="340" width="484" height="18" uuid="616dcf56-3d32-476b-b7c1-88d925578efe"/>
 				<box leftPadding="0" rightPadding="15"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -368,7 +367,7 @@ $F{acres}.toString() +
 				<text><![CDATA[Mkazi atawajibika kuhifadhi mazingira (ardhi na maji)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="3" y="333" width="37" height="18" uuid="bc9c3169-d3ad-4ea2-b8f9-7d96f2a1f530"/>
+				<reportElement positionType="Float" x="3" y="340" width="37" height="18" uuid="bc9c3169-d3ad-4ea2-b8f9-7d96f2a1f530"/>
 				<box leftPadding="20"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -376,7 +375,7 @@ $F{acres}.toString() +
 				<text><![CDATA[iii)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="3" y="351" width="37" height="18" uuid="183488fa-3f18-4156-9147-b5b542edb28c"/>
+				<reportElement positionType="Float" x="3" y="358" width="37" height="18" uuid="183488fa-3f18-4156-9147-b5b542edb28c"/>
 				<box leftPadding="20"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -384,7 +383,7 @@ $F{acres}.toString() +
 				<text><![CDATA[iv)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="40" y="351" width="484" height="30" uuid="868e336e-d29a-46b8-9614-67a775887df6"/>
+				<reportElement positionType="Float" x="40" y="358" width="484" height="30" uuid="868e336e-d29a-46b8-9614-67a775887df6"/>
 				<box leftPadding="0" rightPadding="15"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -392,7 +391,7 @@ $F{acres}.toString() +
 				<text><![CDATA[Mkazi atahakikisha kwamba mipaka ya ardhi inalindwa na kutunzwa na idumu kuwa bayana kwa kipindi chote cha hakimiliki.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="3" y="381" width="37" height="18" uuid="3399357a-03c4-4bf6-9627-48a5458528b8"/>
+				<reportElement positionType="Float" x="3" y="388" width="37" height="18" uuid="3399357a-03c4-4bf6-9627-48a5458528b8"/>
 				<box leftPadding="20"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -400,7 +399,7 @@ $F{acres}.toString() +
 				<text><![CDATA[v)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="40" y="381" width="484" height="18" uuid="d5cec122-81f8-478c-bd95-0cfe6beff21c"/>
+				<reportElement positionType="Float" x="40" y="388" width="484" height="18" uuid="d5cec122-81f8-478c-bd95-0cfe6beff21c"/>
 				<box leftPadding="0" rightPadding="15"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -408,7 +407,7 @@ $F{acres}.toString() +
 				<text><![CDATA[Mkazi ataheshimu na kuhifadhi haki za njia zilizopo.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="3" y="399" width="37" height="18" uuid="f63265c4-2939-4b2c-be24-d6a754df892f"/>
+				<reportElement positionType="Float" x="3" y="406" width="37" height="18" uuid="f63265c4-2939-4b2c-be24-d6a754df892f"/>
 				<box leftPadding="20"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -416,7 +415,7 @@ $F{acres}.toString() +
 				<text><![CDATA[vi)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="40" y="399" width="484" height="30" uuid="3c4cfb7f-53f1-4729-82b5-5350fb7ac80a"/>
+				<reportElement positionType="Float" x="40" y="406" width="484" height="30" uuid="3c4cfb7f-53f1-4729-82b5-5350fb7ac80a"/>
 				<box leftPadding="0" rightPadding="15"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="11" isItalic="false"/>
@@ -443,6 +442,13 @@ $F{acres}.toString() +
 			<break>
 				<reportElement x="0" y="759" width="100" height="1" uuid="bc7fc0ed-b046-408c-a924-85da2563c579"/>
 			</break>
+			<staticText>
+				<reportElement x="3" y="152" width="521" height="16" uuid="4ba86570-cf6d-4920-96fa-f0ae3103a0c0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="11" isBold="false" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[(Na. 5 ya 1999)]]></text>
+			</staticText>
 		</band>
 		<band height="579" splitType="Prevent">
 			<subreport>
@@ -450,7 +456,7 @@ $F{acres}.toString() +
 					<printWhenExpression><![CDATA[$F{ownershipTypeId} == 6]]></printWhenExpression>
 				</reportElement>
 				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
-				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "CrroNonPersonSignature.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_PATH}]]></subreportExpression>
 			</subreport>
 			<staticText>
 				<reportElement x="0" y="5" width="57" height="20" uuid="4f0914e1-42cf-4944-9ce4-b7b5d6923f0c"/>
@@ -639,10 +645,10 @@ YA KIJIJI]]></text>
 				<textElement verticalAlignment="Middle" markup="styled">
 					<font size="11" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{ownershipTypeId} == 2 ? "Mmiliki (Mkazi)" : "") +
-($F{ownershipTypeId} == 1 || $F{ownershipTypeId} == 3 ? "Wamiliki (Wakazi)" : "") + 
+				<textFieldExpression><![CDATA[($F{ownershipTypeId} == 2 ? "Mmiliki (" + ($F{hasNonResident} ? "Sio mkazi" : "Mkazi") + ")" : "") +
+($F{ownershipTypeId} == 1 || $F{ownershipTypeId} == 3 ? "Wamiliki (" + ($F{hasNonResident} ? "Sio Wakazi" : "Wakazi") + ")" : "") + 
 ($F{ownershipTypeId} == 5 ? "Msimamizi" : "") +
-($F{ownershipTypeId} == 4 ? "Msimamizi wa Mirathi (Mkazi)" : "") +
+($F{ownershipTypeId} == 4 ? "Msimamizi wa Mirathi (" + ($F{hasNonResident} ? "Sio mkazi" : "Mkazi") + ")" : "") +
 ($F{ownershipTypeId} == 6 && $F{nonNaturalOwners} != null && $F{nonNaturalOwners}.size() > 0 ? "Mmiliki (" + ((com.rmsi.mast.studio.domain.fetch.InstitutionSummary)$F{nonNaturalOwners}.get(0)).getInstututionName() + ")" : "")]]></textFieldExpression>
 			</textField>
 			<frame>

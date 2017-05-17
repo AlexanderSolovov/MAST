@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import com.vividsolutions.jts.geom.Geometry;
+import org.hibernate.annotations.Formula;
 
 /**
  * Class for fetching parcel geometry and it's label
@@ -25,6 +26,9 @@ public class SpatialUnitGeom implements Serializable {
     @Column(name = "the_geom", columnDefinition = "Geometry", insertable = false, updatable = false)
     private Geometry theGeom;
 
+    @Formula("st_astext(st_transform(the_geom,32736))")
+    private String utmCoordinates;
+    
     public long getUsin() {
         return usin;
     }
@@ -47,5 +51,13 @@ public class SpatialUnitGeom implements Serializable {
 
     public void setTheGeom(Geometry theGeom) {
         this.theGeom = theGeom;
+    }
+
+    public String getUtmCoordinates() {
+        return utmCoordinates;
+    }
+
+    public void setUtmCoordinates(String utmCoordinates) {
+        this.utmCoordinates = utmCoordinates;
     }
 }

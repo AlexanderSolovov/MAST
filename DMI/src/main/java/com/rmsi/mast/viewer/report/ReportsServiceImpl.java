@@ -12,8 +12,9 @@ import com.rmsi.mast.studio.domain.fetch.RegistryBook;
 import com.rmsi.mast.studio.domain.fetch.SpatialUnitTable;
 import com.rmsi.mast.studio.util.StringUtils;
 import com.rmsi.mast.viewer.service.LandRecordsService;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import net.sf.jasperreports.engine.JRDataSource;
@@ -157,6 +158,9 @@ public class ReportsServiceImpl implements ReportsSerivce {
             params.put("DLO_OFFICER", project.getDistrictOfficer());
             params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
 
+            URL resource = ReportsServiceImpl.class.getResource("/reports/CrroNonPersonSignature.jasper");
+            params.put("SUBREPORT_PATH", Paths.get(resource.toURI()).toAbsolutePath().toString());
+
             ClaimSummary[] beans = claims.toArray(new ClaimSummary[claims.size()]);
             JRDataSource jds = new JRBeanArrayDataSource(beans);
 
@@ -185,7 +189,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
     }
 
     @Override
-    public JasperPrint getTransactionSheet(String projectName, Long usin) {
+    public JasperPrint getTransactionSheet(String projectName, Long usin, String appUrl) {
         try {
             ProjectDetails project = landRecordsService.getProjectDetails(projectName);
             List<RegistryBook> registryBook = landRecordsService.getRegistryBook(projectName, usin);
@@ -211,6 +215,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
                             RegistryBook rbEmpty = new RegistryBook();
                             rbEmpty.setUsin(rb.getUsin());
                             rbEmpty.setPersonType("1");
+                            rbEmpty.setId(0);
                             registryBook.add(i + addedRows, rbEmpty);
                         }
                     }
@@ -221,6 +226,9 @@ public class ReportsServiceImpl implements ReportsSerivce {
             HashMap params = new HashMap();
             params.put("VILLAGE", project.getVillage());
             params.put("DISTRICT", project.getRegion());
+            params.put("APP_URL", appUrl);
+            params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
+            params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
 
             RegistryBook[] beans = registryBook.toArray(new RegistryBook[registryBook.size()]);
             JRDataSource jds = new JRBeanArrayDataSource(beans);

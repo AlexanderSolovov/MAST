@@ -109,7 +109,7 @@ public class SpatialUnit implements Serializable {
     private Status status;
 
     @Column(name = "workflow_status_update_time", nullable = false)
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date statusUpdateTime;
 
     @Column(nullable = false)

@@ -3,7 +3,7 @@ DO $$
 DECLARE project TEXT;
 BEGIN
 
-project := 'Kitayawa_Live';
+project := 'Kinywangaanga';
 
 -- documents
 delete from attribute where 

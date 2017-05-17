@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Adjudication form" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d5fa54e7-4d24-4da4-b2c2-d5928061255e">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="26"/>
+	<property name="ireport.x" value="23"/>
+	<property name="ireport.y" value="0"/>
 	<style name="table">
 		<box>
 			<pen lineWidth="1.0" lineColor="#000000"/>
@@ -993,7 +993,7 @@
 							<staticText>
 								<reportElement style="table 7_TH" x="0" y="0" width="85" height="18" uuid="b5c7992c-f5b4-44f3-9c4b-2fe2c953cea9"/>
 								<textElement verticalAlignment="Middle">
-									<font size="8" isBold="true"/>
+									<font size="8" isBold="true" isPdfEmbedded="false"/>
 									<paragraph leftIndent="3"/>
 								</textElement>
 								<text><![CDATA[Jina La Ukoo]]></text>
@@ -1010,12 +1010,12 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="100" uuid="2f46542e-3dc8-4850-894d-993ac497752a">
+					<jr:column width="105" uuid="2f46542e-3dc8-4850-894d-993ac497752a">
 						<jr:columnHeader style="table 7_CH" height="18" rowSpan="1">
 							<staticText>
-								<reportElement style="table 7_TH" x="0" y="0" width="100" height="18" uuid="b5c6a784-a25d-4a74-9383-f8d622891284"/>
+								<reportElement style="table 7_TH" x="0" y="0" width="105" height="18" uuid="b5c6a784-a25d-4a74-9383-f8d622891284"/>
 								<textElement verticalAlignment="Middle">
-									<font size="8" isBold="true"/>
+									<font size="8" isBold="true" isPdfEmbedded="false"/>
 									<paragraph leftIndent="3"/>
 								</textElement>
 								<text><![CDATA[Namba ya Kitambulisho]]></text>
@@ -1023,7 +1023,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="table 7_TD" height="19" rowSpan="1">
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="100" height="18" uuid="908e4696-2484-4bda-88ab-e89fc23e74a3"/>
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="105" height="18" uuid="908e4696-2484-4bda-88ab-e89fc23e74a3"/>
 								<textElement verticalAlignment="Middle" markup="html">
 									<font size="8"/>
 									<paragraph leftIndent="3"/>
@@ -1033,12 +1033,12 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="64" uuid="824d3447-f3f4-427a-9dd3-6c496726ecf5">
+					<jr:column width="70" uuid="824d3447-f3f4-427a-9dd3-6c496726ecf5">
 						<jr:columnHeader style="table 7_CH" height="18" rowSpan="1">
 							<staticText>
-								<reportElement style="table 7_TH" x="0" y="0" width="64" height="18" uuid="9aa88d63-549a-4bbe-9ebf-60dce475aff8"/>
+								<reportElement style="table 7_TH" x="0" y="0" width="70" height="18" uuid="9aa88d63-549a-4bbe-9ebf-60dce475aff8"/>
 								<textElement verticalAlignment="Middle">
-									<font size="8" isBold="true"/>
+									<font size="8" isBold="true" isPdfEmbedded="false"/>
 									<paragraph leftIndent="3"/>
 								</textElement>
 								<text><![CDATA[Aina ya Umiliki]]></text>
@@ -1046,7 +1046,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="table 7_TD" height="19" rowSpan="1">
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="64" height="18" uuid="99cb765d-c110-4e50-b01c-f0807969172f"/>
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="70" height="18" uuid="99cb765d-c110-4e50-b01c-f0807969172f"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8"/>
 									<paragraph leftIndent="3"/>
@@ -1099,10 +1099,10 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="85" uuid="3b1783b9-02f0-4153-9eec-f7f9bfe43a9b">
+					<jr:column width="77" uuid="3b1783b9-02f0-4153-9eec-f7f9bfe43a9b">
 						<jr:columnHeader style="table 7_CH" height="18" rowSpan="1">
 							<staticText>
-								<reportElement style="table 7_TH" x="0" y="0" width="85" height="18" uuid="53b29ec7-0ef8-43dc-b84d-eaa7d91bfb89"/>
+								<reportElement style="table 7_TH" x="0" y="0" width="77" height="18" uuid="53b29ec7-0ef8-43dc-b84d-eaa7d91bfb89"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 									<paragraph leftIndent="3"/>
@@ -1112,7 +1112,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="table 7_TD" height="19" rowSpan="1">
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="85" height="18" uuid="a98ef604-63e5-46ae-b7c4-306303aec881"/>
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="77" height="18" uuid="a98ef604-63e5-46ae-b7c4-306303aec881"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8"/>
 									<paragraph leftIndent="3"/>
@@ -1121,10 +1121,10 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="58" uuid="059a5836-b57d-414a-958f-79dcdc54b496">
+					<jr:column width="55" uuid="059a5836-b57d-414a-958f-79dcdc54b496">
 						<jr:columnHeader style="table 7_CH" height="18" rowSpan="1">
 							<staticText>
-								<reportElement style="table 7_TH" x="0" y="0" width="58" height="18" uuid="df544f6e-367c-4d6f-8d14-2747259f2981"/>
+								<reportElement style="table 7_TH" x="0" y="0" width="55" height="18" uuid="df544f6e-367c-4d6f-8d14-2747259f2981"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 									<paragraph leftIndent="3"/>
@@ -1134,7 +1134,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="table 7_TD" height="19" rowSpan="1">
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="58" height="18" uuid="901344b0-9aac-4195-a493-5adad36992dd"/>
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="55" height="18" uuid="901344b0-9aac-4195-a493-5adad36992dd"/>
 								<textElement verticalAlignment="Middle">
 									<font size="8"/>
 									<paragraph leftIndent="3"/>
@@ -1943,7 +1943,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<staticText>
-					<reportElement positionType="Float" x="0" y="0" width="550" height="20" uuid="4e9168b9-1889-4aa7-9655-6a6028fa078f"/>
+					<reportElement positionType="Float" x="0" y="0" width="116" height="20" uuid="4e9168b9-1889-4aa7-9655-6a6028fa078f"/>
 					<box leftPadding="0">
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -1958,7 +1958,7 @@
 					<text><![CDATA[Kwa Matumizi ya Ofisi:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" x="0" y="20" width="550" height="20" uuid="84001708-5482-409e-81d0-96467c924ff2"/>
+					<reportElement positionType="Float" x="0" y="20" width="116" height="20" uuid="84001708-5482-409e-81d0-96467c924ff2"/>
 					<box leftPadding="0">
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -1970,10 +1970,10 @@
 						<font size="8" isBold="false"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
-					<text><![CDATA[Maoni ya Halmashauri ya Kijiji _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ]]></text>
+					<text><![CDATA[Maoni ya Halmashauri ya Kijiji]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" x="0" y="40" width="550" height="20" uuid="e47133f5-b004-4149-a98d-adc20a3ebdb2"/>
+					<reportElement positionType="Float" x="0" y="40" width="116" height="20" uuid="e47133f5-b004-4149-a98d-adc20a3ebdb2"/>
 					<box leftPadding="0">
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -1985,7 +1985,7 @@
 						<font size="8" isBold="false"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
-					<text><![CDATA[Uamuzi wa Mkutano wa Kijiji _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _]]></text>
+					<text><![CDATA[Uamuzi wa Mkutano wa Kijiji]]></text>
 				</staticText>
 				<staticText>
 					<reportElement positionType="Float" x="0" y="60" width="89" height="20" uuid="6a5badb9-9d38-4e1b-8801-be7043a9af04"/>
@@ -2176,13 +2176,13 @@
 					<text><![CDATA[ _ _ _ _ _ _ _ _ _ _ _ _]]></text>
 				</staticText>
 				<image scaleImage="FillFrame">
-					<reportElement positionType="Float" x="340" y="58" width="40" height="20" uuid="720d2fe6-3aa0-41ff-8089-1b4bd9e3a01a">
+					<reportElement positionType="Float" x="340" y="61" width="40" height="20" uuid="720d2fe6-3aa0-41ff-8089-1b4bd9e3a01a">
 						<printWhenExpression><![CDATA[$P{CHAIR_PERSON_SIGNATURE} != "0"]]></printWhenExpression>
 					</reportElement>
 					<imageExpression><![CDATA[$P{APP_URL} + "/studio/project/getsignature/" + $P{CHAIR_PERSON_SIGNATURE}]]></imageExpression>
 				</image>
 				<image scaleImage="FillFrame">
-					<reportElement positionType="Float" x="340" y="80" width="40" height="20" uuid="04ac216a-a3c2-48cd-9721-88659b23469f">
+					<reportElement positionType="Float" x="340" y="83" width="40" height="20" uuid="04ac216a-a3c2-48cd-9721-88659b23469f">
 						<printWhenExpression><![CDATA[$P{EXECUTIVE_PERSON_SIGNATURE} != "0"]]></printWhenExpression>
 					</reportElement>
 					<imageExpression><![CDATA[$P{APP_URL} + "/studio/project/getsignature/" + $P{EXECUTIVE_PERSON_SIGNATURE}]]></imageExpression>
@@ -2194,6 +2194,78 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$P{EXECUTIVE_PERSON_SIGNATURE} == "0" ? " _ _ _ _ _ _ _ _ _ _ _" : ("<b>" + new SimpleDateFormat("dd/MM/yyyy").format($F{statusDate}) + "</b>")]]></textFieldExpression>
 				</textField>
+				<rectangle>
+					<reportElement positionType="Float" mode="Transparent" x="129" y="22" width="14" height="14" uuid="59e06b74-47dc-4b89-acdb-eee8a10bb478"/>
+				</rectangle>
+				<staticText>
+					<reportElement positionType="Float" x="149" y="20" width="116" height="20" uuid="1e3cf321-35e2-401e-ac41-ae0c79476386"/>
+					<box leftPadding="0">
+						<pen lineWidth="0.0"/>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true" isUnderline="false"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<text><![CDATA[Apewe]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement positionType="Float" mode="Transparent" x="129" y="43" width="14" height="14" uuid="521a2614-9bce-4d10-8285-8f4f05236de8"/>
+				</rectangle>
+				<staticText>
+					<reportElement positionType="Float" x="326" y="20" width="116" height="20" uuid="3471705f-cb31-4779-a551-262faa513239"/>
+					<box leftPadding="0">
+						<pen lineWidth="0.0"/>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true" isUnderline="false"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<text><![CDATA[Asipewe]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement positionType="Float" mode="Transparent" x="309" y="43" width="14" height="14" uuid="24f4020d-dd6d-44c8-87fc-c386119f3918"/>
+				</rectangle>
+				<staticText>
+					<reportElement positionType="Float" x="326" y="41" width="116" height="20" uuid="7a0a065d-ac8b-4aed-829c-fa7a01771a68"/>
+					<box leftPadding="0">
+						<pen lineWidth="0.0"/>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true" isUnderline="false"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<text><![CDATA[Asipewe]]></text>
+				</staticText>
+				<rectangle>
+					<reportElement positionType="Float" mode="Transparent" x="309" y="22" width="14" height="14" uuid="83b279dc-06d6-4637-8998-8d173fc3b90c"/>
+				</rectangle>
+				<staticText>
+					<reportElement positionType="Float" x="149" y="41" width="116" height="20" uuid="386edbb4-4caf-4e51-8524-bfb2ece36cfa"/>
+					<box leftPadding="0">
+						<pen lineWidth="0.0"/>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="11" isBold="true" isUnderline="false"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<text><![CDATA[Apewe]]></text>
+				</staticText>
 			</frame>
 			<image scaleImage="FillFrame">
 				<reportElement positionType="Float" x="479" y="196" width="60" height="30" uuid="d4368753-9f41-4e2d-8cb2-52e0a1b07dfd"/>

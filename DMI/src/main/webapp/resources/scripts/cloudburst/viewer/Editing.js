@@ -1,9 +1,8 @@
-
-
 saveStrategy = null;
 var selectedFeature = null;
 var splitvector = null;
 var wfs = null;
+var verticesLayer = null;
 var wfs_del = null;
 var wfsurl = null;
 var featPrefix = null;
@@ -135,12 +134,6 @@ Cloudburst.Editing = function (_map, _searchdiv) {
                     toggleEditControl('selectionBox');
                     break;
                 case 'clearselection':
-                    /*if(wfs != undefined){
-                     wfs.removeAllFeatures();
-                     }
-                     if(wfs_del != undefined){
-                     wfs_del.removeAllFeatures();
-                     }*/
                     onEditLayerChange();
                     break;
                 case 'selectUndo':
@@ -241,38 +234,6 @@ Cloudburst.Editing = function (_map, _searchdiv) {
     });
 }
 
-
-function mergeFeatures() {
-
-
-
-    var mergegml = new OpenLayers.Format.WKT().write(wfs.features);
-    $.ajax({
-        type: 'POST',
-        url: "http://localhost:8080/spatialvue-editingservices/editingservice",
-        dataType: "text",
-        data: {process: 'merge', mergegml: mergegml},
-        success: function (result) {
-            alert(result);
-            var mergefeature = new OpenLayers.Format.WKT().read(result);
-            //splitfeatures.state=OpenLayers.State.INSERT;
-
-
-            var multipolygon = new OpenLayers.Geometry.MultiPolygon([mergefeature.geometry]);
-            var polyFeature = new OpenLayers.Feature.Vector(multipolygon);
-            polyFeature.state = OpenLayers.State.INSERT;
-            wfs.addFeatures([polyFeature]);
-
-
-
-        },
-        error: function (xhr, status) {
-            jAlert('Sorry, there is a problem!');
-        }
-    });
-}
-
-
 function populateEditableLayers() {
     var lyrCount = map.getNumLayers();
     $('#edit_layer').empty();
@@ -342,12 +303,16 @@ function onEditLayerChange() {
 
     //Remove the previously add WFS and WFS_DEL layers
     wfs = map.getLayersByName("WFS")[0];
+    if (verticesLayer !== null) {
+        map.removeLayer(verticesLayer);
+    }
+
     if (wfs != undefined) {
         map.removeLayer(wfs);
     }
     wfs_del = map.getLayersByName("WFS_DEL")[0];
     if (wfs_del != undefined) {
-        map.removeLayer(wfs_del);
+        //map.removeLayer(wfs_del);
     }
     deactivateControls();
     saveStrategy = new OpenLayers.Strategy.Save();
@@ -432,7 +397,10 @@ function onEditLayerChange() {
                     displayInLayerSwitcher: false
                 }
         );
-        map.addLayers([wfs]);
+
+        verticesLayer = new OpenLayers.Layer.Vector('vertices', {styleMap: styleMap, force: true});
+
+        map.addLayers([verticesLayer, wfs]);
 
         splitvector = new OpenLayers.Layer.Vector(
                 "SplitVector", {
@@ -448,7 +416,7 @@ function onEditLayerChange() {
 
         snap = new OpenLayers.Control.Snapping({
             layer: wfs,
-            targets: [wfs],
+            targets: [wfs, verticesLayer],
             greedy: false
         });
         snap.activate();
@@ -542,6 +510,33 @@ function onEditLayerChange() {
                 displayClass: "olControlDefault",
                 clickout: false,
                 toggle: false,
+                unselectFeature: function (feature) {
+                    // add vertices for unselected feature
+                    if (typeof feature.data.usin !== 'undefined') {
+                        var coordinates = feature.geometry.getVertices();
+                        if (coordinates.length > 1) {
+                            var points = [];
+                            for (j = 0; j < coordinates.length; j++) {
+                                points.push(new OpenLayers.Geometry.Point(coordinates[j].x, coordinates[j].y));
+                            }
+
+                            var vertices = new OpenLayers.Geometry.MultiPoint(points);
+                            var attributes = {id: feature.data.usin, name: "vertices", editable: "f"};
+                            verticesLayer.addFeatures([new OpenLayers.Feature.Vector(vertices, attributes)]);
+                        }
+                    }
+                },
+                beforeSelectFeature: function (feature) {
+                    // remove vertices for selected feature
+                    if (typeof feature.data.usin !== 'undefined') {
+                        for (i = 0; i < verticesLayer.features.length; i++) {
+                            if (verticesLayer.features[i].attributes.id === feature.data.usin) {
+                                verticesLayer.removeFeatures([verticesLayer.features[i]]);
+                                break;
+                            }
+                        }
+                    }
+                },
                 //enforceTopology: true,
                 deleteCodes: [46, 68, 27]
             }),
@@ -589,48 +584,6 @@ function onEditLayerChange() {
                             }
                         }
                     }),
-            split: new OpenLayers.Control.DrawFeature(
-                    splitvector, OpenLayers.Handler.Path, {
-                        displayClass: "olControlDefault",
-                        callbacks: {
-                            done: function (p) {
-                                var multiLine = new OpenLayers.Geometry.MultiLineString([p]);
-                                var lineFeature = new OpenLayers.Feature.Vector(multiLine);
-                                //lineFeature.state = OpenLayers.State.INSERT;
-                                splitvector.destroyFeatures();
-                                splitvector.addFeatures([lineFeature]);
-                                var gmlOptions = {featureType: "feature", featureNS: "http://www.spatialvue.com/feature"};
-
-                                var linegml = new OpenLayers.Format.WKT().write([lineFeature]);
-                                var forsplitgml = new OpenLayers.Format.WKT().write(wfs.features);
-                                $.ajax({
-                                    type: 'POST',
-                                    url: "http://localhost:8080/spatialvue-editingservices/editingservice",
-                                    dataType: "text",
-                                    data: {process: 'split', forsplitgml: forsplitgml, linegml: linegml, forupdategml: forsplitgml},
-                                    success: function (result) {
-                                        alert(result);
-                                        splitvector.destroyFeatures();
-                                        var splitfeatures = new OpenLayers.Format.WKT().read(result);
-                                        //splitfeatures.state=OpenLayers.State.INSERT;
-
-                                        for (x = 0; x < splitfeatures.length; x++) {
-                                            var multipolygon = new OpenLayers.Geometry.MultiPolygon([splitfeatures[x].geometry]);
-                                            var polyFeature = new OpenLayers.Feature.Vector(multipolygon);
-                                            polyFeature.state = OpenLayers.State.INSERT;
-                                            wfs.addFeatures([polyFeature]);
-
-                                        }
-
-                                    },
-                                    error: function (xhr, status) {
-                                        jAlert('Sorry, there is a problem!');
-                                    }
-                                });
-
-                            }
-                        }
-           }),
             polygon: new OpenLayers.Control.DrawFeature(
                     wfs, OpenLayers.Handler.Polygon, {
                         displayClass: "olControlDefault",
@@ -714,7 +667,10 @@ function selectFeature(e) {
         if (wfs_del != undefined) {
             wfs_del.removeAllFeatures();
         }
+    }
 
+    if (verticesLayer !== null) {
+        verticesLayer.removeAllFeatures();
     }
 
     var selectedFeatures = e.features;
@@ -726,17 +682,25 @@ function selectFeature(e) {
             for (var i = 0; i < selectedFeatures.length; i++) {
                 delete selectedFeatures[i].attributes[uniqueField];
                 if (objLayer.name == 'spatial_unit') {
-                    if (selectedFeatures[i].attributes.project_name == activeProject && selectedFeatures[i].attributes.active == 'true')
+                    if (selectedFeatures[i].attributes.project_name === activeProject && selectedFeatures[i].attributes.active === 'true')
                         wfs.addFeatures(selectedFeatures[i]);
                 } else {
                     wfs.addFeatures(selectedFeatures[i]);
                 }
 
                 var coordinates = selectedFeatures[i].geometry.getVertices();
-                if(coordinates.length > 1){
-                    var vertices = new OpenLayers.Geometry.MultiPoint(coordinates);
-                    var attributes = {name: "vertex", editable: "f"};
-                    wfs.addFeatures(new OpenLayers.Feature.Vector(vertices, attributes))
+                if (coordinates.length > 1) {
+                    var points = [];
+                    for (j = 0; j < coordinates.length; j++) {
+                        points.push(new OpenLayers.Geometry.Point(coordinates[j].x, coordinates[j].y));
+                        //verticesLayer.addFeatures([new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(coordinates[j].x + 0.001, coordinates[j].y + 0.001), attributes)]);
+                    }
+
+                    var vertices = new OpenLayers.Geometry.MultiPoint(points);
+                    var attributes = {id: selectedFeatures[i].data.usin, name: "vertices", editable: "f"};
+
+                    //var attributes = {name: "vertices", editable: "f"};
+                    verticesLayer.addFeatures([new OpenLayers.Feature.Vector(vertices, attributes)]);
                 }
             }
         }
@@ -840,6 +804,9 @@ function saveEdit() {
     saveStrategy.save();
     wfs_del.removeAllFeatures(true);
     wfs.removeAllFeatures(true);
+    if (verticesLayer !== null) {
+        verticesLayer.removeAllFeatures(true);
+    }
     undoredo.resetEditIndex();
     $('#edit_content').empty();
     $("#editApply").hide();
@@ -850,7 +817,7 @@ function onSave(event) {
     objLayer.redraw(true);
 }
 
-function onSaveFailed(event){
+function onSaveFailed(event) {
     jAlert("Failed to save data");
     objLayer.redraw(true);
 }
@@ -872,6 +839,9 @@ Cloudburst.Editing.prototype.Unregister = function () {
 
         map.removeLayer(wfs);
         map.removeLayer(wfs_del);
+        if (verticesLayer !== null) {
+            map.removeLayer(verticesLayer);
+        }
     }
     saveStrategy.destroy();
     saveStrategy = null;
@@ -1002,6 +972,9 @@ function updateSelectionMode() {
 
     if (wfs != undefined) {
         wfs.removeAllFeatures();
+    }
+    if (verticesLayer !== null) {
+        verticesLayer.removeAllFeatures();
     }
     if (wfs_del != undefined) {
         wfs_del.removeAllFeatures();

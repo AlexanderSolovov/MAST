@@ -12,6 +12,9 @@ import org.springframework.stereotype.Repository;
 import com.rmsi.mast.studio.dao.hibernate.GenericHibernateDAO;
 import com.rmsi.mast.studio.domain.Person;
 import com.rmsi.mast.studio.mobile.dao.PersonDao;
+import java.math.BigInteger;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 /**
  * @author Shruti.Thakur
@@ -72,25 +75,54 @@ public class PersonHiberanteDao extends GenericHibernateDAO<Person, Long>
         }
         return null;
     }
-    
+
     @Override
-    public Person findPersonByClientId(String clientId){
-        String query = "select p from Person p where p.mobileGroupId =:clientId";
+    public Long findPersonIdClientId(String clientId, Long usin) {
+        Query q = getEntityManager().createNativeQuery("SELECT p.person_gid "
+                + "FROM person p inner join social_tenure_relationship r on p.person_gid = r.person_gid "
+                + "WHERE p.mobile_group_id = :clientId and r.usin = :usin limit 1");
+        q.setParameter("clientId", clientId).setParameter("usin", usin);
+
+        Object personId;
 
         try {
-            @SuppressWarnings("unchecked")
-            List<Person> personList = getEntityManager().createQuery(query)
-                    .setParameter("clientId", clientId).getResultList();
+            personId = q.getSingleResult();
+        } catch (NoResultException nre) {
+            personId = null;
+        }
 
-            if (personList.size() > 0) {
-                return personList.get(0);
+        if (personId == null) {
+            // Search through non natural representative
+            q = getEntityManager().createNativeQuery("SELECT np.gid "
+                    + "FROM (natural_person np inner join person p on np.gid = p.person_gid) inner join (non_natural_person nnp inner join social_tenure_relationship r on nnp.non_natural_person_gid = r.person_gid) on nnp.poc_gid = np.gid "
+                    + "WHERE p.mobile_group_id = :clientId and r.usin = :usin limit 1");
+            q.setParameter("clientId", clientId).setParameter("usin", usin);
+
+            try {
+                personId = q.getSingleResult();
+            } catch (NoResultException nre) {
+                personId = null;
             }
 
-        } catch (Exception ex) {
-            logger.error(ex);
-            System.out.println("Exception in fetching PERSON:::: " + ex);
-            throw ex;
+            if (personId == null) {
+                // Search through dispute
+                q = getEntityManager().createNativeQuery("SELECT p.person_gid "
+                        + "FROM dispute d inner join (dispute_person dp inner join person p on dp.person_id = p.person_gid) on d.id = dp.dispute_id "
+                        + "WHERE p.mobile_group_id = :clientId and d.usin = :usin");
+                q.setParameter("clientId", clientId).setParameter("usin", usin);
+                
+                try {
+                    personId = q.getSingleResult();
+                } catch (NoResultException nre) {
+                    personId = null;
+                }
+            }
         }
+
+        if (personId != null) {
+            return ((BigInteger) personId).longValue();
+        }
+
         return null;
     }
 }

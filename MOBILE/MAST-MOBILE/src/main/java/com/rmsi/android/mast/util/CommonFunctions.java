@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -328,6 +329,19 @@ public class CommonFunctions {
 
     public String getLineColor() {
         return getmMyPreferences().getString("linecolor", "blue");
+    }
+
+    /** Returns unique application ID, generated per application installation. */
+    public String getAppId(){
+        String appId = getmMyPreferences().getString("app_id", "");
+        if(StringUtility.isEmpty(appId)){
+            // Generate new and save;
+            appId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = getmMyPreferences().edit();
+            editor.putString("app_id", appId);
+            editor.commit();
+        }
+        return appId;
     }
 
     public void savePolygonColor(String color) {

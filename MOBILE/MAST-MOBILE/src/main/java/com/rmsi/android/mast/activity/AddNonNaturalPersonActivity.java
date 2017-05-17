@@ -210,6 +210,7 @@ public class AddNonNaturalPersonActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         if (!firstRun) {
             // Refresh persons list
             List<Person> persons = DbController.getInstance(context).getNaturalPersonsByRight(property.getRight().getId());

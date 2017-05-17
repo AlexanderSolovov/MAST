@@ -52,6 +52,7 @@
         </activity>
         <activity
             android:name=".LandingPageActivity"
+            android:screenOrientation="portrait"
             android:label="@string/app_name" />
 
         <!-- Google API Key -->
@@ -134,6 +135,7 @@
 
         <activity
             android:name=".ConfigureMapDisplay"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_configure_map_display" />
         <activity
             android:name=".AddNonNaturalPersonActivity"
@@ -159,6 +161,7 @@
         <activity
             android:name=".DataSummaryActivity"
             android:label="@string/title_activity_data_summary"
+            android:screenOrientation="portrait"
             android:noHistory="true" />
         <activity
             android:name=".AddGeneralPropertyActivity"
@@ -168,8 +171,9 @@
         <activity
             android:name=".PersonTypeActivity"
             android:label="@string/selectPersonType"
+            android:screenOrientation="portrait"
             android:noHistory="true" />
-        <activity android:name=".AddDisputeActivity"></activity>
+        <activity android:name=".AddDisputeActivity" android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

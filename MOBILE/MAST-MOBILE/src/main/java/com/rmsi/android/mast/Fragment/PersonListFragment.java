@@ -152,6 +152,7 @@ public class PersonListFragment extends ListFragment implements ListActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         ProgressDialog ringProgressDialog = null;
+        CommonFunctions.getInstance().loadLocale(context);
         if (requestCode == 1) //Image
         {
             if (resultCode == Activity.RESULT_OK) {

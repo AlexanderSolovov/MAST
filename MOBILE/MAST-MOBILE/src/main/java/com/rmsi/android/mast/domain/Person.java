@@ -214,7 +214,7 @@ public class Person implements Serializable {
         String name = "";
         if (getAttributes() != null && getAttributes().size() > 0) {
             for (Attribute attribute : getAttributes()) {
-                if (attribute.getId() == Person.ATTRIBUTE_LAST_NAME && !StringUtility.isEmpty(attribute.getValue())) {
+                if (attribute.getId() == Person.ATTRIBUTE_FIRST_NAME && !StringUtility.isEmpty(attribute.getValue())) {
                     name = attribute.getValue();
                 }
                 if (attribute.getId() == Person.ATTRIBUTE_INSTITUTION_NAME && !StringUtility.isEmpty(attribute.getValue())) {
@@ -222,7 +222,7 @@ public class Person implements Serializable {
                 }
             }
             for (Attribute attribute : getAttributes()) {
-                if (attribute.getId() == Person.ATTRIBUTE_FIRST_NAME && !StringUtility.isEmpty(attribute.getValue())) {
+                if (attribute.getId() == Person.ATTRIBUTE_LAST_NAME && !StringUtility.isEmpty(attribute.getValue())) {
                     if (name.equals(""))
                         name = attribute.getValue();
                     else
@@ -295,7 +295,7 @@ public class Person implements Serializable {
                     if (dob != null && !StringUtility.isEmpty(dob.getValue())) {
                         personAge = DateUtility.getDiffYears(DateUtility.getDate(dob.getValue()), DateUtility.getCurrentDate());
                     } else {
-                        personAge = Integer.getInteger(age.getValue());
+                        personAge = Integer.valueOf(age.getValue());
                     }
 
                     // For owners who are minors, the age must be less than 18 years, for all other cases between 18 and 110

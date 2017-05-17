@@ -74,7 +74,7 @@ public class PersonOfInterestListAdapter extends BaseAdapter {
             if(person.getRelationshipId() > 0 && relTypes != null){
                 for(RelationshipType relType : relTypes){
                     if(relType.getCode() == person.getRelationshipId()){
-                        name += " (" + relType.getName() + ")";
+                        name += " (" + relType.toString() + ")";
                         break;
                     }
                 }

@@ -1447,7 +1447,7 @@ public class LandRecordsController {
     @RequestMapping(value = "/viewer/landrecords/transactionsheet/{usin}/{projectName}", method = RequestMethod.GET)
     @ResponseBody
     public void getTransactionSheet(@PathVariable long usin, @PathVariable String projectName, HttpServletRequest request, HttpServletResponse response) {
-        writeReport(reportsService.getTransactionSheet(projectName, usin), "TransactionSheet", response);
+        writeReport(reportsService.getTransactionSheet(projectName, usin, getApplicationUrl(request)), "TransactionSheet", response);
     }
 
     @RequestMapping(value = "/viewer/landrecords/claimsprofile/{projectName}", method = RequestMethod.GET)
@@ -2438,14 +2438,16 @@ public class LandRecordsController {
                         }
                     } else {
                         NaturalPerson person = (NaturalPerson) right.getPerson_gid();
-                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_ADMINISTRATOR) {
-                            admins += 1;
-                        }
-                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER) {
-                            owners += 1;
-                        }
-                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_GUARDIAN) {
-                            guardians += 1;
+                        if (person.getPersonSubType() != null) {
+                            if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_ADMINISTRATOR) {
+                                admins += 1;
+                            }
+                            if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER) {
+                                owners += 1;
+                            }
+                            if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_GUARDIAN) {
+                                guardians += 1;
+                            }
                         }
                     }
                 }
@@ -2644,6 +2646,7 @@ public class LandRecordsController {
 
                         // Check share size
                         if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_COMMON
+                                && person.getPersonSubType() != null 
                                 && person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
                                 && StringUtils.isEmpty(person.getShare())) {
                             errors.add("Enter share size for " + getPersonName(person));
@@ -2659,7 +2662,7 @@ public class LandRecordsController {
                             age = person.getAge();
                         }
 
-                        if (person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
+                        if (person.getPersonSubType() != null && person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
                                 && right.getShare_type().getGid() == ShareType.SHARE_GUARDIAN) {
                             if (age > 17) {
                                 errors.add(getPersonName(person) + " age must be less than 18 years");

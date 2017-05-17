@@ -543,7 +543,7 @@ public class MobileDataController {
                 document.setUsin(usin);
 
                 if (!media.get(1).toString().isEmpty()) {
-                    document.setPerson_gid(mobileUserService.findPersonByMobileGroupId(media.get(1).toString()));
+                    document.setPerson_gid(mobileUserService.findPersonByMobileGroupId(media.get(1).toString(), usin));
                 } else {
                     if (!media.get(5).toString().isEmpty() && Integer.parseInt(media.get(5).toString()) > 0) {
                         List<Dispute> disputes = disputeDao.findByPropId(usin);

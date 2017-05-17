@@ -52,7 +52,7 @@ public class DisputeBasic implements Serializable {
     List<NaturalPersonBasic> disputingPersons;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "disputeId")
+    @JoinColumn(name = "dispute_id")
     List<MediaBasic> media;
     
     public DisputeBasic() {

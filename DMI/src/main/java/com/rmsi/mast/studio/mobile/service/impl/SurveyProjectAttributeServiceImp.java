@@ -123,7 +123,7 @@ public class SurveyProjectAttributeServiceImp implements
     public List<Property> getProperties(String projectId, int statusId) {
         List<Property> props = new ArrayList<>();
         List<ClaimBasic> claims;
-        
+
         if (statusId > 0) {
             claims = spatialUnitiHibernateDao.getClaimsBasicByStatus(projectId, statusId);
         } else {
@@ -218,10 +218,18 @@ public class SurveyProjectAttributeServiceImp implements
 
                             // Get natural person assosiated with non natural
                             if (nonPerson.getRepresentative() != null) {
-                                naturalPerson = nonPerson.getRepresentative();
+                                try {
+                                    naturalPerson = nonPerson.getRepresentative();
+                                } catch (Exception e) {
+                                    logger.error(e);
+                                }
                             }
-                        } else if (person.getPersonTypeId() == 1) {
-                            naturalPerson = (NaturalPersonBasic) person;
+                        } else if (person.getPersonTypeId() == 1 && person instanceof NaturalPersonBasic) {
+                            try {
+                                naturalPerson = (NaturalPersonBasic) person;
+                            } catch (Exception e) {
+                                logger.error(e);
+                            }
                         }
 
                         if (naturalPerson != null) {
@@ -266,7 +274,7 @@ public class SurveyProjectAttributeServiceImp implements
                     prop.setMedia(new ArrayList<Media>());
 
                     for (MediaBasic doc : claim.getMedia()) {
-                        if (doc.getActive() && doc.getPersonId() == null && doc.getRightId()== null && doc.getDisputeId() == null) {
+                        if (doc.getActive() && doc.getPersonId() == null && doc.getRightId() == null && doc.getDisputeId() == null) {
                             Media media = new Media();
                             media.setId((long) doc.getGid());
                             media.setType(doc.getMediaType());

@@ -1673,7 +1673,7 @@ public class DbController extends SQLiteOpenHelper {
                         JSONObject rightType = new JSONObject(rightTypesArray.get(i).toString());
                         rightTypes.put("CODE", rightType.getInt("tenureId"));
                         rightTypes.put("NAME", rightType.getString("tenureClass"));
-                        rightTypes.put("NAME_OTHER_LANG", rightType.getString("tenureClass"));
+                        rightTypes.put("NAME_OTHER_LANG", rightType.getString("tenureClassSw"));
                         rightTypes.put("ACTIVE", rightType.getBoolean("active") ? 1 : 0);
                         rightTypes.put("FOR_ADJUDICATION", rightType.getBoolean("forAdjudication") ? 1 : 0);
                         getDb().insert(RightType.TABLE_NAME, null, rightTypes);
@@ -2463,6 +2463,7 @@ public class DbController extends SQLiteOpenHelper {
                     type = (T) classType.newInstance();
                     type.setCode(0);
                     type.setName(contxt.getResources().getString(R.string.SelectOption));
+                    type.setNameOtherLang(contxt.getResources().getString(R.string.SelectOption));
                     type.setActive(1);
                     types.add(0, type);
                 }
@@ -2553,6 +2554,7 @@ public class DbController extends SQLiteOpenHelper {
                     ClaimType claimType = new ClaimType();
                     claimType.setCode("");
                     claimType.setName(contxt.getResources().getString(R.string.SelectOption));
+                    claimType.setNameOtherLang(contxt.getResources().getString(R.string.SelectOption));
                     claimTypes.add(0, claimType);
                 }
             }

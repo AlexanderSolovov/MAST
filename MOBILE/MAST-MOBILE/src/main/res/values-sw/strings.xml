@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_ver">v 2.3.1</string>
-    <string name="app_ver2">2.3.1</string>
     <string name="app_name">MAST</string>
     <string name="action_settings">Mpangilio</string>
     <string name="appname">UPIMAJI WA ARDHI KUTUMIA SIMU</string>
@@ -57,14 +55,14 @@
     </string-array>
 
     <!-- PLS DON'T CHANGE BELOW 8 ITEMS TO ANY OTHER LANGUAGE -->
-    <string name="option_00">Chora Alama</string>
-    <string name="option_01">Pima alama kwa GPS</string>
-    <string name="option_02">Ingiza eneo</string>
-    <string name="option_10">Chora mstari</string>
-    <string name="option_11">Pima mstari kwa GPS</string>
-    <string name="option_12">Tengeneza mstari kutegemeana na urefu</string>
-    <string name="option_20">Chora eneo</string>
-    <string name="option_21">Pima eneo kwa GPS</string>
+    <string name="option_00">Draw Point</string>
+    <string name="option_01">Capture point by GPS</string>
+    <string name="option_02">Enter location</string>
+    <string name="option_10">Draw Line</string>
+    <string name="option_11">Capture line by GPS</string>
+    <string name="option_12">Create Line based on bearing and distance</string>
+    <string name="option_20">Draw Polygon</string>
+    <string name="option_21">Capture polygon by GPS</string>
     <!-- PLS DON'T CHANGE ABOVE 8 ITEMS TO ANY OTHER LANGUAGE -->
 
     <string-array name="measure_options_arrays">
@@ -200,7 +198,7 @@
         <item>Labeling and vertices</item>
     </string-array>
     <string-array name="media">
-        <item>Taswira</item>
+        <item>Picha</item>
         <item>Video</item>
     </string-array>
 
@@ -270,9 +268,6 @@
     <string name="mark_as_verified">Onesha imethibitishwa</string>
     <string name="add_custom_attributes">Ongeza taarifa</string>
     <string name="verifiedFeatureMsg">Je, unataka kipengele hiki kithibitishwe?</string>
-
-    <!-- changes to be done from here -->
-
     <string name="equal_person_nd_tenure">Tafadhali jaza idadi sawa ya mtu na miliki</string>
     <string name="atleast_one_person">Tafadhali jaza mtu mmoja au zaidi</string>
     <string name="fill_property_Details">Tafadhali jaza taarifa za kipande cha ardhi</string>
@@ -281,9 +276,6 @@
     <string name="add_feature">Ongeza kipengele</string>
     <string name="delete_feature">Futa kipengele</string>
     <string name="webserviceconnectMsg">Unganisha kwenye mtandao..</string>
-
-    <!-- Start Translation by google translator -->
-
     <string name="NoDataPendingforUpload">Hakuna taarifa inayosubiri kupakiwa</string>
     <string name="NoDataFoundToUpload">Hakuna taarifa ya kupakia</string>
     <string name="UploadFinished">Imemaliza kupakia</string>
@@ -301,9 +293,6 @@
     <string name="radio_multiple">Wengi</string>
     <string name="delete_all_data">Taarifa zote zitafutwa</string>
     <string name="unable_to_save_data">Haiwezi kuhifadhi taarifa</string>
-
-    <!-- End Translation by google translator -->
-
     <string name="featurenotdraft">Kipengele hakipo katika rasimu</string>
     <string name="dowbloadFinaldata">Pakua taarifa za mwisho</string>
     <string name="view_details">Onesha maelezo</string>
@@ -347,15 +336,11 @@
     <string name="selectOptionDialogTitle">Chagua katika orodha</string>
     <string name="continueTologout">Malizia/toka</string>
     <string name="add_photo_of_all_persons">Tafadhali weka picha za watu wote</string>
-
-    <!-- add on 3/Nov/2015 -->
-
     <string name="data_summary_label1_1">Aina ya Miliki:</string>
     <string name="data_summary_label1_owner">Mmiliki:</string>
     <string name="data_summary_label4_admin">Msimamizi:</string>
     <string name="data_summary_label5_Guardian">Mlezi:</string>
     <string name="data_summary_label5_POI">Mtu/Watu mwenye maslahi:</string>
-
     <string name="FieldDataUploadedSuccessfully">Upakiaji wa taarifa umefanikiwa</string>
     <string name="MultimediaUploadedSuccessfully">Upakiaji wa picha umefanikiwa</string>
     <string name="ErrorInUploadingFieldData">Hitilafu katika upakiaji wa taarifa za uwandani</string>
@@ -402,15 +387,13 @@
     <string name="btn_proceed">Endelea</string>
     <string name="enter_details">Tafadhali jaza taarifa</string>
     <string name="tenureType">Aina ya Miliki</string>
-
-    <!-- added String on 03/Nov/15- -->
     <string name="minorNotAllowed">Hairuhusu, Mlezi lazima awe na miaka zaidi ya 18.</string>
     <string name="ownerShouldBeMinor">Mmiliki lazima awe na miaka chini ya 18 katika miliki chini ya mlezi</string>
     <string name="guardianShudBeAdult">Mlezi lazima awe mtu mzima</string>
     <string name="infoSingleOccupantStr">Lazima ujaze "mmiliki" mmoja tu na unaweza kujaza "mtu/watu mwenye maslahi"</string>
     <string name="infoMultipleJointStr">Lazima ujaze wamiliki wawili au zaidi na unaweza kujaza "mtu/watu mwenye maslahi"</string>
-    <string name="infoMultipleTeneancyStr">Lazima ujaze "wamiliki"  2 au zaidi (watoto) na walezi wasiozidi wawili</string>
-    <string name="infoTenancyInProbateStr">Unaweza kuongeza "mmiliki" 1 au zaidi na "wasimamizi" wasiozidi 2, lazima ujaze "jina la marehemu", na unaweza kujaza "mtu/watu mweye maslahi" </string>
+    <string name="infoMultipleTeneancyStr">Lazima ujaze wamiliki wawili au zaidi na unaweza kujaza mtu/watu wenye maslahi</string>
+    <string name="infoTenancyInProbateStr">Unaweza kuongeza "wasimamizi" wasiozidi 2, lazima ujaze "jina la marehemu", na unaweza kujaza "mtu/watu mweye maslahi" </string>
     <string name="infoGuardianMinorStr">Lazima ujaze mmiliki 1 au zaidi(Watoto) na walezi wasiozidi wawili</string>
     <string name="warning_multipleJoint">"Miliki ya pamoja" unatakiwa kujaza wamiliki 2 au zaidi.</string>
     <string name="warning_multipleTenancy">"Miliki ya hisa" unatakiwa kujaza wamiliki 2 au zaidi</string>
@@ -429,7 +412,7 @@
     <string name="can_not_add_admin_in_cas_of_guardian_minor">Haiwezekani kujaza "Msimamizi" katika miliki chini ya Mlezi</string>
     <string name="can_not_add_moreThanOne_dp_tenancy_inProbate">Haiwezekani kujaza zaidi ya "marehemu" mmoja</string>
     <string name="Please_add_Administrator_first_or_Owner_first">Tafadhali jaza "msimamizi" au "mmiliki" kwanza</string>
-    <string name="you_can_not_add_Guardian_in_tenancy_in_Probate">Haiwezekani kujaza "mlezi" katika  miliki chini ya msimamizi mirathi</string>
+    <string name="you_can_not_add_Guardian_in_tenancy_in_Probate">Haiwezekani kujaza "Mmiliki" au "Mlezi" katika milki chini ya usimamizi wa Mirathi</string>
     <string name="Administrator_can_not_be_more_than_two_in_tenancy_in_Probate">Wasimamizi hawawezi kuwa zaidi ya wawili</string>
     <string name="Please_delete_Owner_first">Tafadhali futa “Mmiliki” kwanza</string>
     <string name="Please_select_Hamlet">Tafadhali chagua Kitongoji</string>
@@ -439,7 +422,6 @@
     <string name="deleted">Imefutwa</string>
     <string name="do_u_want_to_continue">Unahitaji kuendelea?</string>
     <string name="You_have_selected">Umechagua : </string>
-
     <string name="yes">Ndiyo</string>
     <string name="no">Hapana</string>
     <string name="unable_to_add_person_tye">Haiwezi kuhifadhi Mmiliki/Msimamizi/Mlezi</string>
@@ -470,13 +452,13 @@
     <string name="personType">Aina ya mmiliki</string>
     <string name="accept">Kubali</string>
     <string name="AddNewPropertyDetails">Jaza maelezo ya kipande cha ardhi</string>
-    <string name="rightType">Aina ya umiliki</string>
+    <string name="rightType">Aina ya Haki Milki</string>
     <string name="shareType">Aina ya umiliki</string>
-    <string name="juridicalArea">Eneo la kwenye Hatimiliki/Kimila (ekari)</string>
-    <string name="certNumber">Namba ya Hatimiliki/Kimila</string>
-    <string name="FillCertNumber">Jaza namba ya Hatimiliki/Kimila</string>
-    <string name="SelectCertDate">Jaza tarehe ya Hatimiliki/Kimila</string>
-    <string name="SelectRightType">Chagua aina ya hatimiliki</string>
+    <string name="juridicalArea">Eneo la kwenye Hati milki/Kimila (ekari)</string>
+    <string name="certNumber">Namba ya Hati milki/Kimila</string>
+    <string name="FillCertNumber">Jaza namba ya Hati milki/Kimila</string>
+    <string name="SelectCertDate">Jaza tarehe ya Hati milki/Kimila</string>
+    <string name="SelectRightType">Chagua aina ya Hati milki</string>
     <string name="SelectShareType">Chagua aina ya miliki</string>
     <string name="SelectResidency">Chagua ukaazi</string>
     <string name="Guardian">Mlezi</string>
@@ -530,7 +512,7 @@
     <string name="ukaNumber">UKA/Shamba/Namba ya kitalu</string>
     <string name="EnterUkaNumber">Ingiza Namba ya UKA/Shamba/Kitalu</string>
     <string name="AcquisitionType">Jinsi ardhi ilivyopatikana</string>
-    <string name="AddPerson">Jaza Mmiliki/Msimamizi/Mlezi</string>
+    <string name="AddPerson">Jaza taarifa za mwakilishi</string>
     <string name="ConfigDonwloadFailed">Upakuaji wa mfumo umeshindikana</string>
     <string name="DownloadConfig">Upakuaji wa mfumo</string>
     <string name="FailedToFormJson">Imeshindwa kuunda JSON</string>
