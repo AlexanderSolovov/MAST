@@ -14,56 +14,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3b033bb5-c2eb-45ef-b1be-29d38b23357f" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../DB/changes_18.11.2016_old_before_translation.sql" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/AdjudicationForm.jasper" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/AdjudicationForm.jasper" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/Ccro.jasper" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/Ccro.jasper" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/CcroIssuenceBook.jasper" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/CcroIssuenceBook.jasper" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/TransactionSheet.jasper" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/TransactionSheet.jasper" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DB/changes_18.11.2016.sql" afterPath="$PROJECT_DIR$/../DB/changes_18.11.2016.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DB/delete_deleted_records.sql" afterPath="$PROJECT_DIR$/../DB/delete_deleted_records.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/Person.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/Person.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/SpatialUnit.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/SpatialUnit.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/TenureClass.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/TenureClass.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/ClaimSummary.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/ClaimSummary.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/DisputeBasic.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/DisputeBasic.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/RegistryBook.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/RegistryBook.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialUnitGeom.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/domain/fetch/SpatialUnitGeom.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/PersonDao.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/PersonDao.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/PersonHiberanteDao.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/dao/hibernate/PersonHiberanteDao.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/UserDataService.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/UserDataService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/SurveyProjectAttributeServiceImp.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/SurveyProjectAttributeServiceImp.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/UserDataServiceImpl.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/service/impl/UserDataServiceImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/web/MobileDataController.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/studio/mobile/web/MobileDataController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/report/ReportsSerivce.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/report/ReportsSerivce.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/report/ReportsServiceImpl.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/report/ReportsServiceImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/web/mvc/LandRecordsController.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/web/mvc/LandRecordsController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/web/mvc/ParcelMapController.java" afterPath="$PROJECT_DIR$/../DMI/src/main/java/com/rmsi/mast/viewer/web/mvc/ParcelMapController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/AdjudicationForm.jrxml" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/AdjudicationForm.jrxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/Ccro.jrxml" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/Ccro.jrxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/CcroIssuenceBook.jrxml" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/CcroIssuenceBook.jrxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/resources/reports/TransactionSheet.jrxml" afterPath="$PROJECT_DIR$/../DMI/src/main/resources/reports/TransactionSheet.jrxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Common.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Common.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Editing.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/Editing.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/LandRecords.js" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/scripts/cloudburst/viewer/LandRecords.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/viewer.css" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/styles/viewer/viewer.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/studio/project.html" afterPath="$PROJECT_DIR$/../DMI/src/main/webapp/resources/templates/studio/project.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/PersonListFragment.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/Fragment/PersonListFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddNonNaturalPersonActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddNonNaturalPersonActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddSocialTenureActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/AddSocialTenureActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureDataMapActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/CaptureDataMapActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/activity/PersonListWithDPActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/PersonOfInterestListAdapter.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/adapter/PersonOfInterestListAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DBController.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/db/DBController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/ClaimType.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/ClaimType.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Person.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/Person.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/RefData.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/domain/RefData.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/CommonFunctions.java" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/java/com/rmsi/android/mast/util/CommonFunctions.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/strings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/styles.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values-sw/styles.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml" />
     </list>
     <ignored path="MOBILE.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -168,8 +119,8 @@
       <file leaf-file-name="strings.xml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="44">
-              <caret line="2" column="34" selection-start-line="2" selection-start-column="34" selection-end-line="2" selection-end-column="34" />
+            <state relative-caret-position="374">
+              <caret line="17" column="32" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -3391,7 +3342,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
+    <frame x="-9" y="-9" width="1938" height="1048" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Nl-Palette" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -3731,7 +3682,7 @@
         <state relative-caret-position="471">
           <caret line="236" column="87" selection-start-line="236" selection-start-column="87" selection-end-line="236" selection-end-column="87" />
           <folding>
-            <element signature="e#10211#10267#0" expanded="true" />
+            <element signature="e#10211#10267#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -3768,10 +3719,10 @@
         <state relative-caret-position="556">
           <caret line="58" column="75" selection-start-line="58" selection-start-column="11" selection-end-line="58" selection-end-column="75" />
           <folding>
-            <element signature="e#687#688#0" expanded="true" />
-            <element signature="e#714#715#0" expanded="true" />
-            <element signature="e#826#827#0" expanded="true" />
-            <element signature="e#862#863#0" expanded="true" />
+            <element signature="e#687#688#0" expanded="false" />
+            <element signature="e#714#715#0" expanded="false" />
+            <element signature="e#826#827#0" expanded="false" />
+            <element signature="e#862#863#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -3846,8 +3797,8 @@
         <state relative-caret-position="273">
           <caret line="105" column="19" selection-start-line="105" selection-start-column="19" selection-end-line="105" selection-end-column="19" />
           <folding>
-            <element signature="e#3060#3061#0" expanded="true" />
-            <element signature="e#3112#3113#0" expanded="true" />
+            <element signature="e#3060#3061#0" expanded="false" />
+            <element signature="e#3112#3113#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -3940,8 +3891,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/MAST-MOBILE/src/main/res/values/strings.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" column="34" selection-start-line="2" selection-start-column="34" selection-end-line="2" selection-end-column="34" />
+        <state relative-caret-position="374">
+          <caret line="17" column="32" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
           <folding />
         </state>
       </provider>
