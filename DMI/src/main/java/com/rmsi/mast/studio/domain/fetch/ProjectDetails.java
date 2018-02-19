@@ -53,6 +53,9 @@ public class ProjectDetails implements Serializable {
     @Column(name = "district_officer")
     private String districtOfficer;
 
+    @Column(name = "show_coatofarm")
+    private boolean showCoatofarm;
+    
     @Column(name = "district_officer_signature")
     private String districtOfficerSignature;
 
@@ -174,5 +177,13 @@ public class ProjectDetails implements Serializable {
 
     public void setVcMeetingDate(Date vcMeetingDate) {
         this.vcMeetingDate = vcMeetingDate;
+    }
+
+    public boolean isShowCoatofarm() {
+        return showCoatofarm;
+    }
+
+    public void setShowCoatofarm(boolean showCoatofarm) {
+        this.showCoatofarm = showCoatofarm;
     }
 }

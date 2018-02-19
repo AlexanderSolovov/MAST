@@ -105,7 +105,7 @@
 				<text><![CDATA[Umekikuka sheria ndogo za kijiji  kuhusu ardhi]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="77" y="509" width="56" height="20" uuid="101f163c-5642-4f95-b418-e63c91cccacd"/>
+				<reportElement x="77" y="509" width="75" height="20" uuid="101f163c-5642-4f95-b418-e63c91cccacd"/>
 				<textElement verticalAlignment="Top">
 					<font fontName="SansSerif" size="11" isBold="false" isUnderline="false"/>
 					<paragraph lineSpacing="Single" lineSpacingSize="30.0"/>
@@ -162,10 +162,10 @@
 					<font fontName="SansSerif" size="11" isBold="true" isUnderline="false"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<text><![CDATA[Afisa Mtendaji wa Kijiji
+				<text><![CDATA[Afisa Ardhi Mteule wa Wilaya
 
-Nakala kwa:
-Afisa Ardhi wa Wilaya
+Nakala:
+Afisa Mtendaji wa Kijiji
 ]]></text>
 			</staticText>
 			<textField>
@@ -218,7 +218,7 @@ Afisa Ardhi wa Wilaya
 				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format(new Date().getTime())]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="138" y="524" width="404" height="1" uuid="75c3c44b-937b-4036-a028-75a7ceb771f1"/>
+				<reportElement x="152" y="525" width="390" height="1" uuid="75c3c44b-937b-4036-a028-75a7ceb771f1"/>
 				<graphicElement>
 					<pen lineStyle="Dotted"/>
 				</graphicElement>

@@ -226,6 +226,7 @@ public class ProjectController {
             String regionCode = "";
             String villagepostalcode = "";
             String vcmeetingdate = "";
+            boolean showCoatOfArm = false;
 
             try {
                 try {
@@ -288,6 +289,12 @@ public class ProjectController {
                 } catch (Exception e) {
                     logger.error(e);
                 }
+                
+                try {
+                    showCoatOfArm = ServletRequestUtils.getRequiredBooleanParameter(request, "showcoatofarm");
+                } catch (Exception e) {
+                    logger.error(e);
+                }
 
                 if (id != "") {
                     projectArea.setAreaId(Long.parseLong(id));
@@ -308,7 +315,7 @@ public class ProjectController {
                 projectArea.setVillageChairmanSignaturePath(ServletRequestUtils.getStringParameter(request, "hSignatureVillageChairman", ""));
                 projectArea.setVillageExecutiveSignaturePath(ServletRequestUtils.getStringParameter(request, "hSignatureVillageExecutive", ""));
                 projectArea.setDistrictOfficerSignaturePath(ServletRequestUtils.getStringParameter(request, "hSignatureDistrictOfficer", ""));
-
+                projectArea.setShowCoatofarm(showCoatOfArm);
                 if (StringUtils.isEmpty(vcmeetingdate)) {
                     projectArea.setVcMeetingDate(null);
                 } else {
@@ -372,23 +379,51 @@ public class ProjectController {
                 }
             }
 
-            List<String> hamlettmplst = projectService.getHamletCodesbyProject(projectName);
+            List<ProjectHamlet> existingHamlets = projectService.getHamletsByProject(projectName);
 
             if (hamlet_name != null) {
                 for (int j = 0; j < hamlet_name.length; j++) {
-                    ProjectHamlet hamletObj = new ProjectHamlet();
-                    hamletObj.setHamletName(hamlet_name[j]);
-                    hamletObj.setHamletNameSecondLanguage(hamlet_alias[j]);
-                    hamletObj.setHamletCode(hamlet_code[j]);
-                    hamletObj.setHamletLeaderName(hamlet_leader[j]);
-                    hamletObj.setProjectName(projectName);
-                    hamletObj.setCount(0);
-                    if (!hamlettmplst.contains(hamlet_code[j])) {
+                    // Check if hamlet exists
+                    boolean exists = false;
+                    if (existingHamlets != null && existingHamlets.size() > 0) {
+                        for (ProjectHamlet existingHamlet : existingHamlets) {
+                            if (existingHamlet.getHamletCode().equalsIgnoreCase(hamlet_code[j])) {
+                                // Update
+                                exists = true;
+                                existingHamlet.setHamletName(hamlet_name[j]);
+                                existingHamlet.setHamletNameSecondLanguage(hamlet_alias[j]);
+                                existingHamlet.setHamletLeaderName(hamlet_leader[j]);
+                                projectService.addHamlets(existingHamlet);
+                            }
+                        }
+                    }
+
+                    if (!exists) {
+                        ProjectHamlet hamletObj = new ProjectHamlet();
+                        hamletObj.setHamletName(hamlet_name[j]);
+                        hamletObj.setHamletNameSecondLanguage(hamlet_alias[j]);
+                        hamletObj.setHamletCode(hamlet_code[j]);
+                        hamletObj.setHamletLeaderName(hamlet_leader[j]);
+                        hamletObj.setProjectName(projectName);
+                        hamletObj.setCount(0);
                         projectService.addHamlets(hamletObj);
                     }
                 }
+
+                // Delete non-existing hamlets (in case of code change)
+                for (ProjectHamlet existingHamlet : existingHamlets) {
+                    boolean found = false;
+                    for (int j = 0; j < hamlet_name.length; j++) {
+                        if (existingHamlet.getHamletCode().equalsIgnoreCase(hamlet_code[j])) {
+                            found = true;
+                        }
+                    }
+                    if(!found){
+                        deleteHamlet(existingHamlet.getHamletCode(), projectName);
+                    }
+                }
             }
-            
+
             return "ProjectAdded";
         } catch (Exception e) {
             logger.error(e);
@@ -674,6 +709,13 @@ public class ProjectController {
         } else {
             return false;
         }
+    }
+
+    @RequestMapping(value = "/studio/project/checkhamletedit/{hamletcode}/{projectName}", method = RequestMethod.GET)
+    @ResponseBody
+    public boolean checkCanEditHamlet(@PathVariable String hamletcode, @PathVariable String projectName) {
+        long hamlet_id = projectService.getHamletIdbyCode(hamletcode, projectName);
+        return !landRecordsService.findExistingHamlet(hamlet_id);
     }
 
     @RequestMapping(value = "/studio/project/uploadsignature", method = RequestMethod.POST)

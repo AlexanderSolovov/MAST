@@ -68,13 +68,13 @@ public class ClaimSummary implements Serializable {
 
     @Column(name = "adjudicator1_signature")
     private String adjudicator1Signature;
-    
+
     @Column
     private String adjudicator2;
 
     @Column(name = "adjudicator2_signature")
     private String adjudicator2Signature;
-    
+
     @Column(name = "application_date")
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date applicationDate;
@@ -85,7 +85,7 @@ public class ClaimSummary implements Serializable {
     @Column(name = "status_date")
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date statusDate;
-    
+
     @Column(name = "project_name")
     private String projectName;
 
@@ -122,6 +122,15 @@ public class ClaimSummary implements Serializable {
 
     @Column
     private String recorder;
+
+    @Column
+    private String witness1;
+
+    @Column
+    private String witness2;
+
+    @Column
+    private String witness3;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "usin")
@@ -422,6 +431,30 @@ public class ClaimSummary implements Serializable {
         this.statusDate = statusDate;
     }
 
+    public String getWitness1() {
+        return witness1;
+    }
+
+    public void setWitness1(String witness1) {
+        this.witness1 = witness1;
+    }
+
+    public String getWitness2() {
+        return witness2;
+    }
+
+    public void setWitness2(String witness2) {
+        this.witness2 = witness2;
+    }
+
+    public String getWitness3() {
+        return witness3;
+    }
+
+    public void setWitness3(String witness3) {
+        this.witness3 = witness3;
+    }
+
     public List<PersonWithRightSummary> getPersonsForSignature() {
         ArrayList<PersonWithRightSummary> persons = new ArrayList<>();
 
@@ -463,7 +496,7 @@ public class ClaimSummary implements Serializable {
                 if (person.getPersonTypeId() == PersonType.TYPE_OWNER) {
                     String share = StringUtils.empty(person.getShare()).trim();
                     String owner = "";
-                    
+
                     if (!share.endsWith("%")) {
                         share = share + "%";
                     }
@@ -520,12 +553,12 @@ public class ClaimSummary implements Serializable {
 
         String resident = "Mkazi";
         String residents = "Wakazi";
-        
-        if(getHasNonResident()){
+
+        if (getHasNonResident()) {
             resident = "Sio mkazi";
             residents = "Sio Wakazi";
         }
-                
+
         if (getOwnershipTypeId() == ShareType.SHARE_SINGLE || getOwnershipTypeId() == ShareType.SHARE_INSTITUTION) {
             names = owners + " (humu ndani akirejewa kama \"" + resident + "\")";
         } else if (getOwnershipTypeId() == ShareType.SHARE_MULTIPLE_JOINT) {
@@ -539,47 +572,65 @@ public class ClaimSummary implements Serializable {
         }
         return names;
     }
-    
-    public boolean getHasNonResident(){
-        if(getNaturalOwners() != null && getNaturalOwners().size() > 0){
-            for(PersonWithRightSummary person : getNaturalOwners()){
-                if(person.getVillageResident()){
-                    return false;
+
+    public Integer getTerm() {
+        if (getNaturalOwners() == null || getNaturalOwners().size() < 1
+                || getNaturalOwners().get(0).getTerm() == null
+                || getNaturalOwners().get(0).getTerm() <= 0) {
+            return null;
+        }
+        return getNaturalOwners().get(0).getTerm();
+    }
+
+    public Integer getRentalFee() {
+        if (getNaturalOwners() == null || getNaturalOwners().size() < 1
+                || getNaturalOwners().get(0).getRentalFee() == null
+                || getNaturalOwners().get(0).getRentalFee() <= 0) {
+            return null;
+        }
+        return getNaturalOwners().get(0).getRentalFee().intValue();
+    }
+
+    public boolean getHasNonResident() {
+        if (getNaturalOwners() != null && getNaturalOwners().size() > 0) {
+            for (PersonWithRightSummary person : getNaturalOwners()) {
+                if (!person.getVillageResident()) {
+                    return true;
                 }
             }
         }
         return false;
     }
-    
-    public Date getStartDate(){
-        if(getCertDate() != null){
+
+    public Date getStartDate() {
+        if (getCertDate() != null) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(getCertDate());
             int month = cal.get(Calendar.MONTH);
             int day = cal.get(Calendar.DATE);
             int newMonth = 0;
-            
-            if((month == Calendar.APRIL || month == Calendar.JULY || month == Calendar.OCTOBER 
-                    || month == Calendar.JANUARY) && day == 1){
+
+            if ((month == Calendar.APRIL || month == Calendar.JULY || month == Calendar.OCTOBER
+                    || month == Calendar.JANUARY) && day == 1) {
                 return getCertDate();
             }
-            
-            if(month == Calendar.JANUARY || month == Calendar.FEBRUARY || month == Calendar.MARCH){
+
+            if (month == Calendar.JANUARY || month == Calendar.FEBRUARY || month == Calendar.MARCH) {
                 newMonth = Calendar.JANUARY;
             }
-            
-            if(month == Calendar.APRIL || month == Calendar.MAY || month == Calendar.JUNE){
+
+            if (month == Calendar.APRIL || month == Calendar.MAY || month == Calendar.JUNE) {
                 newMonth = Calendar.APRIL;
             }
-            
-            if(month == Calendar.JULY || month == Calendar.AUGUST || month == Calendar.SEPTEMBER){
+
+            if (month == Calendar.JULY || month == Calendar.AUGUST || month == Calendar.SEPTEMBER) {
                 newMonth = Calendar.JULY;
             }
-            
-            if(month == Calendar.OCTOBER || month == Calendar.NOVEMBER || month == Calendar.DECEMBER){
+
+            if (month == Calendar.OCTOBER || month == Calendar.NOVEMBER || month == Calendar.DECEMBER) {
                 newMonth = Calendar.OCTOBER;
             }
-            
+
             cal.set(Calendar.DATE, 1);
             cal.set(Calendar.MONTH, newMonth);
             return cal.getTime();

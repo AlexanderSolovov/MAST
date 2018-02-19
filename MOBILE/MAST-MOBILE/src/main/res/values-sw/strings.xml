@@ -194,8 +194,8 @@
     <string name="title_activity_configure_map_display">Andaa muonekano wa ramani</string>
 
     <string-array name="configureMapToolsitems">
-        <item>Snapping</item>
-        <item>Labeling and vertices</item>
+        <item>Kuunganisha alama</item>
+        <item>Muonekano wa alama</item>
     </string-array>
     <string-array name="media">
         <item>Picha</item>
@@ -491,6 +491,7 @@
     <string name="MultiCommonShareError">Miliki ya hisa lazima iwe na wamiliki wasiopungua wawili</string>
     <string name="ProbateShareError">Miliki chini ya msimamizi mirathi lazima iwe na jina la marehemu na wasimamizi wasiozidi wawili.</string>
     <string name="FillShareSize">Jaza hisa</string>
+    <string name="WitnessesRequired">Jaza mashahidi wasio pungua wawili.</string>
     <string name="Next">Inayofuata</string>
     <string name="Close">Funga</string>
     <string name="Finish">Maliza</string>
@@ -528,5 +529,6 @@
     <string name="snapToVertex">Unganisha kwenye kona</string>
     <string name="please_delete_Social_Tenure_first">Tafadhali futa taarifa za Milki</string>
     <string name="mandatoryPOI">Itahitajika kujaza mtu/watu wenye maslahi kwa miliki chini ya msimamizi mirathi</string>
+    <string name="Provide3PointsOrMore">Chukua alama zaidi ya moja wakati wa upimaji.</string>
 
 </resources>

@@ -108,6 +108,9 @@ public class ProjectArea implements Serializable {
     @Column(name = "district_officer_signature")
     String districtOfficerSignaturePath;
     
+    @Column(name = "show_coatofarm")
+    private boolean showCoatofarm;
+    
     public ProjectArea() {
     }
 
@@ -373,5 +376,13 @@ public class ProjectArea implements Serializable {
 
     public void setDistrictOfficerSignaturePath(String districtOfficerSignaturePath) {
         this.districtOfficerSignaturePath = districtOfficerSignaturePath;
+    }
+
+    public boolean isShowCoatofarm() {
+        return showCoatofarm;
+    }
+
+    public void setShowCoatofarm(boolean showCoatofarm) {
+        this.showCoatofarm = showCoatofarm;
     }
 }

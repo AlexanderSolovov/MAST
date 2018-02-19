@@ -2,6 +2,7 @@ package com.rmsi.android.mast.domain;
 
 import android.content.Context;
 import android.view.Gravity;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rmsi.android.mast.activity.R;
@@ -386,6 +387,30 @@ public class Property extends Feature implements Serializable {
             if(getRight().hasPersonSubType(Person.SUBTYPE_GUARDIAN) || !getRight().hasPersonSubType(Person.SUBTYPE_ADMINISTRATOR)
                     || getDeceasedPerson() == null || getRight().getAdministratorCount() > 2){
                 return handleError(context, R.string.ProbateShareError, showMessage);
+            }
+        }
+
+        // Make sure witnesses provided for non resident
+        if(getRight().getNaturalPersons().size() > 0){
+            for(Person person : getRight().getNaturalPersons()){
+                if(person.getResident() == 0){
+                    Attribute w1 = getRight().getAttribute(Right.ATTRIBUTE_WITNESS1);
+                    Attribute w2 = getRight().getAttribute(Right.ATTRIBUTE_WITNESS2);
+                    Attribute w3 = getRight().getAttribute(Right.ATTRIBUTE_WITNESS3);
+                    int witnessCount = 0;
+                    if(w1 != null && !StringUtility.isEmpty(w1.getValue())){
+                        witnessCount +=1;
+                    }
+                    if(w2 != null && !StringUtility.isEmpty(w2.getValue())){
+                        witnessCount +=1;
+                    }
+                    if(w3 != null && !StringUtility.isEmpty(w3.getValue())){
+                        witnessCount +=1;
+                    }
+                    if(witnessCount < 2){
+                        return handleError(context, R.string.WitnessesRequired, showMessage);
+                    }
+                }
             }
         }
 

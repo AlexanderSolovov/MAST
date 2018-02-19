@@ -2,6 +2,7 @@ package com.rmsi.mast.viewer.report;
 
 import com.rmsi.mast.studio.domain.NaturalPerson;
 import com.rmsi.mast.studio.domain.NonNaturalPerson;
+import com.rmsi.mast.studio.domain.Person;
 import com.rmsi.mast.studio.domain.PersonType;
 import com.rmsi.mast.studio.domain.SocialTenureRelationship;
 import com.rmsi.mast.studio.domain.Status;
@@ -92,6 +93,50 @@ public class ReportsServiceImpl implements ReportsSerivce {
             return null;
         }
     }
+    
+    /**
+     * Returns denial letter for claim
+     *
+     * @param usin Claim USIN number
+     * @param personId Person id for who the letter is printed
+     * @return
+     */
+    @Override
+    public JasperPrint getWarningLetter(long usin, long personId) {
+        try {
+            NaturalPerson person = (NaturalPerson) landRecordsService.findPersonGidById(personId);
+            SpatialUnitTable claim = landRecordsService.getSpatialUnit(usin);
+
+            if (claim == null || person == null) {
+                return null;
+            }
+
+            ProjectDetails project = landRecordsService.getProjectDetails(claim.getProject());
+            String village = project.getVillage();
+            String hamlet = claim.getHamlet_Id().getHamletName();
+            String claimantName = getPersonName(person);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+            HashMap params = new HashMap();
+            params.put("CLAIMANT_NAME", claimantName);
+            params.put("VILLAGE", village);
+            params.put("HAMLET", hamlet);
+            params.put("CLAIM_NUMBER", StringUtils.empty(claim.getClaimNumber()));
+            params.put("CLAIM_DATE", dateFormat.format(claim.getSurveyDate()));
+
+            Object[] beans = new Object[1];
+            beans[0] = new Object();
+            JRDataSource jds = new JRBeanArrayDataSource(beans);
+
+            return JasperFillManager.fillReport(
+                    ReportsServiceImpl.class.getResourceAsStream("/reports/WarningLetter.jasper"),
+                    params, jds);
+        } catch (Exception ex) {
+            logger.error(ex);
+            return null;
+        }
+    }
 
     @Override
     public JasperPrint getAdjudicationForms(String projectName, Long usin, int startRecord, int endRecord, String appUrl) {
@@ -123,7 +168,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
             params.put("CHAIR_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageChairmanSignature()) ? "0" : project.getVillageChairmanSignature()));
             params.put("EXECUTIVE_PERSON", project.getVillageExecutive());
             params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
-            
+
             ClaimSummary[] beans = claims.toArray(new ClaimSummary[claims.size()]);
             JRDataSource jds = new JRBeanArrayDataSource(beans);
 
@@ -157,7 +202,9 @@ public class ReportsServiceImpl implements ReportsSerivce {
             params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
             params.put("DLO_OFFICER", project.getDistrictOfficer());
             params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
-
+            params.put("COAT_OF_ARM", ReportsServiceImpl.class.getResourceAsStream("/reports/images/coatofarm.png"));
+            params.put("SHOW_COAT_OF_ARM", project.isShowCoatofarm());
+            
             URL resource = ReportsServiceImpl.class.getResource("/reports/CrroNonPersonSignature.jasper");
             params.put("SUBREPORT_PATH", Paths.get(resource.toURI()).toAbsolutePath().toString());
 
@@ -207,7 +254,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
             for (int i = 0; i < size; i++) {
                 RegistryBook rb = registryBook.get(i + addedRows);
                 ownersCount += 1;
-                
+
                 if (i == size - 1 || rb.getUsin() != registryBook.get(i + addedRows + 1).getUsin()) {
                     if (totalRows > ownersCount) {
                         for (int j = 0; j < totalRows - ownersCount; j++) {
@@ -220,7 +267,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
                         }
                     }
                     ownersCount = 0;
-                } 
+                }
             }
 
             HashMap params = new HashMap();
@@ -243,7 +290,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
     }
 
     @Override
-    public JasperPrint getClaimsProfile(String projectName){
+    public JasperPrint getClaimsProfile(String projectName) {
         try {
             ClaimProfile profile = landRecordsService.getClaimsProfile(projectName);
 
@@ -251,10 +298,10 @@ public class ReportsServiceImpl implements ReportsSerivce {
                 return null;
             }
 
-            if(StringUtils.isEmpty(projectName)){
+            if (StringUtils.isEmpty(projectName)) {
                 projectName = "ALL";
             }
-            
+
             HashMap params = new HashMap();
             params.put("VILLAGE", projectName);
             ClaimProfile[] beans = new ClaimProfile[]{profile};
@@ -268,12 +315,12 @@ public class ReportsServiceImpl implements ReportsSerivce {
             return null;
         }
     }
-    
+
     private JasperPrint getRegistryBook(String projectName, String reportPath, String appUrl) {
         try {
             ProjectDetails project = landRecordsService.getProjectDetails(projectName);
             List<RegistryBook> registryBook = landRecordsService.getRegistryBook(projectName, 0);
-
+            
             if (project == null || registryBook == null || registryBook.size() < 1) {
                 return null;
             }

@@ -162,6 +162,9 @@ public class SpatialUnit implements Serializable {
 
     @Column(name = "witness_4")
     private String witness4;
+    
+    @Column(name = "witness_5")
+    private String witness5;
 
     @ManyToOne
     @JoinColumn(name = "quality_of_soil")
@@ -533,6 +536,14 @@ public class SpatialUnit implements Serializable {
 
     public void setWitness4(String witness4) {
         this.witness4 = witness4;
+    }
+
+    public String getWitness5() {
+        return witness5;
+    }
+
+    public void setWitness5(String witness5) {
+        this.witness5 = witness5;
     }
 
     public SoilQualityValues getSoilQuality() {

@@ -2,9 +2,11 @@ package com.rmsi.android.mast.activity;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -41,7 +43,7 @@ public class ConfigureMapDisplay extends ActionBarActivity
 		String[] mapDisplayitems = getResources().getStringArray(R.array.configureMapToolsitems);
 		cf = CommonFunctions.getInstance();
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		toolbar.setTitle("Configure Map Settings");
+		toolbar.setTitle(getResources().getStringArray(R.array.UserPref_arrays)[2]);
 		if(toolbar!=null)
 			setSupportActionBar(toolbar);
 
@@ -259,5 +261,18 @@ public class ConfigureMapDisplay extends ActionBarActivity
 		{
 			e.printStackTrace();cf.appLog("", e);
 		}
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		onBackPressed();
+		return true;
+	}
+
+	@Override
+	public void onBackPressed() {
+		Intent i = new Intent(context, UserPreferences.class);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		startActivity(i);
 	}
 }

@@ -491,6 +491,10 @@ public class UserDataServiceImpl implements UserDataService {
                 right.setTenureDuration(Float.parseFloat(value));
             } else if (id == 300) {
                 right.setAcquisitionType(acquisitionTypeDao.getTypeByAttributeOptionId(Integer.parseInt(value)));
+            } else if (id == 360) {
+                right.setTerm(Integer.parseInt(value));
+            } else if (id == 370) {
+                right.setRentalFee(Double.parseDouble(value));
             }
         }
     }
@@ -629,7 +633,12 @@ public class UserDataServiceImpl implements UserDataService {
             for (Attribute attribute : prop.getRight().getAttributes()) {
                 if (attribute.getId() == 9) {
                     parcel.setProposedUse(landUseTypeDao.getLandUseTypeById(Integer.parseInt(attribute.getValue())));
-                    break;
+                } else if (attribute.getId() == 50) {
+                    parcel.setWitness3(attribute.getValue());
+                } else if (attribute.getId() == 51) {
+                    parcel.setWitness4(attribute.getValue());
+                } else if (attribute.getId() == 350) {
+                    parcel.setWitness5(attribute.getValue());
                 }
             }
         }
@@ -918,6 +927,17 @@ public class UserDataServiceImpl implements UserDataService {
                         attributeOptionsDao.getAttributeOptionsId(300, socialTenure.getAcquisitionType().getCode()),
                         attribsList);
             }
+            String term = null;
+            String rentalFee = null;
+            if(socialTenure.getTerm() != null){
+                term = socialTenure.getTerm().toString();
+            }
+            if(socialTenure.getRentalFee()!= null){
+                rentalFee = socialTenure.getRentalFee().toString();
+            }
+            addAttribute(360, project, parentUid, term, attribsList);
+            addAttribute(370, project, parentUid, rentalFee, attribsList);
+            
             attributeValuesDao.updateAttributeValues(attribsList);
         } catch (Exception e) {
             logger.error("Exception", e);
@@ -986,6 +1006,9 @@ public class UserDataServiceImpl implements UserDataService {
                 if (rights != null) {
                     for (SocialTenureRelationship right : rights) {
                         addAttribute(9, project, (long) right.getGid(), value, attribsList);
+                        addAttribute(50, project, (long) right.getGid(), spatialunit.getWitness_3(), attribsList);
+                        addAttribute(51, project, (long) right.getGid(), spatialunit.getWitness_4(), attribsList);
+                        addAttribute(350, project, (long) right.getGid(), spatialunit.getWitness_5(), attribsList);
                     }
                 }
             }

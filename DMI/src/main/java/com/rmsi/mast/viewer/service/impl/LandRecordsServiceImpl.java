@@ -1058,13 +1058,7 @@ public class LandRecordsServiceImpl implements LandRecordsService {
     @Override
     public String findNextUkaNumber(String ukaPrefix) {
         try {
-            String uka = landRecordsDao.findBiggestUkaNumber(ukaPrefix);
-            if (StringUtils.isEmpty(uka)) {
-                return ukaPrefix + "1";
-            } else {
-                String number = uka.substring(ukaPrefix.length());
-                return ukaPrefix + Integer.toString(Integer.parseInt(number) + 1);
-            }
+            return ukaPrefix + Integer.toString(landRecordsDao.findBiggestUkaNumber(ukaPrefix) + 1);
         } catch (Exception e) {
             logger.error(e);
             return ukaPrefix + "1";

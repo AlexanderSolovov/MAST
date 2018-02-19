@@ -1038,6 +1038,11 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
     private void saveNewFeature() {
         String geomtype = "";
         List<LatLng> pointslist = new ArrayList<LatLng>();
+        if(drawnFeature == null){
+            Toast.makeText(context, R.string.Provide3PointsOrMore, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         try {
             if (drawnFeature instanceof Polyline) {
                 Polyline tmp = (Polyline) drawnFeature;
@@ -1051,6 +1056,10 @@ public class CaptureDataMapActivity extends ActionBarActivity implements OnMapRe
             } else if (drawnFeature instanceof Polygon) {
                 Polygon tmp = (Polygon) drawnFeature;
                 pointslist = tmp.getPoints();
+                if(pointslist == null || pointslist.size() < 4){
+                    Toast.makeText(context, R.string.Provide3PointsOrMore, Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 geomtype = Feature.GEOM_POLYGON;
             }
 

@@ -138,7 +138,7 @@ public class DataSummaryActivity extends ActionBarActivity {
             if(property.getDispute() != null) {
                 DisputeType disputeType = db.getDisputeType(property.getDispute().getDisputeTypeId());
                 if(disputeType != null)
-                    txtDisputeType.setText(disputeType.getName());
+                    txtDisputeType.setText(disputeType.toString());
             }
         } else {
             rowDisputeType.setVisibility(View.GONE);
@@ -169,7 +169,7 @@ public class DataSummaryActivity extends ActionBarActivity {
         ClaimType claimType = db.getPropClaimType(property.getId());
 
         if (claimType != null)
-            txtClaimType.setText(claimType.getName());
+            txtClaimType.setText(claimType.toString());
 
         txtClaimDate.setText(StringUtility.empty(property.getSurveyDate()));
 
@@ -228,7 +228,7 @@ public class DataSummaryActivity extends ActionBarActivity {
                 if (property.getRight().getShareTypeId() > 0) {
                     ShareType shareType = db.getShareType(property.getRight().getShareTypeId());
                     if (shareType != null)
-                        tenureRaltion.setText(shareType.getName());
+                        tenureRaltion.setText(shareType.toString());
                 }
                 personCount.setText("0");
                 personCount.setTextColor(getResources().getColor(R.color.red));

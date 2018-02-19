@@ -40,6 +40,10 @@ public class Right implements Serializable {
     public static String COL_JURIDICAL_AREA = "JURIDICAL_AREA";
     public static String COL_RELATIONSHIP_ID = "RELATIONSHIP_ID";
 
+    public static int ATTRIBUTE_WITNESS1 = 50;
+    public static int ATTRIBUTE_WITNESS2 = 51;
+    public static int ATTRIBUTE_WITNESS3 = 350;
+
     public static int RIGHT_CUSTOMARY = 2;
 
     public Long getId() {
@@ -136,6 +140,20 @@ public class Right implements Serializable {
 
     public void setNonNaturalPerson(Person nonNaturalPerson) {
         this.nonNaturalPerson = nonNaturalPerson;
+    }
+
+    /**
+     * Looks for the attribute by id and returns it if found, otherwise null will be returned.
+     */
+    public Attribute getAttribute(int attributeId) {
+        if (getAttributes() != null && getAttributes().size() > 0) {
+            for (Attribute attribute : getAttributes()) {
+                if (attribute.getId() == attributeId) {
+                    return attribute;
+                }
+            }
+        }
+        return null;
     }
 
     /** Returns owners count (based on person's subtype). */

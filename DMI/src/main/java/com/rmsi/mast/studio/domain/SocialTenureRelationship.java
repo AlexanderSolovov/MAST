@@ -78,7 +78,13 @@ public class SocialTenureRelationship implements Serializable {
 
     private String sharePercentage;
     private boolean resident;
+    
+    @Column
+    private Integer term;
 
+    @Column(name = "rental_fee")
+    private Double rentalFee;
+    
     public SocialTenureRelationship() {
         super();
     }
@@ -227,6 +233,22 @@ public class SocialTenureRelationship implements Serializable {
 
     public void setResident(boolean resident) {
         this.resident = resident;
+    }
+
+    public Integer getTerm() {
+        return term;
+    }
+
+    public void setTerm(Integer term) {
+        this.term = term;
+    }
+
+    public Double getRentalFee() {
+        return rentalFee;
+    }
+
+    public void setRentalFee(Double rentalFee) {
+        this.rentalFee = rentalFee;
     }
 
 }

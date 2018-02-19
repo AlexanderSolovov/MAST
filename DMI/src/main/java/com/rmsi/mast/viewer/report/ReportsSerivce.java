@@ -21,4 +21,6 @@ public interface ReportsSerivce {
     JasperPrint getTransactionSheet(String projectName, Long usin, String appUrl);
     
     JasperPrint getClaimsProfile(String projectName);
+    
+    JasperPrint getWarningLetter(long usin, long personId);
 }

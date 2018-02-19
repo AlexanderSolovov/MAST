@@ -27,7 +27,7 @@ public interface LandRecordsDao extends GenericDAO<SpatialUnitTable, Long> {
 
     List<SpatialUnitTable> findSpatialUnitById(Long id);
 
-    String findBiggestUkaNumber(String ukaPrefix);
+    Integer findBiggestUkaNumber(String ukaPrefix);
 
     SpatialUnitGeom getParcelGeometry(long usin);
 

@@ -80,6 +80,188 @@
 	</field>
 	<field name="age" class="java.lang.Integer"/>
 	<field name="gender" class="java.lang.String"/>
+	<group name="hamlet" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{hamletName}]]></groupExpression>
+		<groupHeader>
+			<band height="74">
+				<staticText>
+					<reportElement mode="Opaque" x="44" y="54" width="160" height="20" backcolor="#DCDCDC" uuid="ecf5f419-11ef-40a2-8e96-8d5512817c37"/>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[JINA LA KWANZA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="204" y="54" width="160" height="20" backcolor="#DCDCDC" uuid="2219c59c-cc3c-4353-bb99-5bbb50a24d10"/>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[JINA LA KATI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="364" y="54" width="160" height="20" backcolor="#DCDCDC" uuid="5ed67e4a-acb0-422b-823a-0b5c13654426"/>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[JINA LA MWISHO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="612" y="34" width="107" height="40" backcolor="#DCDCDC" uuid="bbf70c8e-ef59-498d-9a1b-7d3eb1019d5b"/>
+					<box topPadding="1" leftPadding="1">
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NAMBA YA KITAMBULISHO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="819" y="34" width="92" height="40" backcolor="#DCDCDC" uuid="bbd6e991-100b-42a8-8068-71e80fac44e7"/>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[KITONGOJI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="719" y="34" width="100" height="40" backcolor="#DCDCDC" uuid="70d318fe-b880-4ea4-ae82-6086884fa2ab"/>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NAMBA YA HAKIMILIKI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="44" y="34" width="480" height="20" backcolor="#DCDCDC" uuid="2bdd4d7d-72d3-472b-86a7-9faf68aa75a9"/>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[JINA LA MMILIKI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="1004" y="34" width="128" height="40" backcolor="#DCDCDC" uuid="ca6df200-b5ec-4951-bad1-94da5a837add"/>
+					<box leftPadding="1" rightPadding="1">
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[SAHIHI YA MPOKEA HATI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="911" y="34" width="93" height="40" backcolor="#DCDCDC" uuid="5b5d7e4d-5aaf-4337-bfdd-a032843e299c"/>
+					<box leftPadding="1" rightPadding="1">
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[TAREHE YA KUPOKEA HATI]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="524" y="34" width="47" height="40" backcolor="#DCDCDC" uuid="18942a60-78f8-48a2-a7e4-b937825732e3"/>
+					<box topPadding="1" leftPadding="1">
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jinsia]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="571" y="34" width="41" height="40" backcolor="#DCDCDC" uuid="a5130638-cda9-4604-91d9-0789a64750c9"/>
+					<box topPadding="1" leftPadding="1">
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Umri]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="34" width="44" height="40" backcolor="#DCDCDC" uuid="70bc1b1c-e2fe-41a6-915a-b9159f60d71f"/>
+					<box topPadding="1" leftPadding="1">
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[#]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="0" width="1132" height="34" uuid="e8b6b4ce-dc1c-49dc-9301-a291b59db01f"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="20"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{hamletName}.toUpperCase()]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -105,178 +287,6 @@ Hati Miliki za Kimila la Kijiji]]></text>
 			</break>
 		</band>
 	</title>
-	<columnHeader>
-		<band height="43" splitType="Stretch">
-			<staticText>
-				<reportElement mode="Opaque" x="44" y="23" width="160" height="20" backcolor="#DCDCDC" uuid="ecf5f419-11ef-40a2-8e96-8d5512817c37"/>
-				<box>
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[JINA LA KWANZA]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="204" y="23" width="160" height="20" backcolor="#DCDCDC" uuid="2219c59c-cc3c-4353-bb99-5bbb50a24d10"/>
-				<box>
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[JINA LA KATI]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="364" y="23" width="160" height="20" backcolor="#DCDCDC" uuid="5ed67e4a-acb0-422b-823a-0b5c13654426"/>
-				<box>
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[JINA LA MWISHO]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="612" y="3" width="107" height="40" backcolor="#DCDCDC" uuid="bbf70c8e-ef59-498d-9a1b-7d3eb1019d5b"/>
-				<box topPadding="1" leftPadding="1">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[NAMBA YA KITAMBULISHO]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="819" y="3" width="92" height="40" backcolor="#DCDCDC" uuid="bbd6e991-100b-42a8-8068-71e80fac44e7"/>
-				<box>
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[KITONGOJI]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="719" y="3" width="100" height="40" backcolor="#DCDCDC" uuid="70d318fe-b880-4ea4-ae82-6086884fa2ab"/>
-				<box>
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[NAMBA YA HAKIMILIKI]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="44" y="3" width="480" height="20" backcolor="#DCDCDC" uuid="2bdd4d7d-72d3-472b-86a7-9faf68aa75a9"/>
-				<box>
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[JINA LA MMILIKI]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="1004" y="3" width="128" height="40" backcolor="#DCDCDC" uuid="ca6df200-b5ec-4951-bad1-94da5a837add"/>
-				<box leftPadding="1" rightPadding="1">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[SAHIHI YA MPOKEA HATI]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="911" y="3" width="93" height="40" backcolor="#DCDCDC" uuid="5b5d7e4d-5aaf-4337-bfdd-a032843e299c"/>
-				<box leftPadding="1" rightPadding="1">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[TAREHE YA KUPOKEA HATI]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="524" y="3" width="47" height="40" backcolor="#DCDCDC" uuid="18942a60-78f8-48a2-a7e4-b937825732e3"/>
-				<box topPadding="1" leftPadding="1">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Jinsia]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="571" y="3" width="41" height="40" backcolor="#DCDCDC" uuid="a5130638-cda9-4604-91d9-0789a64750c9"/>
-				<box topPadding="1" leftPadding="1">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Umri]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="0" y="3" width="44" height="40" backcolor="#DCDCDC" uuid="70bc1b1c-e2fe-41a6-915a-b9159f60d71f"/>
-				<box topPadding="1" leftPadding="1">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[#]]></text>
-			</staticText>
-		</band>
-	</columnHeader>
 	<detail>
 		<band height="30" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">

@@ -1,5 +1,3 @@
-
-
 package com.rmsi.mast.studio.service;
 
 import java.util.List;
@@ -20,90 +18,92 @@ import com.rmsi.mast.studio.domain.UserRole;
 import com.rmsi.mast.studio.domain.fetch.ProjectDetails;
 import com.rmsi.mast.studio.domain.fetch.ProjectTemp;
 
-
-
 public interface ProjectService {
 
+    @Transactional
+    void addSaveProject(Project project, Set<Layergroup> layergroups, List<Bookmark> bookmarks, String projectName);
 
-	@Transactional
-	void addSaveProject(Project project,Set<Layergroup> layergroups,List<Bookmark> bookmarks,String projectName);
+    @Transactional
+    void addProject(Project project);
 
-	@Transactional
-	void addProject(Project project);
+    @Transactional
+    void deleteProject();
 
-	@Transactional
-	void deleteProject();
+    @Transactional
+    void deleteProjectById(String name);
 
-	@Transactional
-	void deleteProjectById(String name);
+    @Transactional
+    void updateProject(Project project);
 
-	@Transactional
-	void updateProject(Project project);
+    Project findProjectById(Long id);
 
-	Project findProjectById(Long id);
-	List<Project> findAllProjects();
-        List<ProjectDetails> getAllProjectsDetails();
-	Project findProjectByName(String name);	
-	List<Bookmark> getBookmarksByProject(String project);
-	List<Savedquery> getSavedqueryByProject(String project);
-	List<String> getAllProjectNames();
-	List<String> getUsersByProject(String name);
+    List<Project> findAllProjects();
 
-	List<Project> getAllUserProjects();
-	List<Project> getProjectsByOwner(String email);
+    List<ProjectDetails> getAllProjectsDetails();
 
-	List<ProjectRegion> findAllCountry();
+    Project findProjectByName(String name);
 
-	List<ProjectRegion> findRegionByCountry(String countryname);
+    List<Bookmark> getBookmarksByProject(String project);
 
-	List<ProjectRegion> findDistrictByRegion(String countryname);
+    List<Savedquery> getSavedqueryByProject(String project);
 
-	List<ProjectRegion> findVillageByDistrict(String countryname);
+    List<String> getAllProjectNames();
 
-	List<ProjectRegion> findHamletByVillage(String countryname);
+    List<String> getUsersByProject(String name);
 
-	boolean checkprojectname(String projectName);
+    List<Project> getAllUserProjects();
 
-	boolean updateProjectArea(String projectName);
+    List<Project> getProjectsByOwner(String email);
 
+    List<ProjectRegion> findAllCountry();
 
+    List<ProjectRegion> findRegionByCountry(String countryname);
 
-	List<String> getUserEmailByProject(String id);
+    List<ProjectRegion> findDistrictByRegion(String countryname);
 
+    List<ProjectRegion> findVillageByDistrict(String countryname);
 
-	List<UserRole> findAlluserrole(List<String> lstRole);
+    List<ProjectRegion> findHamletByVillage(String countryname);
 
-	boolean checkduplicatename(String projectName);
+    boolean checkprojectname(String projectName);
 
-	ProjectTemp findProjectTempByName(String defaultproject);
-	@Transactional
-	void addAdjudicatorDetails(ProjectAdjudicator adjObj);
+    boolean updateProjectArea(String projectName);
 
-	List<ProjectAdjudicator> findAdjudicatorByProject(String projname);
+    List<String> getUserEmailByProject(String id);
 
-	@Transactional
-	void deleteAdjByProject(String projectName);
+    List<UserRole> findAlluserrole(List<String> lstRole);
 
-	@Transactional
-	void addHamlets(ProjectHamlet hamletObj);
+    boolean checkduplicatename(String projectName);
 
-	List<ProjectHamlet> findHamletByProject(String projname);
+    ProjectTemp findProjectTempByName(String defaultproject);
 
-	@Transactional
-	void deleteHamletByProject(String projectName);
+    @Transactional
+    void addAdjudicatorDetails(ProjectAdjudicator adjObj);
 
-	@Transactional
-	void saveHamlet(ProjectHamlet hamlet_Id);
+    List<ProjectAdjudicator> findAdjudicatorByProject(String projname);
 
-	ProjectHamlet findHamletById(long hamletId);
+    @Transactional
+    void deleteAdjByProject(String projectName);
 
-	long getHamletIdbyCode(String hamletcode,String projectName);
+    @Transactional
+    void addHamlets(ProjectHamlet hamletObj);
 
-	@Transactional
-	boolean deletHamletbyId(long hamlet_id);
+    List<ProjectHamlet> findHamletByProject(String projname);
 
-	List<String> getHamletCodesbyProject(String projectName);
+    @Transactional
+    void deleteHamletByProject(String projectName);
 
+    @Transactional
+    void saveHamlet(ProjectHamlet hamlet_Id);
 
+    ProjectHamlet findHamletById(long hamletId);
 
+    long getHamletIdbyCode(String hamletcode, String projectName);
+
+    @Transactional
+    boolean deletHamletbyId(long hamlet_id);
+
+    List<String> getHamletCodesbyProject(String projectName);
+
+    List<ProjectHamlet> getHamletsByProject(String projectName);
 }

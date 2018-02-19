@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_ver">v 2.3.5</string>
-    <string name="app_ver2">2.3.5</string>
+    <string name="app_ver">v 2.3.6</string>
+    <string name="app_ver2">2.3.6</string>
     <string name="app_name">MAST</string>
     <string name="action_settings">Settings</string>
     <string name="appname">Mobile Application to Secure Tenure</string>
@@ -515,6 +515,7 @@
     <string name="ProbateShareError">Tenancy in probate must have deceased person and up to 2 administrators. </string>
     <string name="FillShareSize">Fill in share size field</string>
     <string name="ShareSize">Share size</string>
+    <string name="WitnessesRequired">At least 2 witnesses required for non-resident.</string>
     <string name="Next">Next</string>
     <string name="Close">Close</string>
     <string name="Finish">Finish</string>
@@ -539,4 +540,5 @@
     <string name="DataDownloadFailed">Failed to download data</string>
     <string name="ukaNumber">UKA/Farm/Plot Number</string>
     <string name="EnterUkaNumber">Enter UKA/Farm/Plot Number</string>
+    <string name="Provide3PointsOrMore">Provide at least 3 points for the polygon</string>
 </resources>

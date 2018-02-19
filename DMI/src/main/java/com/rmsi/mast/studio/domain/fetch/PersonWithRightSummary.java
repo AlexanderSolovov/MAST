@@ -71,6 +71,12 @@ public class PersonWithRightSummary implements Serializable {
     @Column(name = "village_resident")
     private Boolean villageResident;
     
+    @Column(name = "rental_fee")
+    private Double rentalFee;
+    
+    @Column
+    private Integer term;
+    
     public PersonWithRightSummary(){
         
     }
@@ -217,6 +223,22 @@ public class PersonWithRightSummary implements Serializable {
 
     public void setVillageResident(Boolean villageResident) {
         this.villageResident = villageResident;
+    }
+
+    public Double getRentalFee() {
+        return rentalFee;
+    }
+
+    public void setRentalFee(Double rentalFee) {
+        this.rentalFee = rentalFee;
+    }
+
+    public Integer getTerm() {
+        return term;
+    }
+
+    public void setTerm(Integer term) {
+        this.term = term;
     }
     
     public String getFullName() {

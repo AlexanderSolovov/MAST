@@ -144,7 +144,7 @@
 					<text><![CDATA[Fomu ya Ardhi ya Vijiji Na. 21 (b)]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="30" width="142" height="20" uuid="59c1e03a-8026-41fc-ae75-e93bf1d55e34"/>
+					<reportElement x="20" y="30" width="158" height="20" uuid="59c1e03a-8026-41fc-ae75-e93bf1d55e34"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -158,7 +158,7 @@
 					<text><![CDATA[Wilaya:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="50" width="142" height="20" uuid="8eb8b09a-f9ae-42bc-8b27-f601f8559fff"/>
+					<reportElement x="20" y="50" width="158" height="20" uuid="8eb8b09a-f9ae-42bc-8b27-f601f8559fff"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -172,7 +172,7 @@
 					<text><![CDATA[Kijiji:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="70" width="142" height="20" uuid="21650d61-3e16-4a90-bd00-e521088a5160"/>
+					<reportElement x="20" y="70" width="158" height="20" uuid="21650d61-3e16-4a90-bd00-e521088a5160"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -186,7 +186,7 @@
 					<text><![CDATA[Kitongoji:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="90" width="142" height="20" uuid="3cd02c39-95a0-4390-b20f-3c8d66f1120f"/>
+					<reportElement x="20" y="90" width="158" height="20" uuid="3cd02c39-95a0-4390-b20f-3c8d66f1120f"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -200,7 +200,7 @@
 					<text><![CDATA[Eneo:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="115" width="142" height="20" uuid="da61b69e-acdc-44a6-a69f-a181e32cd608"/>
+					<reportElement x="20" y="115" width="158" height="20" uuid="da61b69e-acdc-44a6-a69f-a181e32cd608"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -214,7 +214,7 @@
 					<text><![CDATA[Mipaka:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="135" width="142" height="20" uuid="ccfbc9f6-05c7-4110-8fd1-891e96b3a2e1"/>
+					<reportElement x="20" y="135" width="158" height="20" uuid="ccfbc9f6-05c7-4110-8fd1-891e96b3a2e1"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -228,7 +228,7 @@
 					<text><![CDATA[Kaskazini:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="155" width="142" height="20" uuid="34470a0d-041a-4cab-a70b-e36c000d4126"/>
+					<reportElement x="20" y="155" width="158" height="20" uuid="34470a0d-041a-4cab-a70b-e36c000d4126"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -242,7 +242,7 @@
 					<text><![CDATA[Kusini:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="175" width="142" height="20" uuid="f2ce19ef-1f77-48ce-8544-4b0041afb4f1"/>
+					<reportElement x="20" y="175" width="158" height="20" uuid="f2ce19ef-1f77-48ce-8544-4b0041afb4f1"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -256,7 +256,7 @@
 					<text><![CDATA[Mashariki:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="195" width="142" height="20" uuid="68f31267-90a9-4171-b5f0-e3c768968342"/>
+					<reportElement x="20" y="195" width="158" height="20" uuid="68f31267-90a9-4171-b5f0-e3c768968342"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -270,7 +270,7 @@
 					<text><![CDATA[Magharibi:]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="218" width="142" height="30" uuid="974786d7-770e-43e5-af22-270386e347e9"/>
+					<reportElement x="20" y="218" width="158" height="30" uuid="974786d7-770e-43e5-af22-270386e347e9"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -285,7 +285,7 @@
 (lakini inaweza kubadilika)]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="26" y="248" width="142" height="20" uuid="38247e1c-529b-4afb-844a-1d2947878b24"/>
+					<reportElement x="20" y="248" width="158" height="20" uuid="38247e1c-529b-4afb-844a-1d2947878b24"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -313,63 +313,63 @@
 					<text><![CDATA[SEHEMU YA PILI - UMILIKI]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="30" width="367" height="20" uuid="2d64af73-e117-45fc-8729-a6e75b7843d6"/>
+					<reportElement x="178" y="30" width="357" height="20" uuid="2d64af73-e117-45fc-8729-a6e75b7843d6"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{DISTRICT}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="50" width="367" height="20" uuid="3e99c19d-cd48-4963-b4d3-fefaa5a3af0c"/>
+					<reportElement x="178" y="50" width="357" height="20" uuid="3e99c19d-cd48-4963-b4d3-fefaa5a3af0c"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{VILLAGE}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="70" width="367" height="20" uuid="58e8b559-1d03-4cb3-9291-6cdef964cc6d"/>
+					<reportElement x="178" y="70" width="357" height="20" uuid="58e8b559-1d03-4cb3-9291-6cdef964cc6d"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{hamletName}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="135" width="367" height="20" uuid="122dbef6-4e50-4092-beb7-5ce5169e00d5"/>
+					<reportElement x="178" y="135" width="357" height="20" uuid="122dbef6-4e50-4092-beb7-5ce5169e00d5"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{neighborNorth}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="90" width="367" height="20" uuid="7828282a-29da-4e78-bf5b-caedfeef4883"/>
+					<reportElement x="178" y="90" width="357" height="20" uuid="7828282a-29da-4e78-bf5b-caedfeef4883"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{acres}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="195" width="367" height="20" uuid="5367384e-7ce2-4236-bb34-889cd73257ba"/>
+					<reportElement x="178" y="195" width="357" height="20" uuid="5367384e-7ce2-4236-bb34-889cd73257ba"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{neighborWest}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="155" width="367" height="20" uuid="cd76c1e1-e01a-4536-9d49-7fea13b52cab"/>
+					<reportElement x="178" y="155" width="357" height="20" uuid="cd76c1e1-e01a-4536-9d49-7fea13b52cab"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{neighborSouth}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="168" y="175" width="367" height="20" uuid="65bd7dc1-1864-4be3-bc80-cf24fc139f7a"/>
+					<reportElement x="178" y="175" width="357" height="20" uuid="65bd7dc1-1864-4be3-bc80-cf24fc139f7a"/>
 					<textElement verticalAlignment="Middle">
 						<font size="11"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{neighborEast}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="168" y="218" width="367" height="20" uuid="21ae0fb3-25cf-4a5f-b297-c976e0a0be08"/>
+					<reportElement x="178" y="218" width="357" height="20" uuid="21ae0fb3-25cf-4a5f-b297-c976e0a0be08"/>
 					<box>
 						<pen lineWidth="0.0"/>
 						<topPen lineWidth="0.0"/>
@@ -383,7 +383,7 @@
 					<text><![CDATA[.......................................................................................................]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="168" y="248" width="367" height="20" uuid="c9f110f1-09ac-4cee-8daf-e8e41678ff03">
+					<reportElement x="178" y="248" width="357" height="20" uuid="c9f110f1-09ac-4cee-8daf-e8e41678ff03">
 						<printWhenExpression><![CDATA[!$F{resident}]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -714,7 +714,7 @@
 					<text><![CDATA[Maelezo Mengineyo]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="168" y="248" width="86" height="20" uuid="ce015c31-387b-46a8-b036-244388ed9999">
+					<reportElement x="178" y="248" width="111" height="20" uuid="ce015c31-387b-46a8-b036-244388ed9999">
 						<printWhenExpression><![CDATA[$F{resident}]]></printWhenExpression>
 					</reportElement>
 					<box>

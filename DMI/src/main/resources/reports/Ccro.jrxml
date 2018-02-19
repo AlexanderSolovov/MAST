@@ -28,6 +28,10 @@
 	<parameter name="EXECUTIVE_PERSON_SIGNATURE" class="java.lang.String"/>
 	<parameter name="CHAIR_PERSON_SIGNATURE" class="java.lang.String"/>
 	<parameter name="DLO_OFFICER_SIGNATURE" class="java.lang.String"/>
+	<parameter name="COAT_OF_ARM" class="java.io.InputStream"/>
+	<parameter name="SHOW_COAT_OF_ARM" class="java.lang.Boolean" isForPrompting="false">
+		<defaultValueExpression><![CDATA[true]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -136,6 +140,8 @@
 	<field name="startDate" class="java.util.Date">
 		<fieldDescription><![CDATA[startDate]]></fieldDescription>
 	</field>
+	<field name="term" class="java.lang.Integer"/>
+	<field name="rentalFee" class="java.lang.Integer"/>
 	<detail>
 		<band height="760" splitType="Stretch">
 			<rectangle radius="10">
@@ -315,7 +321,7 @@ $F{acres}.toString() +
 "</b>. Hii ni kuthibitisha kwamba Halmashauri ya Kijiji cha <b>" + $P{VILLAGE_ADDRESS} + "</b> " +
 "imetoa kwa " + $F{ownerNames} + " hakimiliki ya kimila (itaitwa “hakimiliki”) juu ya " + 
 "ardhi iliyofafanuliwa katika Jedwali (humu ndani itaitwa “ardhi”) " + 
-($F{hasNonResident} ? "kwa kipindi cha miaka ............... " : "kwa <b>kipindi kisicho na Kikomo</b> ") +
+($F{hasNonResident} ? ($F{term} == null || $F{term} <= 0 ? "kwa kipindi cha miaka ............... " : "kwa kipindi cha miaka <b>" + $F{term}) + "</b> " : "kwa <b>kipindi kisicho na Kikomo</b> ") +
 "tangu tarehe <b>" +
 ($F{startDate} == null ? "..............." : Integer.toString($F{startDate}.getDate())) + 
 "</b> mwezi <b>" +
@@ -341,14 +347,6 @@ $F{acres}.toString() +
 					<font fontName="SansSerif" size="11" isItalic="false"/>
 				</textElement>
 				<text><![CDATA[ii)]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="40" y="292" width="484" height="30" uuid="44295739-90b0-4a63-9ec4-cd765a318186"/>
-				<box leftPadding="0" rightPadding="15"/>
-				<textElement verticalAlignment="Middle">
-					<font fontName="SansSerif" size="11" isItalic="false"/>
-				</textElement>
-				<text><![CDATA[Mkazi atalipa kodi ya mwaka ya Shs ........... kabla ya tarehe ........... ya mwezi ........... kila mwaka (kama inahusika).]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="40" y="322" width="484" height="18" uuid="46c9f3bb-f211-4d59-baf0-8ec6ee2e941b"/>
@@ -449,6 +447,32 @@ $F{acres}.toString() +
 				</textElement>
 				<text><![CDATA[(Na. 5 ya 1999)]]></text>
 			</staticText>
+			<image>
+				<reportElement positionType="Float" x="27" y="85" width="80" height="40" uuid="edb5309b-7e0b-4754-9360-b15b49171667">
+					<printWhenExpression><![CDATA[$P{DLO_OFFICER_SIGNATURE} != "0"]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{APP_URL} + "/studio/project/getsignature/" + $P{DLO_OFFICER_SIGNATURE}]]></imageExpression>
+			</image>
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement positionType="Float" x="224" y="32" width="79" height="92" uuid="5a500ad7-e976-4ee0-8e32-c6b8f4677c9f">
+					<printWhenExpression><![CDATA[$P{SHOW_COAT_OF_ARM}]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[$P{COAT_OF_ARM}]]></imageExpression>
+			</image>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="40" y="292" width="484" height="30" uuid="3cff57ea-8d54-4262-9998-a63d1c3fbd23"/>
+				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="15"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top" markup="html">
+					<font size="11" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Mkazi atalipa kodi ya mwaka ya Shs " + 
+($F{rentalFee} == null || $F{rentalFee} <= 0 ? "..........." : "<b>" + java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format($F{rentalFee}) + "</b>") + 
+" kabla ya tarehe " +
+($F{rentalFee} == null || $F{rentalFee} <= 0 ? "..........." : "<b>31</b>") +
+" ya mwezi " +
+($F{rentalFee} == null || $F{rentalFee} <= 0 ? "..........." : "<b>12</b>") +
+" kila mwaka (kama inahusika)."]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="579" splitType="Prevent">
 			<subreport>

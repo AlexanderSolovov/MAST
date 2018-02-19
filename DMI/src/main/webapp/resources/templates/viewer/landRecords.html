@@ -206,12 +206,12 @@
                         <a href="#" title="Print denial letter" class="denial_letter" onclick="javascript:printDenialLetter(${usin});"></a>
                         {{/if}}
 
-                        {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_VALIDATED}}
-                        <a href="#" title="Generate adjudication form" onclick="javascript:generateAdjudicationForm(${usin});" class="ga"></a>
-                        {{/if}}
-
                         {{if claimType.code === CLAIM_TYPE_NEW && (status.workflowStatusId === CLAIM_STATUS_APPROVED || status.workflowStatusId === CLAIM_STATUS_DENIED)}}
                         <a href="#" title="Upload document" onclick="javascript:editMultimedia(0,${usin},false)" class="upload"></a>
+                        {{/if}}
+                        
+                        {{if claimType.code === CLAIM_TYPE_NEW && (status.workflowStatusId === CLAIM_STATUS_VALIDATED || status.workflowStatusId === CLAIM_STATUS_APPROVED)}}
+                        <a href="#" title="Generate adjudication form" onclick="javascript:generateAdjudicationForm(${usin});" class="ga"></a>
                         {{/if}}
                                 
                         {{if claimType.code === CLAIM_TYPE_NEW && status.workflowStatusId === CLAIM_STATUS_APPROVED}}
@@ -348,6 +348,20 @@
                                             <td>
                                                 <label>Adjudicator 2</label>
                                                 <select name="witness_2" id="witness_2" class="gendisable"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label>Witness 1 (for non-resident)</label>
+                                                <input type="text" name="witness_3" id="witness_3" class="text ui-widget-content ui-corner-all justread">
+                                            </td>
+                                            <td>
+                                                <label>Witness 2 (for non-resident)</label>
+                                                <input type="text" name="witness_4" id="witness_4" class="text ui-widget-content ui-corner-all justread">
+                                            </td>
+                                            <td>
+                                                <label>Witness 3 (for non-resident)</label>
+                                                <input type="text" name="witness_5" id="witness_5" class="text ui-widget-content ui-corner-all justread">
                                             </td>
                                         </tr>
                                         <tr>
@@ -659,6 +673,7 @@
                                     <th>Delete</th>
                                     <th>Upload Image</th>
                                     <th>Delete Image</th>
+                                    <th>Warning Letter</th>
                                     {{else}}
                                     <th>View</th>
                                     {{/if}}
@@ -691,6 +706,11 @@
                                     <td align="center">
                                     <a href="javascript:naturalPersonDeleteImage('${$value.person_gid}','${$value.firstName}');">
                                     <img src="resources/images/studio/deleteImage.png" title="Delete Image" />
+                                    </a>
+                                    </td>
+                                    <td align="center">
+                                    <a href="javascript:printWarningLetter('${$value.person_gid}');">
+                                    <img src="resources/images/viewer/printer_Btn.png" title="Print" />
                                     </a>
                                     </td>
                                     {{else}}
@@ -1020,6 +1040,16 @@
                                             <td>
                                                 <label>Juridical Area (acres)</label>
                                                 <input type="text" name="txtJuridicalArea" id="txtJuridicalArea" class="text ui-widget-content ui-corner-all read-tenure">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label>Term (for non-resident)</label> 
+                                                <input type="text" name="term" id="term" class="text ui-widget-content ui-corner-all read-tenure">
+                                            </td>
+                                            <td>
+                                                <label>Rental fee  (for non-resident)</label>
+                                                <input type="text" name="rentalFee" id="rentalFee" class="text ui-widget-content ui-corner-all read-tenure">
                                             </td>
                                         </tr>
                                     </table>

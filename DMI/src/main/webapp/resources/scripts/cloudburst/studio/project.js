@@ -240,6 +240,11 @@ var createEditProject = function (_name) {
                     jQuery("#villagecode").val(data.projectAreas[0].village_code);
                     jQuery("#villagepostalcode").val(data.projectAreas[0].address);
                     jQuery("#vcmeetingdate").val(data.projectAreas[0].vcMeetingDate);
+                    if(data.projectAreas[0].showCoatofarm){
+                        jQuery("#chbxShowCoatofarm").prop('checked', true);
+                    } else {
+                        jQuery("#chbxShowCoatofarm").prop('checked', false);
+                    }
                 }
 
                 jQuery("#ProjectTemplateDisclaimer").tmpl(data, {}).appendTo("#projectDisclaimerBody");
@@ -384,7 +389,7 @@ var createEditProject = function (_name) {
     }
 
     $("#vcmeetingdate").live('click', function () {
-        $(this).datepicker('destroy').datepicker({dateFormat: 'yy-mm-dd'}).focus();
+        $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
     });
     jQuery("#project_accordion").show();
     jQuery("#project_accordion").accordion({fillSpace: true});
@@ -966,6 +971,18 @@ function addHamlet(hamlet) {
 
     if (checkeditHam) {
         var k = parseInt(hamlet.id);
+        // Check name and code are not duplicated
+        for (var i = 0; i < hamletDetails.length; i++) {
+            if(hamletDetails[i] === hamlet_name && i !== k){
+                jAlert("Name already exists");
+                return;
+            }
+            if(hamletDetails[i+2] === hamlet_code && i+2 !== k+2){
+                jAlert("Code already exists");
+                return;
+            }
+            i = i + 3;
+        }
         hamletDetails[k] = hamlet_name;
         hamletDetails[k + 1] = hamlet_alias;
         hamletDetails[k + 2] = hamlet_code;
@@ -1085,7 +1102,7 @@ function editHamlet(hamlet) {
         jQuery.ajax({
             type: 'GET',
             async: false,
-            url: "project/delethamlet/" + hamlet.code + "/" + editableProject,
+            url: "project/checkhamletedit/" + hamlet.code + "/" + editableProject,
             success: function (result)
             {
                 checkeditHam = result;

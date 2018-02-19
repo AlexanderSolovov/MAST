@@ -250,7 +250,6 @@ ALTER TABLE public.ccro_number_seq
   OWNER TO postgres;
 
 -- Function to assign CCRO and file numbers
-
 CREATE OR REPLACE FUNCTION public.f_for_trg_generate_ccro()
   RETURNS trigger AS
 $BODY$
@@ -267,7 +266,7 @@ BEGIN
 	RAISE EXCEPTION 'Village code must be assigned in the project settings';
       ELSE
         SELECT nextval('ccro_number_seq') INTO ccro_number;
-        UPDATE public.social_tenure_relationship SET cert_number = village_code || '/' || ccro_number, ccro_issue_date = now(), file_number = 'IRD/HW/' || ccro_number 
+        UPDATE public.social_tenure_relationship SET cert_number = village_code || ccro_number, ccro_issue_date = now(), file_number = 'IRD/HW/' || ccro_number 
 	WHERE (cert_number IS NULL OR cert_number = '') AND usin = NEW.usin AND isactive = 't';
       END IF;
       
@@ -1194,3 +1193,38 @@ order by am.listing;
 -- Adjudicators
 ALTER TABLE public.project_adjudicators ADD COLUMN signature_path character varying(255);
 COMMENT ON COLUMN public.project_adjudicators.signature_path IS 'Path to adjudicator''s scanned signature';
+
+-- gis_users role for external editing of spatial data
+DO
+$body$
+BEGIN
+   IF NOT EXISTS (
+      SELECT 1
+      FROM   pg_catalog.pg_roles
+      WHERE  rolname='gis_users') THEN
+        CREATE ROLE gis_users;
+   END IF;
+END
+$body$;
+
+GRANT USAGE ON SCHEMA public TO gis_users;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO gis_users;
+GRANT UPDATE ON public.spatial_unit TO gis_users;
+GRANT INSERT ON public.spatial_unit TO gis_users;
+GRANT DELETE ON public.spatial_unit TO gis_users;
+REVOKE SELECT ON public.users FROM gis_users;
+
+-- Greates gis user and assign gis_users role
+DO
+$body$
+BEGIN
+   IF NOT EXISTS (
+      SELECT 1
+      FROM   pg_catalog.pg_user
+      WHERE  usename='gis') THEN
+        CREATE ROLE gis WITH LOGIN PASSWORD 'Welcome1';
+   END IF;
+END
+$body$;
+
+GRANT gis_users TO gis;

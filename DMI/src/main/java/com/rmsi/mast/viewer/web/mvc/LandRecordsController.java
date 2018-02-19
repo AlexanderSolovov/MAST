@@ -227,6 +227,9 @@ public class LandRecordsController {
             spatialUnit.setNeighbor_west(neighbour_west);
             spatialUnit.setWitness_1(witness1);
             spatialUnit.setWitness_2(witness2);
+            spatialUnit.setWitness_3(ServletRequestUtils.getStringParameter(request, "witness_3", null));
+            spatialUnit.setWitness_4(ServletRequestUtils.getStringParameter(request, "witness_4", null));
+            spatialUnit.setWitness_5(ServletRequestUtils.getStringParameter(request, "witness_5", null));
 
             if (existingUse != 0) {
                 LandUseType existingObj = landRecordsService.findLandUseById(existingUse);
@@ -342,14 +345,17 @@ public class LandRecordsController {
                 logger.error(e);
             }
 
-            if (dateto == "") {
-                SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//dd/MM/yyyy
-                Date now = new Date();
-                dateto = sdfDate.format(now);
-            }
+            if (!datefrom.isEmpty() || !dateto.isEmpty()) {
 
-            if (datefrom == "") {
-                datefrom = "1990-01-01 00:00:00";
+                if ("".equals(dateto)) {
+                    SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//dd/MM/yyyy
+                    Date now = new Date();
+                    dateto = sdfDate.format(now);
+                }
+
+                if ("".equals(datefrom)) {
+                    datefrom = "1990-01-01 00:00:00";
+                }
             }
 
             return landRecordsService.search(UsinStr, UkaNumber, projname,
@@ -897,6 +903,8 @@ public class LandRecordsController {
         Integer acquisitionTypeCode;
         long relationshipTypeCode;
         float tenureDuration = 0;
+        Integer term;
+        Double rentalFee;
         long rightId;
         Double juridicalArea;
         String projectName;
@@ -927,6 +935,16 @@ public class LandRecordsController {
             tenureDuration = ServletRequestUtils.getFloatParameter(request, "tenureDuration", 0);
             length = ServletRequestUtils.getRequiredIntParameter(request, "tenure_length");
             projectName = ServletRequestUtils.getRequiredStringParameter(request, "projectname_key3");
+            term = ServletRequestUtils.getIntParameter(request, "term", 0);
+            rentalFee = ServletRequestUtils.getDoubleParameter(request, "rentalFee", 0);
+            
+            if(term == 0){
+                term = null;
+            }
+            
+            if(rentalFee == 0){
+                rentalFee = null;
+            }
 
             List<SocialTenureRelationship> ownershipRights = landRecordsService.findAllSocialTenureByUsin(usin);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -976,6 +994,8 @@ public class LandRecordsController {
 
                     ownershipRight.setJuridicalArea(juridicalArea);
                     ownershipRight.setTenureDuration(tenureDuration);
+                    ownershipRight.setTerm(term);
+                    ownershipRight.setRentalFee(rentalFee);
 
                     // Update/save tenure
                     try {
@@ -1386,6 +1406,12 @@ public class LandRecordsController {
     @ResponseBody
     public void getDenialLetter(@PathVariable Long usin, HttpServletRequest request, HttpServletResponse response) {
         writeReport(reportsService.getDenialLetter(usin), "DenialLetter", response);
+    }
+    
+    @RequestMapping(value = "/viewer/landrecords/warningletter/{usin}/{personid}", method = RequestMethod.GET)
+    @ResponseBody
+    public void getDenialLetter(@PathVariable Long usin, @PathVariable Long personid, HttpServletRequest request, HttpServletResponse response) {
+        writeReport(reportsService.getWarningLetter(usin, personid), "WarningLetter", response);
     }
 
     @RequestMapping(value = "/viewer/landrecords/adjudicationform/{usin}", method = RequestMethod.GET)
@@ -2646,7 +2672,7 @@ public class LandRecordsController {
 
                         // Check share size
                         if (right.getShare_type().getGid() == ShareType.SHARE_MULTIPLE_COMMON
-                                && person.getPersonSubType() != null 
+                                && person.getPersonSubType() != null
                                 && person.getPersonSubType().getPerson_type_gid() == PersonType.TYPE_OWNER
                                 && StringUtils.isEmpty(person.getShare())) {
                             errors.add("Enter share size for " + getPersonName(person));

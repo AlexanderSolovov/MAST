@@ -249,7 +249,7 @@ public class CaptureAttributesActivity extends ActionBarActivity {
             }
 
             for (int i = 0; i < hamletList.size(); i++) {
-                if (hamletList.get(i).getId() == property.getHamletId()) {
+                if (hamletList.get(i).getId().equals(property.getHamletId())) {
                     spinnerHamlet.setSelection(i);
                 }
             }

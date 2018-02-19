@@ -426,10 +426,10 @@ public class LandRecordsHibernateDAO extends GenericHibernateDAO<SpatialUnitTabl
     }
 
     @Override
-    public String findBiggestUkaNumber(String ukaPrefix) {
+    public Integer findBiggestUkaNumber(String ukaPrefix) {
         try {
-            Query query = getEntityManager().createQuery("Select max(su.propertyno) from SpatialUnitTable su where su.propertyno like :ukaPrefix");
-            return (String) query.setParameter("ukaPrefix", ukaPrefix + "%").getSingleResult();
+            Query query = getEntityManager().createNativeQuery("select max(coalesce(cast(substring(su.uka_propertyno from length('" + ukaPrefix + "') + 1) as int),0)) from spatial_unit su where position('" + ukaPrefix + "' in su.uka_propertyno) = 1");
+            return (Integer)query.getSingleResult();
         } catch (Exception e) {
             logger.error(e);
             return null;

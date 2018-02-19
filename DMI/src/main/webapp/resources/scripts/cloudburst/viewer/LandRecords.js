@@ -436,6 +436,10 @@ function editAttribute(id) {
             jQuery("#neighbor_south").val(data[0].neighbor_south);
             jQuery("#neighbor_east").val(data[0].neighbor_east);
             jQuery("#neighbor_west").val(data[0].neighbor_west);
+            
+            jQuery("#witness_3").val(data[0].witness_3);
+            jQuery("#witness_4").val(data[0].witness_4);
+            jQuery("#witness_5").val(data[0].witness_5);
         }
     });
 
@@ -462,10 +466,10 @@ function editAttribute(id) {
 
     editAttrDialog = $("#editattribute-dialog-form").dialog({
         autoOpen: false,
-        height: 520,
+        height: 550,
         closed: false,
         cache: false,
-        width: 880,
+        width: 1000,
         resizable: false,
         modal: true,
         close: function () {
@@ -1324,6 +1328,8 @@ function editTenure(id) {
     $("#tenureDuration").val("");
     $("#txtJuridicalArea").val("");
     $("#txtCertNumber").val("");
+    $("#term").val("");
+    $("#rentalFee").val("");
 
     $("#tenure_type").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
     $("#lstAcquisitionTypes").append(jQuery("<option></option>").attr("value", 0).text("Please Select"));
@@ -1405,9 +1411,17 @@ function editTenure(id) {
                     jQuery("#txtJuridicalArea").val(data[0].juridicalArea);
                 }
 
+                if (data[0].term !== null) {
+                    jQuery("#term").val(data[0].term);
+                }
+                
+                if (data[0].rentalFee !== null) {
+                    jQuery("#rentalFee").val(data[0].rentalFee);
+                }
+                
                 if (data[0].share_type !== null) {
                     jQuery("#tenure_type").val(data[0].share_type.gid);
-                    jQuery("#tenure_type").attr('disabled', true);
+                    //jQuery("#tenure_type").attr('disabled', true);
                     // Allow relationship selection only for joint tenancy (3)
                     if (data[0].share_type.gid === 3)
                         $('#lstRelationshipTypes').attr('disabled', false);
@@ -1430,8 +1444,8 @@ function editTenure(id) {
 
     tenureDialog = $("#tenureinfo-dialog-form").dialog({
         autoOpen: false,
-        height: 450,
-        width: 500,
+        height: 500,
+        width: 550,
         resizable: false,
         modal: true,
         buttons: {
@@ -2967,6 +2981,10 @@ function deleteDisputingParty(disputeId, partyId) {
 
 function printDenialLetter(usin) {
     window.open("landrecords/denialletter/" + usin, 'Report', 'height=500,width=950,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=false');
+}
+
+function printWarningLetter(userId){
+    window.open("landrecords/warningletter/" + $("#primary").val() + "/" + userId, 'Report', 'height=500,width=950,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=no,titlebar=no,menubar=no,status=no,replace=false');
 }
 
 function generateAdjudicationForm(usin) {

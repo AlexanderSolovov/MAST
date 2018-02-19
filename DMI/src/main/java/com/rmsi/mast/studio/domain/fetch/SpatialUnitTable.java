@@ -111,6 +111,7 @@ public class SpatialUnitTable implements Serializable {
     private String witness_2;
     private String witness_3;
     private String witness_4;
+    private String witness_5;
 
     @Column(name = "usin_str")
     private String usinStr;
@@ -420,6 +421,14 @@ public class SpatialUnitTable implements Serializable {
 
     public void setWitness_4(String witness_4) {
         this.witness_4 = witness_4;
+    }
+
+    public String getWitness_5() {
+        return witness_5;
+    }
+
+    public void setWitness_5(String witness_5) {
+        this.witness_5 = witness_5;
     }
 
     public SoilQualityValues getSoilQualityValues() {
