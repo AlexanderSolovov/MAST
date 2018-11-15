@@ -99,6 +99,10 @@ public class ProjectArea implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date vcMeetingDate;
     
+    @Column(name = "va_meeting_date")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date vaMeetingDate;
+    
     @Column(name = "village_chairman_signature")
     String villageChairmanSignaturePath;
     
@@ -352,6 +356,14 @@ public class ProjectArea implements Serializable {
 
     public void setVcMeetingDate(Date vcMeetingDate) {
         this.vcMeetingDate = vcMeetingDate;
+    }
+
+    public Date getVaMeetingDate() {
+        return vaMeetingDate;
+    }
+
+    public void setVaMeetingDate(Date vaMeetingDate) {
+        this.vaMeetingDate = vaMeetingDate;
     }
 
     public String getVillageChairmanSignaturePath() {

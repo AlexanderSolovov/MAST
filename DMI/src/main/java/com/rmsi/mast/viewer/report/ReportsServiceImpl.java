@@ -93,7 +93,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
             return null;
         }
     }
-    
+
     /**
      * Returns denial letter for claim
      *
@@ -156,14 +156,19 @@ public class ReportsServiceImpl implements ReportsSerivce {
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             String vcDate = "";
+            String vaDate = "";
             if (project.getVcMeetingDate() != null) {
                 vcDate = dateFormat.format(project.getVcMeetingDate());
+            }
+            if (project.getVaMeetingDate() != null) {
+                vaDate = dateFormat.format(project.getVaMeetingDate());
             }
 
             HashMap params = new HashMap();
             params.put("VILLAGE", project.getVillage());
             params.put("APP_URL", appUrl);
             params.put("VC_DATE", vcDate);
+            params.put("VA_DATE", vaDate);
             params.put("CHAIR_PERSON", project.getVillageChairman());
             params.put("CHAIR_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageChairmanSignature()) ? "0" : project.getVillageChairmanSignature()));
             params.put("EXECUTIVE_PERSON", project.getVillageExecutive());
@@ -194,17 +199,19 @@ public class ReportsServiceImpl implements ReportsSerivce {
             HashMap params = new HashMap();
             params.put("VILLAGE", project.getVillage());
             params.put("VILLAGE_ADDRESS", project.getAddress());
+            params.put("MONTHS", getMonths());
             params.put("APP_URL", appUrl);
-            params.put("VC_DATE", project.getVcMeetingDate());
+            params.put("VA_DATE", project.getVaMeetingDate());
             params.put("CHAIR_PERSON", project.getVillageChairman());
             params.put("CHAIR_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageChairmanSignature()) ? "0" : project.getVillageChairmanSignature()));
             params.put("EXECUTIVE_PERSON", project.getVillageExecutive());
             params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
             params.put("DLO_OFFICER", project.getDistrictOfficer());
+            params.put("DISTRICT", project.getDistrictName());
             params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
-            params.put("COAT_OF_ARM", ReportsServiceImpl.class.getResourceAsStream("/reports/images/coatofarm.png"));
+            //params.put("COAT_OF_ARM", ReportsServiceImpl.class.getResourceAsStream("/reports/images/coatofarm.png"));
             params.put("SHOW_COAT_OF_ARM", project.isShowCoatofarm());
-            
+
             URL resource = ReportsServiceImpl.class.getResource("/reports/CrroNonPersonSignature.jasper");
             params.put("SUBREPORT_PATH", Paths.get(resource.toURI()).toAbsolutePath().toString());
 
@@ -218,6 +225,23 @@ public class ReportsServiceImpl implements ReportsSerivce {
             logger.error(ex);
             return null;
         }
+    }
+
+    private String[] getMonths() {
+        return new String[]{
+            "Januari",
+            "Februari",
+            "Machi",
+            "Aprili",
+            "Mei",
+            "Juni",
+            "Julai",
+            "Agosti",
+            "Septemba",
+            "Oktoba",
+            "Novemba",
+            "Desemba"
+        };
     }
 
     @Override
@@ -272,7 +296,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
 
             HashMap params = new HashMap();
             params.put("VILLAGE", project.getVillage());
-            params.put("DISTRICT", project.getRegion());
+            params.put("DISTRICT", project.getDistrictName());
             params.put("APP_URL", appUrl);
             params.put("EXECUTIVE_PERSON_SIGNATURE", (StringUtils.isEmpty(project.getVillageExecutiveSignature()) ? "0" : project.getVillageExecutiveSignature()));
             params.put("DLO_OFFICER_SIGNATURE", (StringUtils.isEmpty(project.getDistrictOfficerSignature()) ? "0" : project.getDistrictOfficerSignature()));
@@ -320,7 +344,7 @@ public class ReportsServiceImpl implements ReportsSerivce {
         try {
             ProjectDetails project = landRecordsService.getProjectDetails(projectName);
             List<RegistryBook> registryBook = landRecordsService.getRegistryBook(projectName, 0);
-            
+
             if (project == null || registryBook == null || registryBook.size() < 1) {
                 return null;
             }

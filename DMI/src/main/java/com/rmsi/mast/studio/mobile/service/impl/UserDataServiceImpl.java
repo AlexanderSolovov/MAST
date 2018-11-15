@@ -491,9 +491,9 @@ public class UserDataServiceImpl implements UserDataService {
                 right.setTenureDuration(Float.parseFloat(value));
             } else if (id == 300) {
                 right.setAcquisitionType(acquisitionTypeDao.getTypeByAttributeOptionId(Integer.parseInt(value)));
-            } else if (id == 360) {
+            } else if (id == 360 && !StringUtils.isEmpty(value)) {
                 right.setTerm(Integer.parseInt(value));
-            } else if (id == 370) {
+            } else if (id == 370 && !StringUtils.isEmpty(value)) {
                 right.setRentalFee(Double.parseDouble(value));
             }
         }

@@ -937,12 +937,12 @@ public class LandRecordsController {
             projectName = ServletRequestUtils.getRequiredStringParameter(request, "projectname_key3");
             term = ServletRequestUtils.getIntParameter(request, "term", 0);
             rentalFee = ServletRequestUtils.getDoubleParameter(request, "rentalFee", 0);
-            
-            if(term == 0){
+
+            if (term == 0) {
                 term = null;
             }
-            
-            if(rentalFee == 0){
+
+            if (rentalFee == 0) {
                 rentalFee = null;
             }
 
@@ -1407,7 +1407,7 @@ public class LandRecordsController {
     public void getDenialLetter(@PathVariable Long usin, HttpServletRequest request, HttpServletResponse response) {
         writeReport(reportsService.getDenialLetter(usin), "DenialLetter", response);
     }
-    
+
     @RequestMapping(value = "/viewer/landrecords/warningletter/{usin}/{personid}", method = RequestMethod.GET)
     @ResponseBody
     public void getDenialLetter(@PathVariable Long usin, @PathVariable Long personid, HttpServletRequest request, HttpServletResponse response) {
@@ -2323,7 +2323,8 @@ public class LandRecordsController {
             }
 
             if (claim.getClaimType().getCode().equalsIgnoreCase(ClaimType.CODE_NEW)
-                    && claim.getStatus().getWorkflowStatusId() == Status.STATUS_NEW) {
+                    && (claim.getStatus().getWorkflowStatusId() == Status.STATUS_NEW
+                    || claim.getStatus().getWorkflowStatusId() == Status.STATUS_REFERRED)) {
                 User user = userService.findByUniqueName(principal.getName());
                 if (StringUtils.isEmpty(claim.getPropertyno())) {
                     // Generate UKA number

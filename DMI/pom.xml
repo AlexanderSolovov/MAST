@@ -223,7 +223,11 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-        
+        <dependency>
+            <groupId>my.custom.fonts</groupId>
+            <artifactId>times</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>

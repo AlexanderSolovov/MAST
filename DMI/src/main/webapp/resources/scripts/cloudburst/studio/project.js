@@ -240,6 +240,7 @@ var createEditProject = function (_name) {
                     jQuery("#villagecode").val(data.projectAreas[0].village_code);
                     jQuery("#villagepostalcode").val(data.projectAreas[0].address);
                     jQuery("#vcmeetingdate").val(data.projectAreas[0].vcMeetingDate);
+                    jQuery("#vameetingdate").val(data.projectAreas[0].vaMeetingDate);
                     if(data.projectAreas[0].showCoatofarm){
                         jQuery("#chbxShowCoatofarm").prop('checked', true);
                     } else {
@@ -389,6 +390,9 @@ var createEditProject = function (_name) {
     }
 
     $("#vcmeetingdate").live('click', function () {
+        $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
+    });
+    $("#vameetingdate").live('click', function () {
         $(this).datepicker({dateFormat: 'yy-mm-dd'}).focus();
     });
     jQuery("#project_accordion").show();

@@ -226,6 +226,7 @@ public class ProjectController {
             String regionCode = "";
             String villagepostalcode = "";
             String vcmeetingdate = "";
+            String vameetingdate = "";
             boolean showCoatOfArm = false;
 
             try {
@@ -289,6 +290,11 @@ public class ProjectController {
                 } catch (Exception e) {
                     logger.error(e);
                 }
+                try {
+                    vameetingdate = ServletRequestUtils.getRequiredStringParameter(request, "vameetingdate");
+                } catch (Exception e) {
+                    logger.error(e);
+                }
                 
                 try {
                     showCoatOfArm = ServletRequestUtils.getRequiredBooleanParameter(request, "showcoatofarm");
@@ -320,6 +326,11 @@ public class ProjectController {
                     projectArea.setVcMeetingDate(null);
                 } else {
                     projectArea.setVcMeetingDate(new SimpleDateFormat("yyyy-MM-dd").parse(vcmeetingdate));
+                }
+                if (StringUtils.isEmpty(vameetingdate)) {
+                    projectArea.setVaMeetingDate(null);
+                } else {
+                    projectArea.setVaMeetingDate(new SimpleDateFormat("yyyy-MM-dd").parse(vameetingdate));
                 }
                 projectAreaList.add(projectArea);
             } catch (Exception e) {

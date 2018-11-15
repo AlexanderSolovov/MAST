@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.rmsi.android.mast.Fragment.CompletedSurveyFragment;
 import com.rmsi.android.mast.activity.R;
 import com.rmsi.android.mast.Fragment.DraftSurveyFragment;
 import com.rmsi.android.mast.Fragment.VerifyDataFragment;
@@ -79,6 +80,11 @@ public class SurveyListingAdapter extends BaseAdapter {
             public void onClick(View v) {
                 if (classname.equalsIgnoreCase("draftsurvey")) {
                     DraftSurveyFragment obj = (DraftSurveyFragment) fragmentObj;
+                    obj.showPopupDraft(v, v.getTag());
+                }
+
+                if (classname.equalsIgnoreCase("completed")) {
+                    CompletedSurveyFragment obj = (CompletedSurveyFragment) fragmentObj;
                     obj.showPopupDraft(v, v.getTag());
                 }
 

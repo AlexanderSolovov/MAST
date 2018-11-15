@@ -508,6 +508,21 @@ public class DbController extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean markFeatureAsDraft(Long featureid) {
+        ContentValues values = new ContentValues();
+        String whereClause = Feature.COL_ID + " = " + featureid;
+        try {
+            values.put(Feature.COL_STATUS, Property.CLIENT_STATUS_DRAFT);
+            values.put(Property.COL_COMPLETION_DATE, "");
+            getDb().update(Feature.TABLE_NAME, values, whereClause, null);
+        } catch (Exception e) {
+            cf.appLog("", e);
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public boolean markFeatureAsVerified(Long featureid) {
         ContentValues values = new ContentValues();
         String whereClause = Feature.COL_ID + " = " + featureid;

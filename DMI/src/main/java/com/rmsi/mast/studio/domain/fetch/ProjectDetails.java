@@ -63,6 +63,10 @@ public class ProjectDetails implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date vcMeetingDate;
     
+    @Column(name = "va_meeting_date")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date vaMeetingDate;
+    
     public ProjectDetails(){
         
     }
@@ -177,6 +181,14 @@ public class ProjectDetails implements Serializable {
 
     public void setVcMeetingDate(Date vcMeetingDate) {
         this.vcMeetingDate = vcMeetingDate;
+    }
+
+    public Date getVaMeetingDate() {
+        return vaMeetingDate;
+    }
+
+    public void setVaMeetingDate(Date vaMeetingDate) {
+        this.vaMeetingDate = vaMeetingDate;
     }
 
     public boolean isShowCoatofarm() {

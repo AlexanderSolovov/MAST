@@ -38,6 +38,9 @@ public class ClaimSummary implements Serializable {
 
     @Column
     private Double acres;
+    
+    @Column 
+    private String area;
 
     @Column(name = "hamlet_name")
     private String hamletName;
@@ -173,6 +176,14 @@ public class ClaimSummary implements Serializable {
 
     public void setAcres(Double acres) {
         this.acres = acres;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
 
     public String getHamletName() {

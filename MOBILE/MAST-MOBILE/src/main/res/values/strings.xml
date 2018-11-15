@@ -541,4 +541,6 @@
     <string name="ukaNumber">UKA/Farm/Plot Number</string>
     <string name="EnterUkaNumber">Enter UKA/Farm/Plot Number</string>
     <string name="Provide3PointsOrMore">Provide at least 3 points for the polygon</string>
+    <string name="draftFeatureMsg">Are you sure to revert to draft?</string>
+    <string name="mark_as_draft">Revert to Draft</string>
 </resources>

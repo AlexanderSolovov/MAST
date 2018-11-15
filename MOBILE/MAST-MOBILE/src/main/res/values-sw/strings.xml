@@ -530,5 +530,7 @@
     <string name="please_delete_Social_Tenure_first">Tafadhali futa taarifa za Milki</string>
     <string name="mandatoryPOI">Itahitajika kujaza mtu/watu wenye maslahi kwa miliki chini ya msimamizi mirathi</string>
     <string name="Provide3PointsOrMore">Chukua alama zaidi ya moja wakati wa upimaji.</string>
+    <string name="mark_as_draft">Rejea kwenye Rasimu</string>
+    <string name="draftFeatureMsg">Je! Una uhakika wa kurejea kwa rasimu?</string>
 
 </resources>
